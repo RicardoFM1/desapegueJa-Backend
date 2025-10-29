@@ -11,19 +11,19 @@ namespace BackendDesapegaJa.Services
         {
             _repo = repo;
         }
-        public IEnumerable<StatusOrdem> GetStatusDeOrdemDePagamento()
+        public IEnumerable<StatusOrdem> GetStatusDeOrdemDePagamento(string? status = null)
         {
-            return _repo.ListarTodos();
+            return _repo.ListarTodos(status);
         }
 
-        public StatusOrdem GetStatusDeOrdemDePagamentoById(int id)
+        public StatusOrdem GetStatusDeOrdemDePagamentoById(int id, string? status = null)
         {
-            var status =  _repo.BuscarPorId(id);
-            if(status == null)
+            var statusres =  _repo.BuscarPorId(id);
+            if(statusres == null)
             {
                 throw new InvalidOperationException("Não foi possível encontrar esse status de ordem de pagamento");
             }
-            return status;
+            return statusres;
         }
 
         public StatusOrdem CriarStatusDeOrdemDePagamento(StatusOrdem status)

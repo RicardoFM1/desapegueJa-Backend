@@ -89,7 +89,7 @@ namespace BackendDesapegaJa.Controllers
         [Authorize]
         [HttpPatch("{id}")]
 
-        public IActionResult atualizarProduto(int id, [FromQuery] string? status, [FromBody] ProdutoUpdateDTO produtoAtualizado)
+        public IActionResult atualizarProduto(int id, [FromBody] ProdutoUpdateDTO produtoAtualizado, [FromQuery] string? status)
         {
             try
             {
@@ -123,7 +123,7 @@ namespace BackendDesapegaJa.Controllers
                     return StatusCode(403, new { message = "Sem autorização para atualizar esse produto" });
                 }
 
-                var atualizacao = _service.AtualizarProduto(id, status, produtoAtualizado);
+                var atualizacao = _service.AtualizarProduto(id, produtoAtualizado, status);
                 return StatusCode(200, atualizacao);
 
             }

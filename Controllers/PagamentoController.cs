@@ -18,12 +18,12 @@ namespace BackendDesapegaJa.Controllers
 
         [HttpGet]
 
-        public IActionResult Get()
+        public IActionResult Get([FromQuery] string? status)
         {
             try
             {
 
-            var pagamentos = _service.GetPagamentos();
+            var pagamentos = _service.GetPagamentos(status);
             return Ok(pagamentos);
             }
             catch (InvalidOperationException ex)
@@ -38,12 +38,12 @@ namespace BackendDesapegaJa.Controllers
 
         [HttpGet("{id}")]
 
-        public IActionResult GetById(int id)
+        public IActionResult GetById(int id, [FromQuery] string? status)
         {
             try
             {
 
-            var pagamento = _service.GetPagamentosById(id);
+            var pagamento = _service.GetPagamentosById(id, status);
             return Ok(pagamento);
             }
             catch (InvalidOperationException ex)
@@ -83,11 +83,11 @@ namespace BackendDesapegaJa.Controllers
             }
         }
         [HttpPatch("{id}")]
-        public IActionResult AtualizarPagamento(int id, [FromBody] PagamentosUpdateDTO pagamento)
+        public IActionResult AtualizarPagamento(int id, [FromBody] PagamentosUpdateDTO pagamento, [FromQuery] string? status)
         {
             try
             {
-                var pagamentoExistente = _service.GetPagamentosById(id);
+                var pagamentoExistente = _service.GetPagamentosById(id, status);
                 var isAdmin = false;
                 var admin = User.FindFirst("isAdmin").Value;
 
@@ -112,7 +112,7 @@ namespace BackendDesapegaJa.Controllers
                     return StatusCode(403, new { message = "Sem autorização para efetuar esse pagamento" });
                 }
 
-                var pagamentoAtualizado = _service.AtualizarPagamentos(id, pagamento);
+                var pagamentoAtualizado = _service.AtualizarPagamentos(id, pagamento, status);
                 return StatusCode(200, pagamentoAtualizado);
             }
             catch (InvalidOperationException ex)

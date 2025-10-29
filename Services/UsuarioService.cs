@@ -19,9 +19,9 @@ namespace BackendDesapegaJa.Services
             _repo = repo;
         }
 
-        public IEnumerable<Usuario> ObterUsuarios()
+        public IEnumerable<Usuario> ObterUsuarios(string? status = null)
         {
-            return _repo.ListarTodos();
+            return _repo.ListarTodos(status);
         }
 
         public Usuario CriarUsuario(Usuario usuario)
@@ -93,18 +93,18 @@ namespace BackendDesapegaJa.Services
             };
         }
 
-        public Usuario? BuscarUsuarioPorId(int id)
+        public Usuario? BuscarUsuarioPorId(int id, string? status = null)
         {
-            var usuario = _repo.BuscarPorId(id);
+            var usuario = _repo.BuscarPorId(id, status);
             if (usuario == null)
                 throw new InvalidOperationException("Não foi possível encontrar esse usuário.");
 
             return usuario;
         }
 
-        public Usuario AtualizarUsuario(int id, UsuarioUpdateDTO usuarioDto)
+        public Usuario AtualizarUsuario(int id, UsuarioUpdateDTO usuarioDto, string? status = null)
         {
-            var existente = _repo.BuscarPorId(id);
+            var existente = _repo.BuscarPorId(id, status);
             if (existente == null)
                 throw new InvalidOperationException("Nenhum usuário encontrado.");
 
@@ -161,7 +161,7 @@ namespace BackendDesapegaJa.Services
             if (!string.IsNullOrWhiteSpace(usuarioDto.status))
                 existente.status = usuarioDto.status;
 
-            _repo.Atualizar(id, existente);
+            _repo.Atualizar(id, existente, status);
             return existente;
         }
 

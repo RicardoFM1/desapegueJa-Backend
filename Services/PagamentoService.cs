@@ -24,14 +24,14 @@ namespace BackendDesapegaJa.Services
         }
 
 
-        public IEnumerable<Pagamentos> GetPagamentos()
+        public IEnumerable<Pagamentos> GetPagamentos(string? status = null)
         {
-            return _repo.ListarTodos();
+            return _repo.ListarTodos(status);
         }
 
-        public Pagamentos GetPagamentosById(int id)
+        public Pagamentos GetPagamentosById(int id, string? status = null)
         {
-            var pagamentos = _repo.BuscarPorId(id);
+            var pagamentos = _repo.BuscarPorId(id, status);
             if(pagamentos == null)
             {
                 throw new InvalidOperationException("Não foi possível encontrar esse pagamento");
@@ -61,10 +61,10 @@ namespace BackendDesapegaJa.Services
             return pagamento;
 
         }
-        public Pagamentos? AtualizarPagamentos(int id, PagamentosUpdateDTO pagamento)
+        public Pagamentos? AtualizarPagamentos(int id, PagamentosUpdateDTO pagamento, string? statusquery = null)
         {
            
-            var pagamentoExistente = _repo.BuscarPorId(id);
+            var pagamentoExistente = _repo.BuscarPorId(id, statusquery);
 
             int usuarioIdFinal = pagamento.usuario_id ?? pagamentoExistente.usuario_id;
             int formasPagamentoIdFinal = pagamento.formas_de_pagamento_id ?? pagamentoExistente.formas_de_pagamento_id;

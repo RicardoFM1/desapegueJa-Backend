@@ -13,13 +13,24 @@ namespace BackendDesapegaJa.Repositories
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
 
-        public IEnumerable<Pagamentos> ListarTodos()
+        public IEnumerable<Pagamentos> ListarTodos(string? status = null)
         {
             var pagamentos = new List<Pagamentos>();
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT * from Pagamentos", connection);
+            string sql = "SELECT * from Pagamentos";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " WHERE status = @status";
+            }
+
+            using var cmd = new MySqlCommand(sql, connection);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
@@ -40,14 +51,24 @@ namespace BackendDesapegaJa.Repositories
             return pagamentos;
         }
 
-        public Pagamentos BuscarPorId(int? id)
+        public Pagamentos BuscarPorId(int? id, string? status = null)
         {
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT * FROM Pagamentos WHERE id = @id", connection);
+            string sql = "SELECT * FROM Pagamentos WHERE id = @id";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             using var reader = cmd.ExecuteReader();
             Pagamentos? pagamentos = null;
             while (reader.Read())
@@ -69,13 +90,24 @@ namespace BackendDesapegaJa.Repositories
         }
 
        
-        public Pagamentos BuscarPorUsuarioId(int? id)
+        public Pagamentos BuscarPorUsuarioId(int? id, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id", connection);
+            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", id);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             using var reader = cmd.ExecuteReader();
             Pagamentos? pagamentos = null;
             while (reader.Read())
@@ -123,9 +155,9 @@ namespace BackendDesapegaJa.Repositories
 
         }
 
-        public Pagamentos Atualizar(int id, PagamentosUpdateDTO pagamento)
+        public Pagamentos Atualizar(int id, PagamentosUpdateDTO pagamento, string? statusquery = null)
         {
-            var pagamentoExistente = BuscarPorId(id);
+            var pagamentoExistente = BuscarPorId(id, statusquery);
             if (pagamentoExistente == null)
             {
                 throw new InvalidOperationException("Nenhum pagamento encontrado");

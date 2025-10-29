@@ -13,14 +13,14 @@ namespace BackendDesapegaJa.Services
             _repo = repo;
         }
 
-        public IEnumerable<FormasDePagamento> GetFormasDePagamentos()
+        public IEnumerable<FormasDePagamento> GetFormasDePagamentos(string? status = null)
         {
-            return _repo.ListarTodos();
+            return _repo.ListarTodos(status);
         }
         
-        public FormasDePagamento getFormasById(int id)
+        public FormasDePagamento getFormasById(int id, string? status = null)
         {
-            var formas = _repo.BuscarPorId(id);
+            var formas = _repo.BuscarPorId(id, status);
             if(formas == null)
             {
                 throw new InvalidOperationException("Não foi possível encontrar essa forma de pagamento");
@@ -39,7 +39,7 @@ namespace BackendDesapegaJa.Services
             _repo.Adicionar(forma);
             return forma;
         }
-        public FormasDePagamento AtualizarFormaDePagamento(int id, FormasDePagamentoUpdateDTO forma)
+        public FormasDePagamento AtualizarFormaDePagamento(int id, FormasDePagamentoUpdateDTO forma, string? status = null)
         {
             var formaJaExistente = _repo.BuscarPorForma(forma.forma);
             if (formaJaExistente != null && formaJaExistente.id != id && formaJaExistente.status.ToLower() == "ativo")

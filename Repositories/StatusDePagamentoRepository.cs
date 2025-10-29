@@ -14,19 +14,27 @@ namespace BackendDesapegaJa.Repositories
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
 
-        public IEnumerable<StatusDePagamento> ListarTodos()
+        public IEnumerable<StatusDePagamento> ListarTodos(string? status = null)
         {
-            var status = new List<StatusDePagamento>();
+            var statuslist = new List<StatusDePagamento>();
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-
-            var cmd = new MySqlCommand("SELECT * from status_de_pagamento", connection);
+            string sql = "SELECT * from status_de_pagamento";
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " WHERE status = @status";
+            }
+            var cmd = new MySqlCommand(sql, connection);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             var reader = cmd.ExecuteReader();
 
             while (reader.Read())
             {
-                status.Add(new StatusDePagamento
+                statuslist.Add(new StatusDePagamento
                 {
                     id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
                     descricao = reader.IsDBNull(reader.GetOrdinal("descricao")) ? "" : reader.GetString("descricao"),
@@ -34,17 +42,27 @@ namespace BackendDesapegaJa.Repositories
                 });
             }
          
-            return status;
+            return statuslist;
         }
 
-        public StatusDePagamento BuscarPorDescricao(string descricao)
+        public StatusDePagamento BuscarPorDescricao(string descricao, string? status = null)
         {
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("SELECT * FROM status_de_pagamento WHERE descricao = @descricao", connection);
+            string sql = "SELECT * FROM status_de_pagamento WHERE descricao = @descricao";
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+
+            var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@descricao", descricao);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             var reader = cmd.ExecuteReader();
             StatusDePagamento? statusDePagamento = null;
             while (reader.Read())
@@ -62,13 +80,22 @@ namespace BackendDesapegaJa.Repositories
             return statusDePagamento;
         }
 
-        public StatusDePagamento BuscarPorId(int? id)
+        public StatusDePagamento BuscarPorId(int? id, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("SELECT * FROM status_de_pagamento WHERE id = @id", connection);
+            string sql = "SELECT * FROM status_de_pagamento WHERE id = @id";
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             var reader = cmd.ExecuteReader();
             StatusDePagamento? statusdepagamento = null;
             while (reader.Read())
@@ -109,7 +136,7 @@ namespace BackendDesapegaJa.Repositories
           
         }
 
-        public StatusDePagamento Atualizar(int id, StatusDePagamentoUpdateDTO status)
+        public StatusDePagamento Atualizar(int id, StatusDePagamentoUpdateDTO statuspagamento, string? status = null)
         {
             var statusExistente = BuscarPorId(id);
             if (statusExistente == null)
@@ -118,8 +145,8 @@ namespace BackendDesapegaJa.Repositories
             }
 
 
-            var descricaoFinal = string.IsNullOrWhiteSpace(status.descricao) ? statusExistente.descricao : status.descricao;
-            var statusFinal = string.IsNullOrWhiteSpace(status.status) ? statusExistente.status : status.status;
+            var descricaoFinal = string.IsNullOrWhiteSpace(statuspagamento.descricao) ? statusExistente.descricao : statuspagamento.descricao;
+            var statusFinal = string.IsNullOrWhiteSpace(statuspagamento.status) ? statusExistente.status : statuspagamento.status;
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();

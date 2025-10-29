@@ -19,20 +19,20 @@ namespace BackendDesapegaJa.Controllers
 
         [HttpGet]
 
-        public IActionResult Get()
+        public IActionResult Get([FromQuery] string? statusquery)
         {
-            var statusDePagamentos = _service.GetStatusDePagamento();
+            var statusDePagamentos = _service.GetStatusDePagamento(statusquery);
             return Ok(statusDePagamentos);
         }
 
         [HttpGet("{id}")]
 
-        public IActionResult GetById(int id)
+        public IActionResult GetById(int id, [FromQuery] string? statusquery)
         {
             try
             {
 
-            var status = _service.GetStatusDePagamentoById(id);
+            var status = _service.GetStatusDePagamentoById(id, statusquery);
             return Ok(status);
             }
             catch (InvalidOperationException ex)
@@ -86,7 +86,7 @@ namespace BackendDesapegaJa.Controllers
         }
         [Authorize]
         [HttpPatch("{id}")]
-        public IActionResult AtualizarStatusDePagamento(int id, [FromBody] StatusDePagamentoUpdateDTO status)
+        public IActionResult AtualizarStatusDePagamento(int id, [FromBody] StatusDePagamentoUpdateDTO status, [FromQuery] string? statusquery)
         {
             try
             {
@@ -107,7 +107,7 @@ namespace BackendDesapegaJa.Controllers
                 if (isAdmin == false)
                     return StatusCode(403, new { message = "Sem autorização para atualizar esse status de ordem de pagamento" });
 
-                var statusAtualizado = _service.AtualizarStatusDePagamento(id, status);
+                var statusAtualizado = _service.AtualizarStatusDePagamento(id, status, statusquery);
                 return StatusCode(200, statusAtualizado);
             }
             catch (InvalidOperationException ex)

@@ -18,12 +18,12 @@ namespace BackendDesapegaJa.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get([FromQuery] string? status)
         {
             try
             {
 
-            var usuarios = _service.ObterUsuarios();
+            var usuarios = _service.ObterUsuarios(status);
             return Ok(usuarios);
             }
             catch (InvalidOperationException ex)
@@ -38,12 +38,12 @@ namespace BackendDesapegaJa.Controllers
 
         [HttpGet("{id}")]
 
-        public IActionResult GetById(int id)
+        public IActionResult GetById(int id, [FromQuery] string? status)
         {
             try
             {
 
-            var usuario = _service.BuscarUsuarioPorId(id);
+            var usuario = _service.BuscarUsuarioPorId(id, status);
             return Ok(usuario);
             }
             catch (InvalidOperationException ex)
@@ -132,11 +132,11 @@ namespace BackendDesapegaJa.Controllers
         [Authorize]
         [HttpPatch("{id}")]
 
-        public IActionResult AtualizarUsuario(int id, [FromBody] UsuarioUpdateDTO usuario)
+        public IActionResult AtualizarUsuario(int id, [FromBody] UsuarioUpdateDTO usuario, [FromQuery] string? status)
         {
             try
             {
-                var usuarioExistente = _service.BuscarUsuarioPorId(id);
+                var usuarioExistente = _service.BuscarUsuarioPorId(id, status);
                 var loggedId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var isAdmin = false;
                 var admin = User.FindFirst("isAdmin")?.Value;
@@ -161,7 +161,7 @@ namespace BackendDesapegaJa.Controllers
                 {
                     return StatusCode(403, new { message = "Usuário sem permissão" });
                 }
-                    var atualizacao = _service.AtualizarUsuario(id, usuario);
+                    var atualizacao = _service.AtualizarUsuario(id, usuario, status);
                 return StatusCode(200, atualizacao);
 
             }

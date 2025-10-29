@@ -59,12 +59,22 @@ namespace BackendDesapegaJa.Repositories
 
             return produtos;
         }
-        public Produto? BuscarPorNome(string nome)
+        public Produto? BuscarPorNome(string nome, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            using var cmd = new MySqlCommand("SELECT * FROM produtos WHERE LOWER(nome) = LOWER(@nome)", connection);
+            string sql = "SELECT * FROM produtos WHERE LOWER(nome) = LOWER(@nome)";
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@nome", nome.Trim());
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
+            
             using var reader = cmd.ExecuteReader();
             if (reader.Read())
             {
@@ -87,7 +97,7 @@ namespace BackendDesapegaJa.Repositories
             return null;
         }
 
-        public Produto? BuscarPorId(int? id, string? status)
+        public Produto? BuscarPorId(int? id, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
@@ -173,7 +183,7 @@ namespace BackendDesapegaJa.Repositories
 
          
         }
-        public Produto? Atualizar(int id, string? status, ProdutoUpdateDTO produto)
+        public Produto? Atualizar(int id, ProdutoUpdateDTO produto, string? status = null)
         {
 
             var existente = BuscarPorId(id, status);

@@ -52,6 +52,11 @@ namespace BackendDesapegaJa.Services
                 throw new InvalidOperationException("Essa quantidade do produto não está disponível");
             }
 
+            if (carrinho.quantidade <= 0)
+            {
+                throw new InvalidOperationException("Não é possível adicionar um item no carrinho com quantidade 0");
+            }
+
             if(usuarioExistente == null)
             {
                 throw new InvalidOperationException("Referência do usuário não encontrado");
@@ -77,7 +82,7 @@ namespace BackendDesapegaJa.Services
             var usuarioExistente = _repoUser.BuscarPorId(usuarioId);
 
             if (!string.Equals(usuarioExistente.status, "ativo", StringComparison.OrdinalIgnoreCase))
-            {
+           {
                 throw new InvalidOperationException("Não é possível adicionar ao carrinho um usuário que não está ativo");
             }
 

@@ -14,14 +14,23 @@ namespace BackendDesapegaJa.Repositories
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
 
-        public IEnumerable<StatusOrdem> ListarTodos()
+        public IEnumerable<StatusOrdem> ListarTodos(string? status = null)
         {
 
             var statusordem = new List<StatusOrdem>();
             var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("SELECT * FROM status_ordem", connection);
+            string sql = "SELECT * FROM status_ordem";
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " WHERE status = @status";
+            }
+            var cmd = new MySqlCommand(sql, connection);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             var reader = cmd.ExecuteReader();
             
 
@@ -37,14 +46,24 @@ namespace BackendDesapegaJa.Repositories
             }
             return statusordem;
         }
-        public StatusOrdem BuscarPorDescricao(string descricao)
+        public StatusOrdem BuscarPorDescricao(string descricao, string? status = null)
         {
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("SELECT * FROM status_ordem WHERE descricao = @descricao", connection);
+            string sql = "SELECT * FROM status_ordem WHERE descricao = @descricao";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@descricao", descricao);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             var reader = cmd.ExecuteReader();
             StatusOrdem? statusordem = null;
             while (reader.Read())
@@ -62,13 +81,24 @@ namespace BackendDesapegaJa.Repositories
             return statusordem;
         }
 
-        public StatusOrdem BuscarPorId(int? id)
+        public StatusOrdem BuscarPorId(int? id, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("SELECT * FROM status_ordem WHERE id = @id", connection);
+            string sql = "SELECT * FROM status_ordem WHERE id = @id";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+
+            var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+               cmd.Parameters.AddWithValue("@status", status);
+            }
             var reader = cmd.ExecuteReader();
             StatusOrdem? statusordem = null;
             while (reader.Read())
@@ -107,9 +137,9 @@ namespace BackendDesapegaJa.Repositories
 
         }
 
-        public StatusOrdem? Atualizar(int id, StatusOrdemUpdateDTO status)
+        public StatusOrdem? Atualizar(int id, StatusOrdemUpdateDTO status, string? statusquery = null)
         {
-            var statusExistente = BuscarPorId(id);
+            var statusExistente = BuscarPorId(id, statusquery);
             if (statusExistente == null)
             {
                 throw new InvalidOperationException("Status de ordem não encontrado.");

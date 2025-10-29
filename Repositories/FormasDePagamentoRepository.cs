@@ -1,5 +1,6 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
+using Google.Protobuf.WellKnownTypes;
 using MySql.Data.MySqlClient;
 using System.Net.WebSockets;
 
@@ -14,15 +15,24 @@ namespace BackendDesapegaJa.Repositories
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
 
-        public IEnumerable<FormasDePagamento> ListarTodos()
+        public IEnumerable<FormasDePagamento> ListarTodos(string? status = null)
         {
             var formas = new List<FormasDePagamento>();
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
+            string sql = "SELECT * from formas_de_pagamentos";
 
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " WHERE status = @status";
+            }
 
-            using var cmd = new MySqlCommand("SELECT * from formas_de_pagamentos", connection);
+            using var cmd = new MySqlCommand(sql, connection);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
@@ -38,14 +48,25 @@ namespace BackendDesapegaJa.Repositories
             return formas;
         }
 
-        public FormasDePagamento BuscarPorForma(string forma)
+        public FormasDePagamento BuscarPorForma(string forma, string? status = null)
         {
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT * FROM formas_de_pagamentos WHERE forma = @forma", connection);
+            string sql = "SELECT * FROM formas_de_pagamentos WHERE forma = @forma";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@forma", forma);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             using var reader = cmd.ExecuteReader();
             FormasDePagamento? formadepagamento = null;
             while (reader.Read())
@@ -61,13 +82,24 @@ namespace BackendDesapegaJa.Repositories
             return formadepagamento;
         }
 
-        public FormasDePagamento BuscarPorId(int? id)
+        public FormasDePagamento BuscarPorId(int? id, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT * FROM formas_de_pagamentos WHERE id = @id", connection);
+            string sql = "SELECT * FROM formas_de_pagamentos WHERE id = @id";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             using var reader = cmd.ExecuteReader();
             FormasDePagamento? formadepagamento = null;
             while (reader.Read())
@@ -99,9 +131,9 @@ namespace BackendDesapegaJa.Repositories
             
         }
 
-        public void Atualizar(int id, FormasDePagamentoUpdateDTO formas)
+        public void Atualizar(int id, FormasDePagamentoUpdateDTO formas, string? status = null)
         {
-            var formaExistente = BuscarPorId(id);
+            var formaExistente = BuscarPorId(id, status);
             if (formaExistente == null)
             {
                 throw new InvalidOperationException("Nenhuma forma de pagamento encontrada");

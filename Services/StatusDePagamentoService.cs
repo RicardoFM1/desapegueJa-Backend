@@ -11,19 +11,19 @@ namespace BackendDesapegaJa.Services
         {
             _repo = repo;
         }
-        public IEnumerable<StatusDePagamento> GetStatusDePagamento()
+        public IEnumerable<StatusDePagamento> GetStatusDePagamento(string? status = null)
         {
-            return _repo.ListarTodos();
+            return _repo.ListarTodos(status);
         }
 
-        public StatusDePagamento GetStatusDePagamentoById(int id)
+        public StatusDePagamento GetStatusDePagamentoById(int id, string? status = null)
         {
-            var status = _repo.BuscarPorId(id);
-            if(status == null)
+            var statusres = _repo.BuscarPorId(id, status);
+            if(statusres == null)
             {
                 throw new InvalidOperationException("Não foi possível encontrar esse status de pagamento");
             }
-                return status;
+                return statusres;
         }
 
         public StatusDePagamento CriarStatusDePagamento(StatusDePagamento status)
@@ -37,7 +37,7 @@ namespace BackendDesapegaJa.Services
             _repo.Adicionar(status);
             return status;
         }
-        public StatusDePagamento? AtualizarStatusDePagamento(int id, StatusDePagamentoUpdateDTO status)
+        public StatusDePagamento? AtualizarStatusDePagamento(int id, StatusDePagamentoUpdateDTO status, string? statusquery = null)
         {
             var descricaoExistente = _repo.BuscarPorDescricao(status.descricao);
             if (descricaoExistente != null && descricaoExistente.id != id && descricaoExistente.status.ToLower() == "ativo")

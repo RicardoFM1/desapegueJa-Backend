@@ -19,7 +19,9 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT * from ordem_de_compra", connection);
+            string sql = "SELECT * from ordem_de_compra";
+
+            using var cmd = new MySqlCommand(sql, connection);
             using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
@@ -42,8 +44,11 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT * FROM ordem_de_compra WHERE id = @id", connection);
+            string sql = "SELECT * FROM ordem_de_compra WHERE id = @id";
+
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
+           
             using var reader = cmd.ExecuteReader();
             OrdemDeCompra? ordemdecompra = null;
             while (reader.Read())

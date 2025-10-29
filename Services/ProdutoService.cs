@@ -15,12 +15,12 @@ namespace BackendDesapegaJa.Services
             _repoUser = repoUser;
             _repoCategoria = repoCategoria;
         }
-        public IEnumerable<Produto> ObterProdutos(string? status)
+        public IEnumerable<Produto> ObterProdutos(string? status = null)
         {
             return _repo.ListarTodos(status);
         }
 
-        public Produto GetProdutoById(int id, string? status)
+        public Produto GetProdutoById(int id, string? status = null)
         {
            var produto =_repo.BuscarPorId(id, status);
             if(produto == null)
@@ -50,7 +50,7 @@ namespace BackendDesapegaJa.Services
             return produto;
 
         }
-        public Produto? AtualizarProduto(int id, string? status, ProdutoUpdateDTO produto)
+        public Produto? AtualizarProduto(int id, ProdutoUpdateDTO produto, string? status = null)
         {
             var produtoExistente = _repo.BuscarPorId(id, status);
             
@@ -77,7 +77,7 @@ namespace BackendDesapegaJa.Services
                 throw new InvalidOperationException("O estoque deve ser maior que 0");
             }
            
-            var produtoAtualizado = _repo.Atualizar(id, status, produto);
+            var produtoAtualizado = _repo.Atualizar(id, produto, status);
             return produtoAtualizado;
         }
     }

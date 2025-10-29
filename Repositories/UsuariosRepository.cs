@@ -14,12 +14,21 @@ namespace BackendDesapegaJa.Repositories
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
 
-        public IEnumerable<Usuario> ListarTodos()
+        public IEnumerable<Usuario> ListarTodos(string? status = null)
         {
             var usuarios = new List<Usuario>();
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            using var cmd = new MySqlCommand("SELECT * FROM Usuarios", connection);
+            string sql = "SELECT * FROM Usuarios";
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " WHERE status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, connection);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -28,35 +37,67 @@ namespace BackendDesapegaJa.Repositories
             return usuarios;
         }
 
-        public Usuario? BuscarPorEmail(string email)
+        public Usuario? BuscarPorEmail(string email, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            using var cmd = new MySqlCommand("SELECT * FROM Usuarios WHERE LOWER(email)=LOWER(@email)", connection);
+            string sql = "SELECT * FROM Usuarios WHERE LOWER(email)=LOWER(@email)";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@email", email.Trim());
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             using var reader = cmd.ExecuteReader();
             return reader.Read() ? MapUsuario(reader) : null;
         }
 
-        public Usuario? BuscarPorId(int? id)
+        public Usuario? BuscarPorId(int? id, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            using var cmd = new MySqlCommand("SELECT * FROM Usuarios WHERE id=@id", connection);
+
+            string sql = "SELECT * FROM Usuarios WHERE id=@id";
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             using var reader = cmd.ExecuteReader();
             return reader.Read() ? MapUsuario(reader) : null;
         }
 
-        public Usuario? BuscarPorCpf(string cpf)
+        public Usuario? BuscarPorCpf(string cpf, string? status = null)
         {
             if (string.IsNullOrWhiteSpace(cpf))
+            {
                 return null;
+            }
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            using var cmd = new MySqlCommand("SELECT * FROM Usuarios WHERE cpf=@cpf", connection);
+            string sql = "SELECT * FROM Usuarios WHERE cpf=@cpf";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@cpf", long.Parse(cpf));
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             using var reader = cmd.ExecuteReader();
             return reader.Read() ? MapUsuario(reader) : null;
         }
@@ -85,11 +126,12 @@ namespace BackendDesapegaJa.Repositories
             usuario.Id = Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-        public void Atualizar(int id, Usuario usuario)
+        public void Atualizar(int id, Usuario usuario, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            using var cmd = new MySqlCommand(@"
+
+            string sql = @"
                 UPDATE Usuarios SET
                     email=@Email,
                     senha=@Senha,
@@ -101,7 +143,13 @@ namespace BackendDesapegaJa.Repositories
                     cep=@Cep,
                     foto_de_perfil=@Foto,
                     data_de_nascimento=@Nascimento
-                WHERE id=@Id", connection);
+                WHERE id=@Id";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, connection);
 
             cmd.Parameters.AddWithValue("@Id", id);
             cmd.Parameters.AddWithValue("@Email", usuario.Email);
@@ -115,6 +163,10 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@Foto", string.IsNullOrWhiteSpace(usuario.Foto_De_Perfil) ? (object)DBNull.Value : usuario.Foto_De_Perfil);
             cmd.Parameters.AddWithValue("@Nascimento", string.IsNullOrWhiteSpace(usuario.data_de_nascimento) ? (object)DBNull.Value : usuario.data_de_nascimento);
 
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
             cmd.ExecuteNonQuery();
         }
 

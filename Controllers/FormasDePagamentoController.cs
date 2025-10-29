@@ -21,12 +21,12 @@ namespace BackendDesapegaJa.Controllers
 
         [HttpGet]
 
-        public IActionResult Get()
+        public IActionResult Get([FromQuery] string? status)
         {
             try
             {
 
-            var formas = _service.GetFormasDePagamentos();
+            var formas = _service.GetFormasDePagamentos(status);
             return Ok(formas);
             }
             catch (InvalidOperationException ex)
@@ -41,12 +41,12 @@ namespace BackendDesapegaJa.Controllers
 
         [HttpGet("{id}")]
 
-        public IActionResult GetById(int id)
+        public IActionResult GetById(int id, [FromQuery] string? status)
         {
             try
             {
 
-            var forma = _service.getFormasById(id);
+            var forma = _service.getFormasById(id, status);
             return Ok(forma);
             }
             catch (InvalidOperationException ex)
@@ -78,7 +78,7 @@ namespace BackendDesapegaJa.Controllers
         }
         [Authorize]
         [HttpPatch("{id}")]
-        public IActionResult AtualizarFormaDePagamento(int id, [FromBody] FormasDePagamentoUpdateDTO forma)
+        public IActionResult AtualizarFormaDePagamento(int id, [FromBody] FormasDePagamentoUpdateDTO forma, [FromQuery] string? status)
         {
             try
             {
@@ -99,7 +99,7 @@ namespace BackendDesapegaJa.Controllers
                 }
              
 
-                var formaAtualizada = _service.AtualizarFormaDePagamento(id, forma);
+                var formaAtualizada = _service.AtualizarFormaDePagamento(id, forma, status);
                 return StatusCode(200, formaAtualizada);
             }
             catch(InvalidOperationException ex)
