@@ -45,17 +45,17 @@ namespace BackendDesapegaJa.Services
             var usuarioExistente = _repoUser.BuscarPorId(pagamento.usuario_id);
             var formaPagamentoExistente = _repoFormaPagamento.BuscarPorId(pagamento.formas_de_pagamento_id);
             var statusPagamentoExistente = _repoStatusPagamento.BuscarPorId(pagamento.status_de_pagamento_id);
-            if (usuarioExistente == null)
+            if (usuarioExistente == null || usuarioExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Usuario referenciado não encontrado");
+                throw new InvalidOperationException("Usuario referenciado não encontrado e/ou inativo");
             }
-            if (formaPagamentoExistente == null)
+            if (formaPagamentoExistente == null || formaPagamentoExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Forma de pagamento referenciada não encontrada");
+                throw new InvalidOperationException("Forma de pagamento referenciada não encontrada e/ou inativa");
             }
-            if (statusPagamentoExistente == null)
+            if (statusPagamentoExistente == null || statusPagamentoExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Status de pagamento não encontrado");
+                throw new InvalidOperationException("Status de pagamento não encontrado e/ou inativo");
             }
             _repo.Adicionar(pagamento);
             return pagamento;
@@ -81,17 +81,17 @@ namespace BackendDesapegaJa.Services
 
 
 
-            if (usuarioExistente == null)
+            if (usuarioExistente == null || usuarioExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Usuario referenciado não encontrado");
+                throw new InvalidOperationException("Usuario referenciado não encontrado e/ou inativo");
             }
-            if (formaPagamentoExistente == null)
+            if (formaPagamentoExistente == null || formaPagamentoExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Forma de pagamento referenciada não encontrada");
+                throw new InvalidOperationException("Forma de pagamento referenciada não encontrada e/ou inativa");
             }
-            if (statusPagamentoExistente == null)
+            if (statusPagamentoExistente == null || statusPagamentoExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Status de pagamento referenciado não encontrado");
+                throw new InvalidOperationException("Status de pagamento não encontrado e/ou inativo");
             }
 
 

@@ -83,7 +83,7 @@ namespace BackendDesapegaJa.Services
 
             if (!string.Equals(usuarioExistente.status, "ativo", StringComparison.OrdinalIgnoreCase))
            {
-                throw new InvalidOperationException("Não é possível adicionar ao carrinho um usuário que não está ativo");
+                throw new InvalidOperationException("Não é possível atualizar um item do carrinho em que um usuário que não está ativo");
             }
 
             if (!string.Equals(produtoExistente.status, "ativo", StringComparison.OrdinalIgnoreCase))

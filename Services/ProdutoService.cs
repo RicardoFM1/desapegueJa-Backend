@@ -34,15 +34,15 @@ namespace BackendDesapegaJa.Services
             
             var usuarioExistente = _repoUser.BuscarPorId(produto.usuario_id);
             var categoriaExistente = _repoCategoria.BuscarPorId(produto.categoria_id);
-            if (usuarioExistente == null)
+            if (usuarioExistente == null || usuarioExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Usuario referenciado não encontrado");
+                throw new InvalidOperationException("Usuario referenciado não encontrado e/ou inativa");
             }
-            if (categoriaExistente == null)
+            if (categoriaExistente == null || usuarioExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Categoria referenciada não encontrada");
+                throw new InvalidOperationException("Categoria referenciada não encontrada e/ou inativa");
             }
-            if(produto.estoque <= 0)
+            if (produto.estoque <= 0)
             {
                 throw new InvalidOperationException("O estoque deve ser maior que 0");
             }
@@ -64,13 +64,13 @@ namespace BackendDesapegaJa.Services
             {
                 throw new InvalidOperationException("Nenhum produto encontrado");
             }
-            if (usuarioExistente == null)
+            if (usuarioExistente == null || usuarioExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Usuario referenciado não encontrado");
+                throw new InvalidOperationException("Usuario referenciado não encontrado e/ou inativa");
             }
-            if (categoriaExistente == null)
+            if (categoriaExistente == null || usuarioExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Categoria referenciada não encontrada");
+                throw new InvalidOperationException("Categoria referenciada não encontrada e/ou inativa");
             }
             if (produto.estoque <= 0)
             {

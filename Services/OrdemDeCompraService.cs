@@ -46,17 +46,17 @@ namespace BackendDesapegaJa.Services
             var usuarioExistente = _repoUser.BuscarPorId(ordem.usuario_id);
             var produtoExistente = _repoProduto.BuscarPorId(ordem.produto_id);
             var statusOrdemExistente = _repoStatusOrdem.BuscarPorId(ordem.status_ordem_id);
-            if (usuarioExistente == null)
+            if (usuarioExistente == null || usuarioExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Usuario referenciado não encontrado");
+                throw new InvalidOperationException("Usuario referenciado não encontrado e/ou inativo");
             }
-            if (produtoExistente == null)
+            if (produtoExistente == null || produtoExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Produto referenciado não encontrado");
+                throw new InvalidOperationException("Produto referenciado não encontrado e/ou inativo");
             }
-            if (statusOrdemExistente == null)
+            if (statusOrdemExistente == null || statusOrdemExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Status de ordem de compra não encontrado");
+                throw new InvalidOperationException("Status de ordem de compra não encontrado e/ou inativo");
             }
             _repo.Adicionar(ordem);
             return ordem;
@@ -81,22 +81,21 @@ namespace BackendDesapegaJa.Services
                 throw new InvalidOperationException("Ordem de compra não existe");
             }
 
-            if (produtoExistente == null)
+            if (usuarioExistente == null || usuarioExistente.status.ToLower() == "inativo")
             {
-                throw new InvalidOperationException("Produto referenciado não encontrado");
+                throw new InvalidOperationException("Usuario referenciado não encontrado e/ou inativo");
+            }
+            if (produtoExistente == null || produtoExistente.status.ToLower() == "inativo")
+            {
+                throw new InvalidOperationException("Produto referenciado não encontrado e/ou inativo");
+            }
+            if (statusOrdemExistente == null || statusOrdemExistente.status.ToLower() == "inativo")
+            {
+                throw new InvalidOperationException("Status de ordem de compra não encontrado e/ou inativo");
             }
 
-            if (usuarioExistente == null)
-            {
-                throw new InvalidOperationException("Usuario referenciado não encontrado");
-            }
-            if (statusOrdemExistente == null)
-            {
-                throw new InvalidOperationException("Status de ordem de compra referenciado não encontrado");
-            }
-           
-           
-            var ordemDeCompraAtualizada = _repo.Atualizar(id, ordem);
+
+                var ordemDeCompraAtualizada = _repo.Atualizar(id, ordem);
             return ordemDeCompraAtualizada;
         }
     }

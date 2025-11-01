@@ -28,7 +28,7 @@ namespace BackendDesapegaJa.Entities
         [Required(ErrorMessage = "O campo 'cpf' deve ser preenchido.")]
         public string Cpf { get; set; }
 
-        public string ?Cep { get; set; }
+        public string ?Cep { get; set; } 
 
         public string ?status { get; set; }
     }

@@ -31,7 +31,7 @@ namespace BackendDesapegaJa.Services
                 throw new InvalidOperationException("Usuário com este email já existe.");
 
             var existenteCpf = _repo.BuscarPorCpf(usuario.Cpf);
-            if (existenteCpf != null)
+            if (existenteCpf != null && existenteCpf.status?.ToLower() == "ativo")
                 throw new InvalidOperationException("Usuário com este CPF já existe.");
 
             if (string.IsNullOrWhiteSpace(usuario.Cpf) || !CpfValido(usuario.Cpf))
@@ -40,11 +40,9 @@ namespace BackendDesapegaJa.Services
             if (string.IsNullOrWhiteSpace(usuario.Senha) || !SenhaValida(usuario.Senha))
                 throw new InvalidOperationException("A senha deve ter no mínimo 8 caracteres, incluir letras maiúsculas, números e caracteres especiais.");
 
-            if (!string.IsNullOrWhiteSpace(usuario.Telefone) && !TelefoneValido(usuario.Telefone))
-                throw new InvalidOperationException("Telefone inválido. Deve conter apenas números e ter 10 ou 11 dígitos.");
+            if (string.IsNullOrWhiteSpace(usuario.Telefone) || !TelefoneValido(usuario.Telefone))
+                throw new InvalidOperationException("Telefone inválido. Deve conter apenas números e ter 10 ou 13 dígitos.");
 
-            if (!string.IsNullOrWhiteSpace(usuario.Cep) && !CepValido(usuario.Cep))
-                throw new InvalidOperationException("CEP inválido. Deve conter exatamente 8 números.");
 
             usuario.Senha = BCrypt.Net.BCrypt.HashPassword(usuario.Senha);
             _repo.Adicionar(usuario);
@@ -138,7 +136,7 @@ namespace BackendDesapegaJa.Services
             if (!string.IsNullOrWhiteSpace(usuarioDto.Telefone))
             {
                 if (!TelefoneValido(usuarioDto.Telefone))
-                    throw new InvalidOperationException("Telefone inválido. Deve conter 10 ou 11 dígitos.");
+                    throw new InvalidOperationException("Telefone inválido. Deve conter 10 ou 13 dígitos.");
                 existente.Telefone = usuarioDto.Telefone;
             }
 
@@ -176,9 +174,16 @@ namespace BackendDesapegaJa.Services
 
         private bool TelefoneValido(string telefone)
         {
+            if (string.IsNullOrEmpty(telefone)) return false;
+
+          
             telefone = new string(telefone.Where(char.IsDigit).ToArray());
-            return telefone.Length >= 10 && telefone.Length <= 11;
+
+           
+            return telefone.Length >= 10 && telefone.Length <= 13;
         }
+
+
 
         private bool CepValido(string cep)
         {
