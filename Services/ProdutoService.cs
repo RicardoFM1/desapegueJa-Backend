@@ -72,10 +72,7 @@ namespace BackendDesapegaJa.Services
             {
                 throw new InvalidOperationException("Categoria referenciada não encontrada e/ou inativa");
             }
-            if (produto.estoque <= 0)
-            {
-                throw new InvalidOperationException("O estoque deve ser maior que 0");
-            }
+           
            
             var produtoAtualizado = _repo.Atualizar(id, produto, status);
             return produtoAtualizado;

@@ -204,10 +204,7 @@ namespace BackendDesapegaJa.Repositories
             {
                 throw new InvalidOperationException("Categoria referenciada não encontrada");
             }
-            if (produto.estoque <= 0)
-            {
-                throw new InvalidOperationException("O estoque deve ser maior que 0");
-            }
+           
 
             var nomeFinal = string.IsNullOrWhiteSpace(produto.nome) ? existente.nome : produto.nome;
             var imagemFinal = string.IsNullOrWhiteSpace(produto.imagem) ? existente.imagem : produto.imagem;
@@ -215,7 +212,7 @@ namespace BackendDesapegaJa.Repositories
             var descricaoFinal = string.IsNullOrWhiteSpace(produto.descricao) ? existente.descricao : produto.descricao;
             var statusFinal = string.IsNullOrWhiteSpace(produto.status) ? existente.status : produto.status;
             var precoFinal = produto.preco ?? existente.preco;
-            var estoqueFinal = produto.estoque != 0 ? produto.estoque : existente.estoque;
+            var estoqueFinal = produto.estoque != null ? produto.estoque : existente.estoque;
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
