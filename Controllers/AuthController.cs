@@ -117,7 +117,11 @@ namespace BackendDesapegaJa.Controllers
                     Id = usuario.Id,
                     Email = usuario.Email,
                     Admin = (bool)usuario.Admin,
-                    Nome = usuario.Nome
+                    Nome = usuario.Nome,
+                    Cpf = usuario.Cpf,
+                    Telefone = usuario.Telefone,
+                    Data_Nascimento = usuario.data_de_nascimento,
+                    Foto_Perfil = usuario.Foto_De_Perfil
 
                 };
 
