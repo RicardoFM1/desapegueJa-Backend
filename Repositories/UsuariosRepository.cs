@@ -37,6 +37,26 @@ namespace BackendDesapegaJa.Repositories
             return usuarios;
         }
 
+        public Usuario? BuscarPorNome(string nome, string? status = null)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+            string sql = "SELECT * FROM Usuarios WHERE LOWER(nome)=LOWER(@nome)";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@nome", nome.Trim());
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
+            using var reader = cmd.ExecuteReader();
+            return reader.Read() ? MapUsuario(reader) : null;
+        }
+
         public Usuario? BuscarPorEmail(string email, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
@@ -108,8 +128,8 @@ namespace BackendDesapegaJa.Repositories
             connection.Open();
             using var cmd = new MySqlCommand(@"
                 INSERT INTO Usuarios 
-                (email, senha, status, admin, telefone, rg, cpf, cep, foto_de_perfil, data_de_nascimento)
-                VALUES (@Email,@Senha,@Status,@Admin,@Telefone,@Rg,@Cpf,@Cep,@Foto,@Nascimento);
+                (email, senha, status, admin, telefone, rg, cpf, cep, foto_de_perfil, data_de_nascimento, nome)
+                VALUES (@Email,@Senha,@Status,@Admin,@Telefone,@Rg,@Cpf,@Cep,@Foto,@Nascimento, @Nome);
                 SELECT LAST_INSERT_ID();", connection);
 
             cmd.Parameters.AddWithValue("@Email", usuario.Email);
@@ -122,6 +142,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@Cep", string.IsNullOrWhiteSpace(usuario.Cep) ? (object)DBNull.Value : usuario.Cep);
             cmd.Parameters.AddWithValue("@Foto", string.IsNullOrWhiteSpace(usuario.Foto_De_Perfil) ? (object)DBNull.Value : usuario.Foto_De_Perfil);
             cmd.Parameters.AddWithValue("@Nascimento", string.IsNullOrWhiteSpace(usuario.data_de_nascimento) ? (object)DBNull.Value : usuario.data_de_nascimento);
+            cmd.Parameters.AddWithValue("@Nome", string.IsNullOrWhiteSpace(usuario.Nome) ? (object)DBNull.Value : usuario.Nome);
 
             usuario.Id = Convert.ToInt32(cmd.ExecuteScalar());
         }
@@ -142,7 +163,8 @@ namespace BackendDesapegaJa.Repositories
                     cpf=@Cpf,
                     cep=@Cep,
                     foto_de_perfil=@Foto,
-                    data_de_nascimento=@Nascimento
+                    data_de_nascimento=@Nascimento,
+                    nome=@Nome
                 WHERE id=@Id";
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -162,6 +184,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@Cep", string.IsNullOrWhiteSpace(usuario.Cep) ? (object)DBNull.Value : usuario.Cep);
             cmd.Parameters.AddWithValue("@Foto", string.IsNullOrWhiteSpace(usuario.Foto_De_Perfil) ? (object)DBNull.Value : usuario.Foto_De_Perfil);
             cmd.Parameters.AddWithValue("@Nascimento", string.IsNullOrWhiteSpace(usuario.data_de_nascimento) ? (object)DBNull.Value : usuario.data_de_nascimento);
+            cmd.Parameters.AddWithValue("@Nome", string.IsNullOrWhiteSpace(usuario.Nome) ? (object)DBNull.Value : usuario.Nome);
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -185,6 +208,7 @@ namespace BackendDesapegaJa.Repositories
                 Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
                 Foto_De_Perfil = reader.IsDBNull(reader.GetOrdinal("foto_de_perfil")) ? null : reader.GetString("foto_de_perfil"),
                 data_de_nascimento = reader.IsDBNull(reader.GetOrdinal("data_de_nascimento")) ? null : reader.GetString("data_de_nascimento"),
+                Nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? null : reader.GetString("nome")
             };
         }
     }

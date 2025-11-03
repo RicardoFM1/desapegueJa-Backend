@@ -15,5 +15,7 @@ namespace BackendDesapegaJa.Interfaces
 
         Usuario? BuscarPorCpf(string? cpf, string? status = null);
 
+        Usuario? BuscarPorNome(string? nome, string? status = null);
+
     }
 }

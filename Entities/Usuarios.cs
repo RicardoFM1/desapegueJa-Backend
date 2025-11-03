@@ -31,6 +31,9 @@ namespace BackendDesapegaJa.Entities
         public string ?Cep { get; set; } 
 
         public string ?status { get; set; }
+
+        [Required(ErrorMessage = "O campo 'nome' deve ser preenchido.")]
+        public string Nome { get; set; }
     }
     public class UsuarioUpdateDTO
     {
@@ -44,5 +47,6 @@ namespace BackendDesapegaJa.Entities
         public int? Rg { get; set; }
         public string? Cep { get; set; }
         public string? Cpf { get; set; }
+        public string ?Nome { get; set; }
     }
 }

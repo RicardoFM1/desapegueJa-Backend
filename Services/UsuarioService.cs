@@ -30,6 +30,13 @@ namespace BackendDesapegaJa.Services
             if (existenteEmail != null && existenteEmail.status?.ToLower() == "ativo")
                 throw new InvalidOperationException("Usuário com este email já existe.");
 
+            var existenteNome = _repo.BuscarPorNome(usuario.Nome);
+
+            if(existenteNome != null && existenteNome.status?.ToLower() == "ativo")
+            {
+                throw new InvalidOperationException("Usuário com este nome já existe.");
+            }
+
             var existenteCpf = _repo.BuscarPorCpf(usuario.Cpf);
             if (existenteCpf != null && existenteCpf.status?.ToLower() == "ativo")
                 throw new InvalidOperationException("Usuário com este CPF já existe.");
@@ -70,9 +77,10 @@ namespace BackendDesapegaJa.Services
                 {
                     new Claim(ClaimTypes.NameIdentifier, existente.Id.ToString()),
                     new Claim(ClaimTypes.Email, existente.Email),
-                    new Claim("isAdmin", existente.Admin.ToString().ToLower())
+                    new Claim("isAdmin", existente.Admin.ToString().ToLower()),
+                    new Claim(ClaimTypes.Name, existente.Nome)
                 }),
-                Expires = DateTime.UtcNow.AddHours(2),
+                Expires = DateTime.UtcNow.AddHours(24),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature

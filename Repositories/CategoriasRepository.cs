@@ -2,6 +2,7 @@
 using BackendDesapegaJa.Interfaces;
 using MySql.Data.MySqlClient;
 using System.Net.WebSockets;
+using System.Runtime.ConstrainedExecution;
 
 namespace BackendDesapegaJa.Repositories
 {
@@ -38,8 +39,10 @@ namespace BackendDesapegaJa.Repositories
             {
                 categorias.Add(new Categorias
                 {
-                    Id = reader.GetInt32("id") != 0 ? reader.GetInt32("id") : 0,
-                    Nome = reader.GetString("nome") != "" ? reader.GetString("nome") : ""
+                    Id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
+                    Nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? "" : reader.GetString("nome"),
+                    Cor = reader.IsDBNull(reader.GetOrdinal("cor")) ? "" : reader.GetString("cor"),
+                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
 
                 });
             }
@@ -58,7 +61,9 @@ namespace BackendDesapegaJa.Repositories
                 var categoriaNova = new Categorias
                 {
                     Id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    Nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? "" : reader.GetString("nome")
+                    Nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? "" : reader.GetString("nome"),
+                    Cor = reader.IsDBNull(reader.GetOrdinal("cor")) ? "" : reader.GetString("cor"),
+                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
                 };
                
                 return categoriaNova;
@@ -92,7 +97,9 @@ namespace BackendDesapegaJa.Repositories
                 categoria = new Categorias
                 {
                     Id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    Nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? "" : reader.GetString("nome")
+                    Nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? "" : reader.GetString("nome"),
+                    Cor = reader.IsDBNull(reader.GetOrdinal("cor")) ? "" : reader.GetString("cor"),
+                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
                 };
             }
             reader.Close();
@@ -105,9 +112,10 @@ namespace BackendDesapegaJa.Repositories
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            var cmd = new MySqlCommand("INSERT INTO categorias (nome, status) VALUES(@nome, @status); SELECT LAST_INSERT_ID();", connection);
+            var cmd = new MySqlCommand("INSERT INTO categorias (nome, status, cor) VALUES(@nome, @status, @cor); SELECT LAST_INSERT_ID();", connection);
             cmd.Parameters.AddWithValue("@nome", categorias.Nome);
             cmd.Parameters.AddWithValue("@status", string.IsNullOrWhiteSpace(categorias.status) ? "ativo" : categorias.status);
+            cmd.Parameters.AddWithValue("@cor", categorias.Cor);
 
             int novoId = Convert.ToInt32(cmd.ExecuteScalar());
             categorias.Id = novoId;
@@ -125,13 +133,17 @@ namespace BackendDesapegaJa.Repositories
                 throw new InvalidOperationException("Nenhuma categoria encontrada");
             }
             var nomeFinal = string.IsNullOrWhiteSpace(categorias.Nome) ? categoriaExistente.Nome : categorias.Nome;
+            var corFinal = string.IsNullOrWhiteSpace(categorias.Cor) ? categoriaExistente.Cor : categorias.Cor;
+            var statusFinal = string.IsNullOrWhiteSpace(categorias.status) ? categoriaExistente.status : categorias.status;
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("UPDATE categorias SET nome = @nome WHERE id = @id", connection);
+            var cmd = new MySqlCommand("UPDATE categorias SET nome = @nome, set status = @status, set cor = @cor WHERE id = @id", connection);
             cmd.Parameters.AddWithValue("@id", id);
             cmd.Parameters.AddWithValue("@nome", nomeFinal);
+            cmd.Parameters.AddWithValue("@cor", corFinal);
+            cmd.Parameters.AddWithValue("@status", statusFinal);
             cmd.ExecuteNonQuery();
             
         }

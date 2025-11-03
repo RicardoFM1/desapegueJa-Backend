@@ -9,6 +9,7 @@ namespace BackendDesapegaJa.Entities
         [Required(ErrorMessage = "O campo 'nome' deve ser preenchido.")]
         public string Nome { get; set; }
 
+        public string Cor { get; set; }
       
         public string ?status { get; set; }
     }
@@ -16,5 +17,7 @@ namespace BackendDesapegaJa.Entities
     {
         public string? Nome { get; set; }
         public string? status { get; set; }
+
+        public string? Cor { get; set; }
     }
 }

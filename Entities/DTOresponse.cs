@@ -5,5 +5,7 @@
         public int Id { get; set; }
         public string Email { get; set; } = string.Empty;
         public bool Admin { get; set; } = false;
+
+        public string Nome { get; set; } = string.Empty;
     }
 }

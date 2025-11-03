@@ -166,8 +166,8 @@ namespace BackendDesapegaJa.Repositories
             var dataFormatada = data.ToString("dd/MM/yyyy HH:mm:ss");
 
             using var cmd = new MySqlCommand(
-                "INSERT INTO produtos (usuario_id, nome, preco, descricao, categoria_id, estoque, status, data_post) " +
-                "VALUES(@usuarioId, @nome, @preco, @descricao, @categoria_id, @estoque, @status, @data_post); SELECT LAST_INSERT_ID();", connection);
+                "INSERT INTO produtos (usuario_id, nome, preco, descricao, categoria_id, estoque, status, data_post, imagem) " +
+                "VALUES(@usuarioId, @nome, @preco, @descricao, @categoria_id, @estoque, @status, @data_post, @imagem); SELECT LAST_INSERT_ID();", connection);
 
             cmd.Parameters.AddWithValue("@usuarioId", produto.usuario_id);
             cmd.Parameters.AddWithValue("@nome", produto.nome);
@@ -177,6 +177,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@estoque", produto.estoque);
             cmd.Parameters.AddWithValue("@status", string.IsNullOrWhiteSpace(produto.status) ? "ativo" : produto.status);
             cmd.Parameters.AddWithValue("@data_post", dataFormatada);
+            cmd.Parameters.AddWithValue("@imagem", produto.imagem);
 
             int idNovo = Convert.ToInt32(cmd.ExecuteScalar());
             produto.id = idNovo;
