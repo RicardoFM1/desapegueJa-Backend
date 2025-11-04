@@ -78,11 +78,11 @@ namespace BackendDesapegaJa.Services
                     new Claim(ClaimTypes.NameIdentifier, existente.Id.ToString()),
                     new Claim(ClaimTypes.Email, existente.Email),
                     new Claim("isAdmin", existente.Admin.ToString().ToLower()),
-                    new Claim(ClaimTypes.Name, existente.Nome),
-                    new Claim("Nascimento", existente.data_de_nascimento),
-                    new Claim("Telefone", existente.Telefone),
-                    new Claim("Cpf", existente.Cpf),
-                    new Claim("fotoPerfil", existente.Foto_De_Perfil)
+                    new Claim(ClaimTypes.Name, existente.Nome ?? ""),
+                    new Claim("Nascimento", existente.data_de_nascimento ?? ""),
+                    new Claim("Telefone", existente.Telefone ?? ""),
+                    new Claim("Cpf", existente.Cpf ?? ""),
+                    new Claim("fotoPerfil", existente.Foto_De_Perfil ?? "")
                 }),
                 Expires = DateTime.UtcNow.AddHours(24),
                 SigningCredentials = new SigningCredentials(
