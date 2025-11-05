@@ -13,7 +13,7 @@ namespace BackendDesapegaJa.Entities
         [Required(ErrorMessage = "O campo 'senha' deve ser preenchido.")]
         public string Senha { get; set; } = string.Empty;
 
-        public string? Token { get; set; }
+      
 
         public bool Admin { get; set; } = false;
 

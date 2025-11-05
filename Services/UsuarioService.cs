@@ -82,7 +82,7 @@ namespace BackendDesapegaJa.Services
                     new Claim("Nascimento", existente.data_de_nascimento ?? ""),
                     new Claim("Telefone", existente.Telefone ?? ""),
                     new Claim("Cpf", existente.Cpf ?? ""),
-                    new Claim("fotoPerfil", existente.Foto_De_Perfil ?? "")
+                   
                 }),
                 Expires = DateTime.UtcNow.AddHours(24),
                 SigningCredentials = new SigningCredentials(

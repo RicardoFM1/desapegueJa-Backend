@@ -48,7 +48,9 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    var chave = builder.Configuration["TokenKEY:SECRET_KEY"];
+    var chave = builder.Configuration["TokenKEY:SECRET_KEY"]
+        ?? throw new InvalidOperationException("Chave JWT ausente em appsettings.json (TokenKEY:SECRET_KEY).");
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = false,
