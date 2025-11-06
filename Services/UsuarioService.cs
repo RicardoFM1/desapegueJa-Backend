@@ -84,7 +84,7 @@ namespace BackendDesapegaJa.Services
                     new Claim("Cpf", existente.Cpf ?? ""),
                    
                 }),
-                Expires = DateTime.UtcNow.AddHours(24),
+                Expires = DateTime.UtcNow.AddHours(12),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature
