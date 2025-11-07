@@ -81,7 +81,7 @@ namespace BackendDesapegaJa.Services
                     new Claim(ClaimTypes.Name, existente.Nome ?? ""),
                     new Claim("Nascimento", existente.data_de_nascimento ?? ""),
                     new Claim("Telefone", existente.Telefone ?? ""),
-                    new Claim("Cpf", existente.Cpf ?? ""),
+                    new Claim("Cpf", existente.Cpf ?? "")
                    
                 }),
                 Expires = DateTime.UtcNow.AddHours(12),
