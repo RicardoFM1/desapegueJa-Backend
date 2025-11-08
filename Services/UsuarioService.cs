@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.Text.RegularExpressions;
+using System.Data;
 
 namespace BackendDesapegaJa.Services
 {
@@ -61,7 +62,9 @@ namespace BackendDesapegaJa.Services
         {
             var existente = _repo.BuscarPorEmail(usuario.Email);
             if (existente == null || !BCrypt.Net.BCrypt.Verify(usuario.Senha, existente.Senha))
-                return null;
+            {
+                throw new InvalidOperationException("Senha e/ou email inválidos");
+            }
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var config = new ConfigurationBuilder()
@@ -160,8 +163,7 @@ namespace BackendDesapegaJa.Services
                 existente.Cep = usuarioDto.Cep;
             }
 
-            if (usuarioDto.Rg.HasValue)
-                existente.Rg = usuarioDto.Rg;
+         
 
             if (!string.IsNullOrWhiteSpace(usuarioDto.Foto_De_Perfil))
                 existente.Foto_De_Perfil = usuarioDto.Foto_De_Perfil;

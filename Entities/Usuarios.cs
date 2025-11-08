@@ -17,8 +17,6 @@ namespace BackendDesapegaJa.Entities
 
         public string ?Telefone { get; set; }
 
-        public int ?Rg { get; set; }
-
         public string ?Foto_De_Perfil { get; set; }
 
         public string ?data_de_nascimento { get; set; }
@@ -42,7 +40,6 @@ namespace BackendDesapegaJa.Entities
         public string? Foto_De_Perfil { get; set; }
         public string? data_de_nascimento { get; set; }
         public string? status { get; set; }
-        public int? Rg { get; set; }
         public string? Cep { get; set; }
         public string? Cpf { get; set; }
         public string ?Nome { get; set; }

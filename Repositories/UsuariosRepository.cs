@@ -15,11 +15,12 @@ namespace BackendDesapegaJa.Repositories
         }
 
         public IEnumerable<Usuario> ListarTodos(string? status = null)
+
         {
             var usuarios = new List<Usuario>();
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            string sql = "SELECT * FROM Usuarios";
+            string sql = "SELECT id, nome, email, status, admin, telefone, cpf, cep, foto_de_perfil, data_de_nascimento FROM Usuarios";
             if (!string.IsNullOrWhiteSpace(status))
             {
                 sql += " WHERE status = @status";
@@ -41,7 +42,7 @@ namespace BackendDesapegaJa.Repositories
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            string sql = "SELECT * FROM Usuarios WHERE LOWER(nome)=LOWER(@nome)";
+            string sql = "SELECT id, nome, email, status, admin, telefone, cpf, cep, foto_de_perfil, data_de_nascimento FROM Usuarios WHERE LOWER(nome)=LOWER(@nome)";
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -61,7 +62,7 @@ namespace BackendDesapegaJa.Repositories
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            string sql = "SELECT * FROM Usuarios WHERE LOWER(email)=LOWER(@email)";
+            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, cep, foto_de_perfil, data_de_nascimento FROM Usuarios WHERE LOWER(email)=LOWER(@email)";
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -74,7 +75,20 @@ namespace BackendDesapegaJa.Repositories
                 cmd.Parameters.AddWithValue("@status", status);
             }
             using var reader = cmd.ExecuteReader();
-            return reader.Read() ? MapUsuario(reader) : null;
+            return reader.Read() ? new Usuario
+            {
+                Id = reader.GetInt32("id"),
+                Email = reader.GetString("email"),
+                Senha = reader.GetString("senha"),
+                status = reader.IsDBNull(reader.GetOrdinal("status")) ? null : reader.GetString("status"),
+                Admin = reader.IsDBNull(reader.GetOrdinal("admin")) ? false : reader.GetBoolean("admin"),
+                Telefone = reader.IsDBNull(reader.GetOrdinal("telefone")) ? null : reader.GetString("telefone"),
+                Cpf = reader.IsDBNull(reader.GetOrdinal("cpf")) ? null : reader.GetInt64("cpf").ToString("D11"),
+                Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
+                Foto_De_Perfil = reader.IsDBNull(reader.GetOrdinal("foto_de_perfil")) ? null : reader.GetString("foto_de_perfil"),
+                data_de_nascimento = reader.IsDBNull(reader.GetOrdinal("data_de_nascimento")) ? null : reader.GetString("data_de_nascimento"),
+                Nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? null : reader.GetString("nome")
+            } : null;
         }
 
         public Usuario? BuscarPorId(int? id, string? status = null)
@@ -82,7 +96,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * FROM Usuarios WHERE id=@id";
+            string sql = "SELECT id, nome, email, status, admin, telefone, cpf, cep, foto_de_perfil, data_de_nascimento FROM Usuarios WHERE id=@id";
             if (!string.IsNullOrWhiteSpace(status))
             {
                 sql += " AND status = @status";
@@ -106,7 +120,7 @@ namespace BackendDesapegaJa.Repositories
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            string sql = "SELECT * FROM Usuarios WHERE cpf=@cpf";
+            string sql = "SELECT id, nome, email, status, admin, telefone, cpf, cep, foto_de_perfil, data_de_nascimento FROM Usuarios WHERE cpf=@cpf";
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -128,7 +142,7 @@ namespace BackendDesapegaJa.Repositories
             connection.Open();
             using var cmd = new MySqlCommand(@"
                 INSERT INTO Usuarios 
-                (email, senha, status, admin, telefone, rg, cpf, cep, foto_de_perfil, data_de_nascimento, nome)
+                (email, senha, status, admin, telefone, cpf, cep, foto_de_perfil, data_de_nascimento, nome)
                 VALUES (@Email,@Senha,@Status,@Admin,@Telefone,@Rg,@Cpf,@Cep,@Foto,@Nascimento, @Nome);
                 SELECT LAST_INSERT_ID();", connection);
 
@@ -137,7 +151,6 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@Status", string.IsNullOrWhiteSpace(usuario.status) ? "ativo" : usuario.status);
             cmd.Parameters.AddWithValue("@Admin", usuario.Admin ? 1 : 0);
             cmd.Parameters.AddWithValue("@Telefone", string.IsNullOrWhiteSpace(usuario.Telefone) ? (object)DBNull.Value : usuario.Telefone);
-            cmd.Parameters.AddWithValue("@Rg", usuario.Rg ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@Cpf", string.IsNullOrWhiteSpace(usuario.Cpf) ? (object)DBNull.Value : long.Parse(usuario.Cpf));
             cmd.Parameters.AddWithValue("@Cep", string.IsNullOrWhiteSpace(usuario.Cep) ? (object)DBNull.Value : usuario.Cep);
             cmd.Parameters.AddWithValue("@Foto", string.IsNullOrWhiteSpace(usuario.Foto_De_Perfil) ? (object)DBNull.Value : usuario.Foto_De_Perfil);
@@ -159,7 +172,6 @@ namespace BackendDesapegaJa.Repositories
                     status=@Status,
                     admin=@Admin,
                     telefone=@Telefone,
-                    rg=@Rg,
                     cpf=@Cpf,
                     cep=@Cep,
                     foto_de_perfil=@Foto,
@@ -179,7 +191,6 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@Status", string.IsNullOrWhiteSpace(usuario.status) ? "ativo" : usuario.status);
             cmd.Parameters.AddWithValue("@Admin", usuario.Admin ? 1 : 0);
             cmd.Parameters.AddWithValue("@Telefone", string.IsNullOrWhiteSpace(usuario.Telefone) ? (object)DBNull.Value : usuario.Telefone);
-            cmd.Parameters.AddWithValue("@Rg", usuario.Rg ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@Cpf", string.IsNullOrWhiteSpace(usuario.Cpf) ? (object)DBNull.Value : long.Parse(usuario.Cpf));
             cmd.Parameters.AddWithValue("@Cep", string.IsNullOrWhiteSpace(usuario.Cep) ? (object)DBNull.Value : usuario.Cep);
             cmd.Parameters.AddWithValue("@Foto", string.IsNullOrWhiteSpace(usuario.Foto_De_Perfil) ? (object)DBNull.Value : usuario.Foto_De_Perfil);
@@ -199,11 +210,9 @@ namespace BackendDesapegaJa.Repositories
             {
                 Id = reader.GetInt32("id"),
                 Email = reader.GetString("email"),
-                Senha = reader.GetString("senha"),
                 status = reader.IsDBNull(reader.GetOrdinal("status")) ? null : reader.GetString("status"),
                 Admin = reader.IsDBNull(reader.GetOrdinal("admin")) ? false : reader.GetBoolean("admin"),
                 Telefone = reader.IsDBNull(reader.GetOrdinal("telefone")) ? null : reader.GetString("telefone"),
-                Rg = reader.IsDBNull(reader.GetOrdinal("rg")) ? null : reader.GetInt32("rg"),
                 Cpf = reader.IsDBNull(reader.GetOrdinal("cpf")) ? null : reader.GetInt64("cpf").ToString("D11"),
                 Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
                 Foto_De_Perfil = reader.IsDBNull(reader.GetOrdinal("foto_de_perfil")) ? null : reader.GetString("foto_de_perfil"),
