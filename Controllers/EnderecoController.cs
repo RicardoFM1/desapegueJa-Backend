@@ -42,7 +42,7 @@ namespace BackendDesapegaJa.Controllers
             try
             {
 
-            var endereco = _service.GetEnderecosById(id, status);
+            var endereco = _service.GetEnderecosByUsuarioId(id, status);
             return Ok(endereco);
             }
             catch (InvalidOperationException ex)

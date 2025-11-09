@@ -86,11 +86,12 @@ namespace BackendDesapegaJa.Controllers
             {
                 var usuario = new Usuario { Email = loginDto.Email, Senha = loginDto.Senha };
                 var loginResponse = _service.Login(usuario);
-                if (loginResponse == null)
+                if (loginResponse == null || usuario.status == "inativo")
                 {
                    return Unauthorized(new { message = "Usuário ou senha inválidos." });
                 }
-                 
+                if (loginResponse.Status.ToLower() == "inativo")
+                    return Unauthorized(new { message = "Usuário ou senha inválidos." });
                 return Ok(loginResponse);
             }
             catch (InvalidOperationException ex)

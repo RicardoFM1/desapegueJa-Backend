@@ -105,6 +105,7 @@ namespace BackendDesapegaJa.Services
                 Email = existente.Email,
                 Admin = existente.Admin.ToString().ToLower(),
                 Token = tokenString,
+                Status = existente.status
                 
             };
         }
