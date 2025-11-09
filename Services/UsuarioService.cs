@@ -61,10 +61,12 @@ namespace BackendDesapegaJa.Services
         public LoginResponse Login(Usuario usuario)
         {
             var existente = _repo.BuscarPorEmail(usuario.Email);
-            if (existente == null || !BCrypt.Net.BCrypt.Verify(usuario.Senha, existente.Senha))
+            if (existente == null || string.IsNullOrWhiteSpace(existente.Senha) ||
+    !BCrypt.Net.BCrypt.Verify(usuario.Senha, existente.Senha))
             {
                 throw new InvalidOperationException("Senha e/ou email inválidos");
             }
+
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var config = new ConfigurationBuilder()
@@ -81,10 +83,10 @@ namespace BackendDesapegaJa.Services
                     new Claim(ClaimTypes.NameIdentifier, existente.Id.ToString()),
                     new Claim(ClaimTypes.Email, existente.Email),
                     new Claim("isAdmin", existente.Admin.ToString().ToLower()),
-                    new Claim(ClaimTypes.Name, existente.Nome ?? ""),
-                    new Claim("Nascimento", existente.data_de_nascimento ?? ""),
-                    new Claim("Telefone", existente.Telefone ?? ""),
-                    new Claim("Cpf", existente.Cpf ?? "")
+                    new Claim(ClaimTypes.Name, existente.Nome ?? "Usuário"),
+                    new Claim("Nascimento", existente.data_de_nascimento ?? DateTime.UtcNow.ToString("dd-MM-yyyy")),
+                    new Claim("Telefone", existente.Telefone ?? "5551992320421"),
+                    new Claim("Cpf", existente.Cpf ?? "000.000.000-00")
                    
                 }),
                 Expires = DateTime.UtcNow.AddHours(12),
@@ -119,7 +121,7 @@ namespace BackendDesapegaJa.Services
         public Usuario AtualizarUsuario(int id, UsuarioUpdateDTO usuarioDto, string? status = null)
         {
             var existente = _repo.BuscarPorId(id, status);
-            if (existente == null)
+            if (existente == null || existente.status == "inativo")
                 throw new InvalidOperationException("Nenhum usuário encontrado.");
 
             var existenteEmail = _repo.BuscarPorEmail(usuarioDto.Email);
@@ -135,46 +137,44 @@ namespace BackendDesapegaJa.Services
                 if (existenteCpf != null && existenteCpf.Id != id)
                     throw new InvalidOperationException("Este CPF já está em uso por outro usuário.");
 
-                existente.Cpf = usuarioDto.Cpf;
+                
             }
-
-            if (!string.IsNullOrWhiteSpace(usuarioDto.Email))
-                existente.Email = usuarioDto.Email;
 
             if (!string.IsNullOrWhiteSpace(usuarioDto.Senha))
             {
                 if (!SenhaValida(usuarioDto.Senha))
                     throw new InvalidOperationException("Senha inválida. Deve ter no mínimo 8 caracteres, incluir letras maiúsculas, números e caracteres especiais.");
 
-                existente.Senha = BCrypt.Net.BCrypt.HashPassword(usuarioDto.Senha);
+                
+                usuarioDto.Senha = BCrypt.Net.BCrypt.HashPassword(usuarioDto.Senha);
             }
 
             if (!string.IsNullOrWhiteSpace(usuarioDto.Telefone))
             {
                 if (!TelefoneValido(usuarioDto.Telefone))
                     throw new InvalidOperationException("Telefone inválido. Deve conter 10 ou 13 dígitos.");
-                existente.Telefone = usuarioDto.Telefone;
+                
             }
 
             if (!string.IsNullOrWhiteSpace(usuarioDto.Cep))
             {
                 if (!CepValido(usuarioDto.Cep))
                     throw new InvalidOperationException("CEP inválido. Deve conter exatamente 8 números.");
-                existente.Cep = usuarioDto.Cep;
+               
             }
 
-         
+            usuarioDto.Admin ??= existente.Admin;
 
-            if (!string.IsNullOrWhiteSpace(usuarioDto.Foto_De_Perfil))
-                existente.Foto_De_Perfil = usuarioDto.Foto_De_Perfil;
-
-            if (!string.IsNullOrWhiteSpace(usuarioDto.data_de_nascimento))
-                existente.data_de_nascimento = usuarioDto.data_de_nascimento;
-
-            if (!string.IsNullOrWhiteSpace(usuarioDto.status))
-                existente.status = usuarioDto.status;
-
-            _repo.Atualizar(id, existente, status);
+            
+            usuarioDto.Email ??= existente.Email;
+            usuarioDto.Telefone ??= existente.Telefone;
+            usuarioDto.data_de_nascimento ??= existente.data_de_nascimento;
+            usuarioDto.Cep ??= existente.Cep;
+            usuarioDto.Cpf ??= existente.Cpf;
+            usuarioDto.status ??= existente.status;
+            usuarioDto.Nome ??= existente.Nome;
+            usuarioDto.Foto_De_Perfil ??= existente.Foto_De_Perfil;
+            _repo.Atualizar(id, usuarioDto, status);
             return existente;
         }
 

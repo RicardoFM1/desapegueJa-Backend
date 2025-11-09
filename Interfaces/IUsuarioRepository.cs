@@ -9,7 +9,7 @@ namespace BackendDesapegaJa.Interfaces
         Usuario? BuscarPorEmail(string email, string? status = null);
         void Adicionar(Usuario usuario);
 
-        void Atualizar(int id, Usuario usuario, string? status = null);
+        void Atualizar(int id, UsuarioUpdateDTO usuario, string? status = null);
 
         Usuario? BuscarPorId(int? id, string? status = null);
 

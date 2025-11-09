@@ -24,7 +24,11 @@ namespace BackendDesapegaJa.Controllers
             {
 
             var usuarios = _service.ObterUsuarios(status);
-            return Ok(usuarios);
+                foreach (var u in usuarios)
+                {
+                    u.Senha = null;
+                }
+                return Ok(usuarios);
             }
             catch (InvalidOperationException ex)
             {
@@ -44,6 +48,7 @@ namespace BackendDesapegaJa.Controllers
             {
 
             var usuario = _service.BuscarUsuarioPorId(id, status);
+                usuario.Senha = null;
             return Ok(usuario);
             }
             catch (InvalidOperationException ex)
