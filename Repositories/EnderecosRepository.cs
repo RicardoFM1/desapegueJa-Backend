@@ -208,7 +208,7 @@ namespace BackendDesapegaJa.Repositories
                 _connection.Open();
             }
 
-            var cmd = new MySqlCommand("UPDATE enderecos SET cep = @cep " +
+            var cmd = new MySqlCommand("UPDATE enderecos SET cep = @cep, " +
                 "numero = @numero, bairro = @bairro, cidade = @cidade, estado = @estado, rua = @rua, tipo_de_logradouro = @tipo_de_logradouro, complemento = @complemento, status = @status WHERE usuario_id = @id", _connection);
             cmd.Parameters.AddWithValue("@id", id);
             cmd.Parameters.AddWithValue("@cep", cepFinal);
