@@ -10,7 +10,7 @@ namespace BackendDesapegaJa.Entities
         [Required(ErrorMessage = "A referência do usuario deve ser preenchida.")]
         public int usuario_id { get; set; }
 
-        public int? numero { get; set; }
+        public string? numero { get; set; }
 
         public string? bairro { get; set; }
 
@@ -29,7 +29,7 @@ namespace BackendDesapegaJa.Entities
     public class EnderecosUpdateDTO
     {
         public int? usuario_id { get; set; }
-        public int? numero { get; set; }
+        public string? numero { get; set; }
 
         public string? bairro { get; set; }
 

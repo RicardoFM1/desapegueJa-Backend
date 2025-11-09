@@ -45,7 +45,7 @@ namespace BackendDesapegaJa.Repositories
                     cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
                     estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
                     rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
-                    numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? 0 : reader.GetInt32("numero"),
+                    numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
                     complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
                     tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
                     status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
@@ -120,7 +120,7 @@ namespace BackendDesapegaJa.Repositories
                     cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
                     estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
                     rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
-                    numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? 0 : reader.GetInt32("numero"),
+                    numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
                     complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
                     tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
                     status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
@@ -157,7 +157,7 @@ namespace BackendDesapegaJa.Repositories
             var ruaFinal = string.IsNullOrWhiteSpace(enderecos.rua) ? enderecoExistente.rua : enderecos.rua;
             var logradouroFinal = string.IsNullOrWhiteSpace(enderecos.tipo_de_logradouro) ? enderecoExistente.tipo_de_logradouro : enderecos.tipo_de_logradouro;
             var complementoFinal = string.IsNullOrWhiteSpace(enderecos.complemento) ? enderecoExistente.complemento : enderecos.complemento;
-            var numeroFinal = enderecos.numero.HasValue ? enderecos.numero.Value : enderecoExistente.numero;
+            var numeroFinal = string.IsNullOrWhiteSpace(enderecos.numero) ? enderecoExistente.numero : enderecos.numero;
             var statusFinal = string.IsNullOrWhiteSpace(enderecoExistente.status) ? enderecoExistente.status : enderecos.status;
 
             if (_connection.State != System.Data.ConnectionState.Open)
