@@ -1,6 +1,7 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
 using System.Runtime.ConstrainedExecution;
+using System.Text.RegularExpressions;
 
 namespace BackendDesapegaJa.Services
 {
@@ -29,19 +30,25 @@ namespace BackendDesapegaJa.Services
         }
 
         private bool CepValido(string cep)
-        { 
-
-        cep = new string(cep.Where(char.IsDigit).ToArray()); return cep.Length == 8; 
+        {
+            if (string.IsNullOrWhiteSpace(cep)) return false;
+            
+            var numeros = new string(cep.Where(char.IsDigit).ToArray());
+            return numeros.Length == 8;
         }
+
+
 
         public Enderecos CriarEndereco(Enderecos enderecos, string? status = null)
         {
 
-            if (!string.IsNullOrWhiteSpace(enderecos.Cep)) { 
-             if (!CepValido(enderecos.Cep))
-                {
-                   throw new InvalidOperationException("CEP inválido. Deve conter exatamente 8 números."); 
-                }
+            if (!string.IsNullOrWhiteSpace(enderecos.Cep))
+            {
+
+                var cepNumeros = new string(enderecos.Cep.Where(char.IsDigit).ToArray());
+                if (!CepValido(cepNumeros))
+                    throw new InvalidOperationException("CEP inválido. Deve conter exatamente 8 números.");
+                enderecos.Cep = cepNumeros;
             }
             _repo.Adicionar(enderecos, status);
             return enderecos;
@@ -56,10 +63,11 @@ namespace BackendDesapegaJa.Services
             }
             if (!string.IsNullOrWhiteSpace(enderecos.Cep))
             {
-                if (!CepValido(enderecos.Cep))
-                {
+                
+                var cepNumeros = new string(enderecos.Cep.Where(char.IsDigit).ToArray());
+                if (!CepValido(cepNumeros))
                     throw new InvalidOperationException("CEP inválido. Deve conter exatamente 8 números.");
-                }
+                enderecos.Cep = cepNumeros;
             }
             enderecoExistente.id = id;
             _repo.Atualizar(id, enderecos);
