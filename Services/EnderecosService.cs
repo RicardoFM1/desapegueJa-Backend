@@ -1,5 +1,6 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
+using System.Runtime.ConstrainedExecution;
 
 namespace BackendDesapegaJa.Services
 {
@@ -27,8 +28,21 @@ namespace BackendDesapegaJa.Services
             return enderecos;
         }
 
+        private bool CepValido(string cep)
+        { 
+
+        cep = new string(cep.Where(char.IsDigit).ToArray()); return cep.Length == 8; 
+        }
+
         public Enderecos CriarEndereco(Enderecos enderecos, string? status = null)
         {
+
+            if (!string.IsNullOrWhiteSpace(enderecos.Cep)) { 
+             if (!CepValido(enderecos.Cep))
+                {
+                   throw new InvalidOperationException("CEP inválido. Deve conter exatamente 8 números."); 
+                }
+            }
             _repo.Adicionar(enderecos, status);
             return enderecos;
         }
@@ -39,6 +53,13 @@ namespace BackendDesapegaJa.Services
             if (enderecoExistente == null)
             {
                 throw new InvalidOperationException("Nenhum endereço encontrado");
+            }
+            if (!string.IsNullOrWhiteSpace(enderecos.Cep))
+            {
+                if (!CepValido(enderecos.Cep))
+                {
+                    throw new InvalidOperationException("CEP inválido. Deve conter exatamente 8 números.");
+                }
             }
             enderecoExistente.id = id;
             _repo.Atualizar(id, enderecos);

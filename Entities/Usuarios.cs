@@ -24,7 +24,7 @@ namespace BackendDesapegaJa.Entities
         [Required(ErrorMessage = "O campo 'cpf' deve ser preenchido.")]
         public string Cpf { get; set; }
 
-        public string ?Cep { get; set; } 
+ 
 
         public string ?status { get; set; }
 
@@ -40,7 +40,7 @@ namespace BackendDesapegaJa.Entities
         public string? Foto_De_Perfil { get; set; }
         public string? data_de_nascimento { get; set; }
         public string? status { get; set; }
-        public string? Cep { get; set; }
+       
         public string? Cpf { get; set; }
         public string ?Nome { get; set; }
     }

@@ -157,12 +157,7 @@ namespace BackendDesapegaJa.Services
                 
             }
 
-            if (!string.IsNullOrWhiteSpace(usuarioDto.Cep))
-            {
-                if (!CepValido(usuarioDto.Cep))
-                    throw new InvalidOperationException("CEP inválido. Deve conter exatamente 8 números.");
-               
-            }
+            
 
             usuarioDto.Admin ??= existente.Admin;
 
@@ -170,7 +165,6 @@ namespace BackendDesapegaJa.Services
             usuarioDto.Email ??= existente.Email;
             usuarioDto.Telefone ??= existente.Telefone;
             usuarioDto.data_de_nascimento ??= existente.data_de_nascimento;
-            usuarioDto.Cep ??= existente.Cep;
             usuarioDto.Cpf ??= existente.Cpf;
             usuarioDto.status ??= existente.status;
             usuarioDto.Nome ??= existente.Nome;
@@ -201,12 +195,7 @@ namespace BackendDesapegaJa.Services
 
 
 
-        private bool CepValido(string cep)
-        {
-            cep = new string(cep.Where(char.IsDigit).ToArray());
-            return cep.Length == 8;
-        }
-
+      
         private bool CpfValido(string cpf)
         {
             cpf = new string(cpf.Where(char.IsDigit).ToArray());

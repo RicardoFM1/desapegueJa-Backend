@@ -41,6 +41,7 @@ namespace BackendDesapegaJa.Repositories
                 {
                     id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
                     usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
+                    Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
                     bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
                     cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
                     estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
@@ -71,9 +72,10 @@ namespace BackendDesapegaJa.Repositories
                 throw new InvalidOperationException("Usuario referenciado não encontrado");
             }
             _connection.Open();
-            var cmd = new MySqlCommand("INSERT INTO enderecos (usuario_id, numero, bairro, cidade, estado, rua, tipo_de_logradouro, complemento, status) " +
-                "VALUES(@usuario_id, @numero, @bairro, @cidade, @estado, @rua, @tipo_de_logradouro, @complemento, @status); SELECT LAST_INSERT_ID();", _connection);
+            var cmd = new MySqlCommand("INSERT INTO enderecos (usuario_id, cep, numero, bairro, cidade, estado, rua, tipo_de_logradouro, complemento, status) " +
+                "VALUES(@usuario_id, @cep, @numero, @bairro, @cidade, @estado, @rua, @tipo_de_logradouro, @complemento, @status); SELECT LAST_INSERT_ID();", _connection);
             cmd.Parameters.AddWithValue("@usuario_id", enderecos.usuario_id);
+            cmd.Parameters.AddWithValue("@cep", enderecos.Cep);
             cmd.Parameters.AddWithValue("@numero", enderecos.numero);
             cmd.Parameters.AddWithValue("@bairro", enderecos.bairro);
             cmd.Parameters.AddWithValue("@estado", enderecos.estado);
@@ -116,6 +118,7 @@ namespace BackendDesapegaJa.Repositories
                 {
                     id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
                     usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
+                    Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
                     bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
                     cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
                     estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
@@ -158,6 +161,7 @@ namespace BackendDesapegaJa.Repositories
                 {
                     id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
                     usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
+                    Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
                     bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
                     cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
                     estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
@@ -192,6 +196,7 @@ namespace BackendDesapegaJa.Repositories
             var cidadeFinal = string.IsNullOrWhiteSpace(enderecos.cidade) ? enderecoExistente.cidade : enderecos.cidade;
             var estadoFinal = string.IsNullOrWhiteSpace(enderecos.estado) ? enderecoExistente.estado : enderecos.estado;
             var bairroFinal = string.IsNullOrWhiteSpace(enderecos.bairro) ? enderecoExistente.bairro : enderecos.bairro;
+            var cepFinal = string.IsNullOrWhiteSpace(enderecos.Cep) ? enderecoExistente.Cep : enderecos.Cep;
             var ruaFinal = string.IsNullOrWhiteSpace(enderecos.rua) ? enderecoExistente.rua : enderecos.rua;
             var logradouroFinal = string.IsNullOrWhiteSpace(enderecos.tipo_de_logradouro) ? enderecoExistente.tipo_de_logradouro : enderecos.tipo_de_logradouro;
             var complementoFinal = string.IsNullOrWhiteSpace(enderecos.complemento) ? enderecoExistente.complemento : enderecos.complemento;
@@ -203,9 +208,10 @@ namespace BackendDesapegaJa.Repositories
                 _connection.Open();
             }
 
-            var cmd = new MySqlCommand("UPDATE enderecos SET " +
+            var cmd = new MySqlCommand("UPDATE enderecos SET cep = @cep " +
                 "numero = @numero, bairro = @bairro, cidade = @cidade, estado = @estado, rua = @rua, tipo_de_logradouro = @tipo_de_logradouro, complemento = @complemento, status = @status WHERE usuario_id = @id", _connection);
             cmd.Parameters.AddWithValue("@id", id);
+            cmd.Parameters.AddWithValue("@cep", cepFinal);
             cmd.Parameters.AddWithValue("@numero", numeroFinal);
             cmd.Parameters.AddWithValue("@bairro", bairroFinal);
             cmd.Parameters.AddWithValue("@estado", estadoFinal);
