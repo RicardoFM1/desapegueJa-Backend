@@ -96,7 +96,7 @@ namespace BackendDesapegaJa.Controllers
         {
             try
             {
-                var enderecoExistente = _service.GetEnderecosById(id, status);
+                var enderecoExistente = _service.GetEnderecosByUsuarioId(id, status);
                 var loggedUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var isAdmin = false;
 
@@ -111,12 +111,12 @@ namespace BackendDesapegaJa.Controllers
                 if (!int.TryParse(loggedUserIdStr, out int loggedUserIdInt))
                     return StatusCode(403, new { message = "Sem autorização para atualizar esse endereço" });
 
-                if (isAdmin == false && enderecos.usuario_id != loggedUserIdInt)
-                    return StatusCode(403, new { message = "Sem autorização para atualizar essa endereço" });
+                if (isAdmin == false && enderecoExistente.usuario_id != loggedUserIdInt)
+                    return StatusCode(403, new { message = "Sem autorização para atualizar esse endereço" });
 
                 if(enderecoExistente.status == "inativo" && isAdmin == false)
                 {
-                    return StatusCode(403, new { message = "Sem autorização para atualizar essa endereço" });
+                    return StatusCode(403, new { message = "Sem autorização para atualizar esse endereço" });
                 }
                 var enderecosAtualizado = _service.AtualizarEnderecos(id, enderecos, status);
                 return StatusCode(200, enderecos);

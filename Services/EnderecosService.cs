@@ -17,9 +17,9 @@ namespace BackendDesapegaJa.Services
             return _repo.ListarTodos(status);
         }
 
-        public Enderecos GetEnderecosById(int id, string? status = null)
+        public Enderecos GetEnderecosByUsuarioId(int id, string? status = null)
         {
-            var enderecos =  _repo.BuscarPorId(id, status);
+            var enderecos =  _repo.BuscarPorUsuarioId(id, status);
             if(enderecos == null)
             {
                 throw new InvalidOperationException("Não foi possível encontrar esse endereço");
@@ -35,7 +35,7 @@ namespace BackendDesapegaJa.Services
 
         public Enderecos AtualizarEnderecos(int id, EnderecosUpdateDTO enderecos, string? status = null)
         {
-            var enderecoExistente = _repo.BuscarPorId(id, status);
+            var enderecoExistente = _repo.BuscarPorUsuarioId(id, status);
             if (enderecoExistente == null)
             {
                 throw new InvalidOperationException("Nenhum endereço encontrado");

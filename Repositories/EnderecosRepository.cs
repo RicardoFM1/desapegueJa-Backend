@@ -133,10 +133,52 @@ namespace BackendDesapegaJa.Repositories
             return enderecos;
 
         }
+        public Enderecos? BuscarPorUsuarioId(int? id, string? status = null)
+        {
+            if (_connection.State != System.Data.ConnectionState.Open)
+                _connection.Open();
+
+            string sql = "SELECT * FROM enderecos WHERE usuario_id = @id";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, _connection);
+            cmd.Parameters.AddWithValue("@id", id);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
+            var reader = cmd.ExecuteReader();
+            Enderecos? enderecos = null;
+            if (reader.Read())
+            {
+                enderecos = new Enderecos
+                {
+                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
+                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
+                    bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
+                    cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
+                    estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
+                    rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
+                    numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
+                    complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
+                    tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
+                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
+                };
+
+
+            }
+            reader.Close();
+            _connection.Close();
+            return enderecos;
+
+        }
         public void Atualizar(int id, EnderecosUpdateDTO enderecos, string? status = null)
         {
-            var usuarioExistente = _repoUser.BuscarPorId(enderecos.usuario_id);
-            var enderecoExistente = BuscarPorId(id);
+            var usuarioExistente = _repoUser.BuscarPorId(id);
+            var enderecoExistente = BuscarPorUsuarioId(id);
             if (usuarioExistente == null)
             {
                 throw new InvalidOperationException("Nenhum usuario encontrado");
@@ -146,12 +188,8 @@ namespace BackendDesapegaJa.Repositories
             {
                 throw new InvalidOperationException("Não é possível atualizar um endereço de um usuario inativo");
             }
-            if (!string.Equals(enderecoExistente.status, "ativo", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException("Não é possível atualizar um endereço inativo");
-            }
+            
             var cidadeFinal = string.IsNullOrWhiteSpace(enderecos.cidade) ? enderecoExistente.cidade : enderecos.cidade;
-            var usuarioIdFinal = enderecos.usuario_id ?? enderecoExistente.usuario_id;
             var estadoFinal = string.IsNullOrWhiteSpace(enderecos.estado) ? enderecoExistente.estado : enderecos.estado;
             var bairroFinal = string.IsNullOrWhiteSpace(enderecos.bairro) ? enderecoExistente.bairro : enderecos.bairro;
             var ruaFinal = string.IsNullOrWhiteSpace(enderecos.rua) ? enderecoExistente.rua : enderecos.rua;
@@ -165,10 +203,9 @@ namespace BackendDesapegaJa.Repositories
                 _connection.Open();
             }
 
-            var cmd = new MySqlCommand("UPDATE enderecos SET usuario_id = @usuario_id," +
-                "numero = @numero, bairro = @bairro, cidade = @cidade, estado = @estado, rua = @rua, tipo_de_logradouro = @tipo_de_logradouro, complemento = @complemento, status = @status WHERE id = @id", _connection);
+            var cmd = new MySqlCommand("UPDATE enderecos SET " +
+                "numero = @numero, bairro = @bairro, cidade = @cidade, estado = @estado, rua = @rua, tipo_de_logradouro = @tipo_de_logradouro, complemento = @complemento, status = @status WHERE usuario_id = @id", _connection);
             cmd.Parameters.AddWithValue("@id", id);
-            cmd.Parameters.AddWithValue("@usuario_id", usuarioIdFinal);
             cmd.Parameters.AddWithValue("@numero", numeroFinal);
             cmd.Parameters.AddWithValue("@bairro", bairroFinal);
             cmd.Parameters.AddWithValue("@estado", estadoFinal);
