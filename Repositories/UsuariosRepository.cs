@@ -130,7 +130,7 @@ namespace BackendDesapegaJa.Repositories
             using var cmd = new MySqlCommand(@"
                 INSERT INTO Usuarios 
                 (email, senha, status, admin, telefone, cpf, cep, foto_de_perfil, data_de_nascimento, nome)
-                VALUES (@Email,@Senha,@Status,@Admin,@Telefone,@Rg,@Cpf,@Cep,@Foto,@Nascimento, @Nome);
+                VALUES (@Email,@Senha,@Status,@Admin,@Telefone,@Cpf,@Cep,@Foto,@Nascimento, @Nome);
                 SELECT LAST_INSERT_ID();", connection);
 
             cmd.Parameters.AddWithValue("@Email", usuario.Email);
