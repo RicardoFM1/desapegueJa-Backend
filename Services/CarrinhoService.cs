@@ -27,7 +27,7 @@ namespace BackendDesapegaJa.Services
             var carrinho = _repo.BuscarPorUsuarioId(id);
             if (carrinho == null)
             {
-                throw new InvalidOperationException("Não foi possível encontrar iten ou usuário relaciona a esse carrinho");
+                throw new InvalidOperationException("Não foi possível encontrar iten ou usuário relacionado a esse carrinho");
             }
             return carrinho;
         }
@@ -36,6 +36,12 @@ namespace BackendDesapegaJa.Services
         {
             var usuarioExistente = _repoUser.BuscarPorId(carrinho.usuario_id);
             var produtoExistente = _repoProduto.BuscarPorId(carrinho.produto_id);
+            var produtoExistenteCarrinho = _repo.BuscarPorUsuarioEProduto(carrinho.usuario_id, carrinho.produto_id);
+
+            if(produtoExistenteCarrinho != null)
+            {
+                throw new InvalidOperationException("Este produto já está no carrinho!");
+            }
 
             if(!string.Equals(usuarioExistente.status, "ativo", StringComparison.OrdinalIgnoreCase))
             {
