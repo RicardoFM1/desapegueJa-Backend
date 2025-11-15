@@ -22,12 +22,12 @@ namespace BackendDesapegaJa.Services
             return _repo.ListarTodos();
         }
 
-        public Carrinho BuscarPorCarrinhoId(int id)
+        public Carrinho BuscarPorUsuarioId(int id)
         {
-            var carrinho = _repo.BuscarPorId(id);
+            var carrinho = _repo.BuscarPorUsuarioId(id);
             if (carrinho == null)
             {
-                throw new InvalidOperationException("Não foi possível encontrar esse carrinho");
+                throw new InvalidOperationException("Não foi possível encontrar iten ou usuário relaciona a esse carrinho");
             }
             return carrinho;
         }

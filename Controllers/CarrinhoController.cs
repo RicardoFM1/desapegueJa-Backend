@@ -41,7 +41,7 @@ namespace BackendDesapegaJa.Controllers
             try
             {
 
-                var carrinho = _service.BuscarPorCarrinhoId(id);
+                var carrinho = _service.BuscarPorUsuarioId(id);
                 return Ok(carrinho);
             }
             catch (InvalidOperationException ex)

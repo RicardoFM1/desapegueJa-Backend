@@ -6,7 +6,7 @@ namespace BackendDesapegaJa.Interfaces
     {
         public IEnumerable<Carrinho> ListarTodos();
 
-        public Carrinho BuscarPorId(int? id);
+        public Carrinho BuscarPorUsuarioId(int? id);
 
         public Carrinho BuscarPorUsuarioEProduto(int usuarioId, int produtoId);
 

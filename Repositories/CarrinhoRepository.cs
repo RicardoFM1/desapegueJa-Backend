@@ -60,14 +60,14 @@ namespace BackendDesapegaJa.Repositories
             return carrinho;
         }
 
-        public Carrinho BuscarPorId(int? id)
+        public Carrinho BuscarPorUsuarioId(int? id)
         {
             Carrinho? carrinho = null;
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("SELECT * FROM carrinho WHERE id = @id", connection);
-            cmd.Parameters.AddWithValue("@id", id);
+            var cmd = new MySqlCommand("SELECT * FROM carrinho WHERE usuario_id = @usuario_id", connection);
+            cmd.Parameters.AddWithValue("@usuario_id", id);
             var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
