@@ -132,10 +132,7 @@ namespace BackendDesapegaJa.Controllers
                 {
                     return StatusCode(403, new { message = "Sem autorização para atualizar esse produto" });
                 }
-                if( produtoExistente.status.ToLower() == "inativo" && isAdmin == false)
-                {
-                    return StatusCode(403, new { message = "Sem autorização para atualizar esse produto" });
-                }
+              
 
                 var atualizacao = _service.AtualizarProduto(id, produtoAtualizado, status);
                 return StatusCode(200, atualizacao);
