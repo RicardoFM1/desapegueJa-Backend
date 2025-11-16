@@ -19,25 +19,28 @@ namespace BackendDesapegaJa.Repositories
             _repoCategoria = repoCategoria;
         }
 
-        public IEnumerable<Produto> ListarTodos(string? status = null)
+        public IEnumerable<Produto> ListarTodos(string? status = null, int offset = 0, int limit = 10)
         {
-           
             var produtos = new List<Produto>();
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            string sql = "SELECT * FROM produtos";
+
+            string sql = "SELECT COUNT(*) FROM produtos";
 
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 sql += " WHERE status = @status";
-            }
+
+            sql += " LIMIT @limit OFFSET @offset"; 
+
             var cmd = new MySqlCommand(sql, connection);
 
             if (!string.IsNullOrWhiteSpace(status))
-            {
-                cmd.Parameters.AddWithValue("status", status);
-            }
+                cmd.Parameters.AddWithValue("@status", status);
+
+            cmd.Parameters.AddWithValue("@limit", limit);
+            cmd.Parameters.AddWithValue("@offset", offset);
+
             var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -45,20 +48,20 @@ namespace BackendDesapegaJa.Repositories
                 {
                     nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? "" : reader.GetString("nome"),
                     id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 :  reader.GetInt32("usuario_id"),
+                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
                     preco = reader.IsDBNull(reader.GetOrdinal("preco")) ? 0 : reader.GetInt32("preco"),
-                    descricao = reader.IsDBNull(reader.GetOrdinal("descricao")) ? "" :  reader.GetString("descricao"),
-                    data_post = reader.IsDBNull(reader.GetOrdinal("data_post")) ? "" :  reader.GetString("data_post"),
-                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" :  reader.GetString("status"),
-                    categoria_id = reader.IsDBNull(reader.GetOrdinal("categoria_id")) ? 0 :  reader.GetInt32("categoria_id"),
+                    descricao = reader.IsDBNull(reader.GetOrdinal("descricao")) ? "" : reader.GetString("descricao"),
+                    data_post = reader.IsDBNull(reader.GetOrdinal("data_post")) ? "" : reader.GetString("data_post"),
+                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status"),
+                    categoria_id = reader.IsDBNull(reader.GetOrdinal("categoria_id")) ? 0 : reader.GetInt32("categoria_id"),
                     estoque = reader.IsDBNull(reader.GetOrdinal("estoque")) ? 0 : reader.GetInt32("estoque"),
                     imagem = reader.IsDBNull(reader.GetOrdinal("imagem")) ? "" : reader.GetString("imagem")
                 });
             }
-         
 
             return produtos;
         }
+
         public Produto? BuscarPorNome(string nome, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);

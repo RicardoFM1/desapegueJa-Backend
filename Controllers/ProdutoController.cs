@@ -21,13 +21,21 @@ namespace BackendDesapegaJa.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get([FromQuery] string? status)
+        public IActionResult Get([FromQuery] string? status,
+        int page = 1,
+        int pageSize = 10
+            )
         {
+            int offset = (page - 1) * pageSize;
             try
             {
 
-            var produtos = _service.ObterProdutos(status);
-            return Ok(produtos);
+            var produtos = _service.ObterProdutos(status, offset, pageSize);
+            return Ok(new {
+                page,
+                pageSize,
+                produtos
+            });
             }
             catch (InvalidOperationException ex)
             {
