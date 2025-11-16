@@ -60,9 +60,9 @@ namespace BackendDesapegaJa.Repositories
             return carrinho;
         }
 
-        public Carrinho BuscarPorUsuarioId(int? id)
+        public IEnumerable<Carrinho> BuscarPorUsuarioId(int? id)
         {
-            Carrinho? carrinho = null;
+            var carrinho = new List<Carrinho>();
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
@@ -71,13 +71,13 @@ namespace BackendDesapegaJa.Repositories
             var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                carrinho = new Carrinho
+                carrinho.Add(new Carrinho
                 {
                     id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
                     usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
                     produto_id = reader.IsDBNull(reader.GetOrdinal("produto_id")) ? 0 : reader.GetInt32("produto_id"),
                     quantidade = reader.IsDBNull(reader.GetOrdinal("quantidade")) ? 0 : reader.GetInt32("quantidade")
-                };
+                });
             }
             reader.Close();
 

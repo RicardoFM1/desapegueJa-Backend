@@ -22,7 +22,7 @@ namespace BackendDesapegaJa.Services
             return _repo.ListarTodos();
         }
 
-        public Carrinho BuscarPorUsuarioId(int id)
+        public IEnumerable<Carrinho> BuscarPorUsuarioId(int id)
         {
             var carrinho = _repo.BuscarPorUsuarioId(id);
             if (carrinho == null)
