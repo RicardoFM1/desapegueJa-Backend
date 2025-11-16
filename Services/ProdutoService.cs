@@ -15,10 +15,12 @@ namespace BackendDesapegaJa.Services
             _repoUser = repoUser;
             _repoCategoria = repoCategoria;
         }
-        public IEnumerable<Produto> ObterProdutos(string? status = null, int offset = 0, int limit = 10)
+        public (IEnumerable<Produto> produtos, int total) ListarTodos(
+    string? status = null, int offset = 0, int limit = 10)
         {
-            return _repo.ListarTodos(status);
+            return _repo.ListarTodos(status, offset, limit);
         }
+
 
         public Produto GetProdutoById(int id, string? status = null)
         {

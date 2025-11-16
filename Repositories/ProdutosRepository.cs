@@ -19,19 +19,28 @@ namespace BackendDesapegaJa.Repositories
             _repoCategoria = repoCategoria;
         }
 
-        public IEnumerable<Produto> ListarTodos(string? status = null, int offset = 0, int limit = 10)
+        public (IEnumerable<Produto> produtos, int total) ListarTodos(string? status = null, int offset = 0, int limit = 10)
         {
             var produtos = new List<Produto>();
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * FROM produtos";
+            string countSql = "SELECT COUNT(*) FROM produtos";
+            if (!string.IsNullOrWhiteSpace(status))
+                countSql += " WHERE status = @status";
 
+            var countCmd = new MySqlCommand(countSql, connection);
+            if (!string.IsNullOrWhiteSpace(status))
+                countCmd.Parameters.AddWithValue("@status", status);
+
+            int total = Convert.ToInt32(countCmd.ExecuteScalar());
+
+            string sql = "SELECT * FROM produtos";
             if (!string.IsNullOrWhiteSpace(status))
                 sql += " WHERE status = @status";
 
-            sql += " LIMIT @limit OFFSET @offset"; 
+            sql += " ORDER BY id LIMIT @limit OFFSET @offset";
 
             var cmd = new MySqlCommand(sql, connection);
 
@@ -59,7 +68,7 @@ namespace BackendDesapegaJa.Repositories
                 });
             }
 
-            return produtos;
+            return (produtos, total);
         }
 
         public Produto? BuscarPorNome(string nome, string? status = null)

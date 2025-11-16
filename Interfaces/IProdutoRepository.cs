@@ -4,7 +4,7 @@ namespace BackendDesapegaJa.Interfaces
 {
     public interface IProdutoRepository
     {
-        IEnumerable<Produto> ListarTodos(string? status = null, int offset = 0, int limit = 10);
+        (IEnumerable<Produto> produtos, int total) ListarTodos(string? status = null, int offset = 0, int limit = 10);
 
         void Adicionar(Produto produto);
 
