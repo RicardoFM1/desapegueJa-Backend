@@ -40,7 +40,7 @@ namespace BackendDesapegaJa.Repositories
             if (!string.IsNullOrWhiteSpace(status))
                 sql += " WHERE status = @status";
 
-            sql += " ORDER BY id LIMIT @limit OFFSET @offset";
+            sql += " ORDER BY id DESC LIMIT @limit OFFSET @offset";
 
             var cmd = new MySqlCommand(sql, connection);
 
