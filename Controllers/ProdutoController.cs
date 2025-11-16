@@ -35,13 +35,12 @@ namespace BackendDesapegaJa.Controllers
 
                 var (produtos, total) = _service.ListarTodos(status, offset, pageSize);
 
-                return Ok(new
-                {
-                    page,
-                    pageSize,
-                    total,
-                    produtos
-                });
+                var response = new List<object>();
+
+                response.Add(new { page, pageSize, total });
+                response.AddRange(produtos);
+
+                return Ok(response);
             }
             catch (InvalidOperationException ex)
             {
