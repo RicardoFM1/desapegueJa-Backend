@@ -26,7 +26,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT COUNT(*) FROM produtos";
+            string sql = "SELECT * FROM produtos";
 
             if (!string.IsNullOrWhiteSpace(status))
                 sql += " WHERE status = @status";
