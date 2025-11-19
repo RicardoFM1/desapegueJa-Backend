@@ -91,7 +91,7 @@ namespace BackendDesapegaJa.Repositories
             pagamento.status = string.IsNullOrWhiteSpace(pagamento.status) ? "ativo" : pagamento.status;
 
             using var cmd = new MySqlCommand(
-                "INSERT INTO Pagamentos (usuario_id, forma_pagamento_id, status_pagamento_id, ordem_id, valor, observacao, createdAt, status) " +
+                "INSERT INTO Pagamentos (usuario_id, forma_pagamento_id, status_pagamento_id, ordem_id, valor, observacao, created_at, status) " +
                 "VALUES (@usuario_id, @forma_pagamento_id, @status_pagamento_id, @ordem_id, @valor, @observacao, @createdAt, @status); " +
                 "SELECT LAST_INSERT_ID();", connection);
 
@@ -101,7 +101,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@ordem_id", pagamento.ordem_id);
             cmd.Parameters.AddWithValue("@valor", pagamento.valor);
             cmd.Parameters.AddWithValue("@observacao", pagamento.observacao);
-            cmd.Parameters.AddWithValue("@createdAt", pagamento.createdAt);
+            cmd.Parameters.AddWithValue("@created_at", pagamento.createdAt);
             cmd.Parameters.AddWithValue("@status", pagamento.status);
 
             pagamento.id = Convert.ToInt32(cmd.ExecuteScalar());
@@ -128,7 +128,7 @@ namespace BackendDesapegaJa.Repositories
 
             var cmd = new MySqlCommand(
                 "UPDATE Pagamentos SET usuario_id = @usuario_id, forma_pagamento_id = @forma_pagamento_id, status_pagamento_id = @status_pagamento_id, " +
-                "ordem_id = @ordem_id, valor = @valor, observacao = @observacao, createdAt = @createdAt, updatedAt = @updatedAt, status = @status WHERE id = @id", connection);
+                "ordem_id = @ordem_id, valor = @valor, observacao = @observacao, created_at = @createdAt, updated_at = @updatedAt, status = @status WHERE id = @id", connection);
 
             cmd.Parameters.AddWithValue("@id", id);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioIdFinal);
