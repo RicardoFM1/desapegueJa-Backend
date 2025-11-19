@@ -51,7 +51,7 @@ namespace BackendDesapegaJa.Services
             if (statusPagamento == null || statusPagamento.status.ToLower() == "inativo")
                 throw new InvalidOperationException("Status de pagamento não encontrado e/ou inativo");
 
-            pagamento.createdAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+            pagamento.createdAt = DateTime.UtcNow;
             pagamento.status = string.IsNullOrWhiteSpace(pagamento.status) ? "ativo" : pagamento.status;
 
             _repo.Adicionar(pagamento);
@@ -70,8 +70,8 @@ namespace BackendDesapegaJa.Services
             int ordemIdFinal = pagamento.ordem_id ?? existente.ordem_id;
             int valorFinal = pagamento.valor ?? existente.valor;
             string observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao) ? existente.observacao : pagamento.observacao;
-            string createdAtFinal = string.IsNullOrWhiteSpace(pagamento.createdAt) ? existente.createdAt : pagamento.createdAt;
-            string updatedAtFinal = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime createdAtFinal = pagamento.createdAt ?? existente.createdAt ?? DateTime.UtcNow;
+            DateTime updatedAtFinal = DateTime.UtcNow;
             string statusFinal = string.IsNullOrWhiteSpace(pagamento.status) ? existente.status : pagamento.status;
 
             var usuario = _repoUser.BuscarPorId(usuarioIdFinal);

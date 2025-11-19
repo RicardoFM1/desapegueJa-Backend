@@ -69,7 +69,7 @@ namespace BackendDesapegaJa.Services
 
             ordem.valor_total = (int)total;
 
-            ordem.created_at = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+            ordem.created_at = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
 
             _repo.Adicionar(ordem);
 
