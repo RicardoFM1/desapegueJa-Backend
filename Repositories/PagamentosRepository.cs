@@ -39,8 +39,8 @@ namespace BackendDesapegaJa.Repositories
                     ordem_id = reader.GetInt32("ordem_id"),
                     valor = reader.GetInt32("valor"),
                     observacao = reader.IsDBNull(reader.GetOrdinal("observacao")) ? "" : reader.GetString("observacao"),
-                    createdAt = reader.IsDBNull(reader.GetOrdinal("createdAt")) ? "" : reader.GetString("createdAt"),
-                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updatedAt")) ? "" : reader.GetString("updatedAt"),
+                    createdAt = reader.IsDBNull(reader.GetOrdinal("created_at")) ? "" : reader.GetString("created_at"),
+                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? "" : reader.GetString("updated_at"),
                     status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
                 });
             }
@@ -74,8 +74,8 @@ namespace BackendDesapegaJa.Repositories
                     ordem_id = reader.GetInt32("ordem_id"),
                     valor = reader.GetInt32("valor"),
                     observacao = reader.IsDBNull(reader.GetOrdinal("observacao")) ? "" : reader.GetString("observacao"),
-                    createdAt = reader.IsDBNull(reader.GetOrdinal("createdAt")) ? "" : reader.GetString("createdAt"),
-                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updatedAt")) ? "" : reader.GetString("updatedAt"),
+                    createdAt = reader.IsDBNull(reader.GetOrdinal("created_at")) ? "" : reader.GetString("created_at"),
+                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? "" : reader.GetString("updated_at"),
                     status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
                 };
             }
