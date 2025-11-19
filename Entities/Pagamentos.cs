@@ -10,26 +10,31 @@ namespace BackendDesapegaJa.Entities
         public int usuario_id { get; set; }
 
         [Required(ErrorMessage = "A referência da forma de pagamento deve ser preenchida")]
-        public int formas_de_pagamento_id { get; set; }
+        public int forma_pagamento_id { get; set; }
 
         [Required(ErrorMessage = "A referência do status de pagamento deve ser preenchida")]
-        public int status_de_pagamento_id { get; set; }
+        public int status_pagamento_id { get; set; }
+
+        [Required(ErrorMessage = "A referência da ordem deve ser preenchida")]
+        public int ordem_id { get; set; }
 
         public string? observacao { get; set; }
+        public int valor { get; set; }
 
-        
         public string? createdAt { get; set; }
-
         public string? updatedAt { get; set; }
 
         public string? status { get; set; }
     }
+
     public class PagamentosUpdateDTO
     {
         public int? usuario_id { get; set; }
-        public int? formas_de_pagamento_id { get; set; }
-        public int? status_de_pagamento_id { get; set; }
+        public int? forma_pagamento_id { get; set; }
+        public int? status_pagamento_id { get; set; }
+        public int? ordem_id { get; set; }
         public string? observacao { get; set; }
+        public int? valor { get; set; }
         public string? createdAt { get; set; }
         public string? updatedAt { get; set; }
         public string? status { get; set; }

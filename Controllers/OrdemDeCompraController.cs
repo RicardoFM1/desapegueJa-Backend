@@ -56,29 +56,33 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+
         [HttpPost]
-        public IActionResult CriarOrdemDeCompra([FromBody] OrdemDeCompra ordem)
+        public IActionResult CriarOrdemDeCompra([FromBody] OrdemDeCompraCreateDTO dto)
         {
             try
             {
                 var loggedUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var isAdmin = false;
+                var isAdmin = User.FindFirst("isAdmin")?.Value.ToLower() == "true";
 
-                if (User.FindFirst("isAdmin")?.Value.ToLower() == "true")
-                {
-                    isAdmin = true;
-                }
-                else
-                {
-                    isAdmin = false;
-                }
-                if (loggedUserIdStr == null && isAdmin == false)
-                {
+                if (loggedUserIdStr == null && !isAdmin)
                     return StatusCode(403, new { message = "Sem autorização para criar essa ordem de compra" });
-                }
-                
 
-                var ordemNova = _service.CriarOrdemDeCompra(ordem);
+            
+                var ordem = new OrdemDeCompra
+                {
+                    usuario_id = dto.usuario_id,
+                    status_ordem_id = dto.status_ordem_id,
+                    valor_total = dto.valor_total
+                };
+
+                var itens = dto.itens.Select(i => new OrdemProduto
+                {
+                    produto_id = i.produto_id,
+                    quantidade = i.quantidade
+                }).ToList();
+
+                var ordemNova = _service.CriarOrdemDeCompra(ordem, itens);
                 return StatusCode(201, ordemNova);
             }
             catch (InvalidOperationException ex)
@@ -90,6 +94,9 @@ namespace BackendDesapegaJa.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+
+
         [HttpPatch("{id}")]
         public IActionResult AtualizarOrdemDeCompra(int id, [FromBody] OrdemDeCompraUpdateDTO ordem)
         {

@@ -99,6 +99,9 @@ builder.Services.AddScoped<StatusOrdemService>();
 builder.Services.AddScoped<IOrdemDeCompraRepository, OrdemDeCompraRepository>();
 builder.Services.AddScoped<OrdemDeCompraService>();
 
+builder.Services.AddScoped<IOrdemProdutoRepository, OrdemProdutoRepository>();
+builder.Services.AddScoped<OrdemProdutoService>();
+
 builder.Services.AddScoped<IPagamentosRepository, PagamentosRepository>();
 builder.Services.AddScoped<PagamentoService>();
 

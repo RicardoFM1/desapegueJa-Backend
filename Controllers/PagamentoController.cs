@@ -9,7 +9,7 @@ namespace BackendDesapegaJa.Controllers
     [Route("desapega/pagamentos")]
     public class PagamentoController : ControllerBase
     {
-        public readonly PagamentoService _service;
+        private readonly PagamentoService _service;
 
         public PagamentoController(PagamentoService service)
         {
@@ -17,18 +17,15 @@ namespace BackendDesapegaJa.Controllers
         }
 
         [HttpGet]
-
         public IActionResult Get([FromQuery] string? status)
         {
             try
             {
-
-            var pagamentos = _service.GetPagamentos(status);
-            return Ok(pagamentos);
+                return Ok(_service.GetPagamentos(status));
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -37,87 +34,65 @@ namespace BackendDesapegaJa.Controllers
         }
 
         [HttpGet("{id}")]
-
         public IActionResult GetById(int id, [FromQuery] string? status)
         {
             try
             {
-
-            var pagamento = _service.GetPagamentosById(id, status);
-            return Ok(pagamento);
+                return Ok(_service.GetPagamentosById(id, status));
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-
 
         [HttpPost]
         public IActionResult CriarPagamento([FromBody] Pagamentos pagamento)
         {
             try
             {
-                var loggedUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-               
-                if (loggedUserIdStr == null)
-                {
+                var loggedUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (loggedUserId == null)
                     return StatusCode(403, new { message = "Sem autorização para efetuar esse pagamento" });
-                }
-                
 
                 var pagamentoNovo = _service.CriarPagamento(pagamento);
                 return StatusCode(201, pagamentoNovo);
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
         [HttpPatch("{id}")]
         public IActionResult AtualizarPagamento(int id, [FromBody] PagamentosUpdateDTO pagamento, [FromQuery] string? status)
         {
             try
             {
+                var loggedUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (loggedUserId == null)
+                    return StatusCode(403, new { message = "Sem autorização para efetuar esse pagamento" });
+
+                var isAdmin = User.FindFirst("isAdmin")?.Value == "true";
                 var pagamentoExistente = _service.GetPagamentosById(id, status);
-                var isAdmin = false;
-                var admin = User.FindFirst("isAdmin").Value;
 
-                if (User.FindFirst("isAdmin")?.Value == "true")
-                {
-                    isAdmin = true;
-                }
-                else
-                {
-                    isAdmin = false;
-                }
-
-                var loggedUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                
-
-                if (loggedUserIdStr == null)
-                {
-                    return StatusCode(403, new { message = "Sem autorização para efetuar esse pagamento" });
-                }
-                if( pagamentoExistente.status.ToLower() == "inativo" && isAdmin == false)
-                {
-                    return StatusCode(403, new { message = "Sem autorização para efetuar esse pagamento" });
-                }
+                if (pagamentoExistente.status?.ToLower() == "inativo" && !isAdmin)
+                    return StatusCode(403, new { message = "Sem autorização para atualizar pagamento inativo" });
 
                 var pagamentoAtualizado = _service.AtualizarPagamentos(id, pagamento, status);
-                return StatusCode(200, pagamentoAtualizado);
+                return Ok(pagamentoAtualizado);
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {

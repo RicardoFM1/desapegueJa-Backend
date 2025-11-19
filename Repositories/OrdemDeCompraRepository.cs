@@ -19,7 +19,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * from ordem_de_compra";
+            string sql = "SELECT * FROM ordem_de_compra";
 
             using var cmd = new MySqlCommand(sql, connection);
             using var reader = cmd.ExecuteReader();
@@ -28,155 +28,171 @@ namespace BackendDesapegaJa.Repositories
             {
                 ordens.Add(new OrdemDeCompra
                 {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    produto_id = reader.IsDBNull(reader.GetOrdinal("produto_id")) ? 0 : reader.GetInt32("produto_id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    status_ordem_id = reader.IsDBNull(reader.GetOrdinal("status_ordem_id")) ? 0 : reader.GetInt32("status_ordem_id")
+                    id = reader.GetInt32("id"),
+                    usuario_id = reader.GetInt32("usuario_id"),
+                    status_ordem_id = reader.GetInt32("status_ordem_id"),
+                    valor_total = reader.GetInt32("valor_total"),
+                    created_at = reader.GetString("created_at")
                 });
             }
 
             return ordens;
         }
 
-        public OrdemDeCompra BuscarPorId(int? id)
+        public OrdemDeCompra BuscarPorId(int id)
         {
-
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
             string sql = "SELECT * FROM ordem_de_compra WHERE id = @id";
-
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
-           
+
             using var reader = cmd.ExecuteReader();
-            OrdemDeCompra? ordemdecompra = null;
-            while (reader.Read())
+            if (reader.Read())
             {
-                ordemdecompra = new OrdemDeCompra
+                return new OrdemDeCompra
                 {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    produto_id = reader.IsDBNull(reader.GetOrdinal("produto_id")) ? 0 : reader.GetInt32("produto_id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    status_ordem_id = reader.IsDBNull(reader.GetOrdinal("status_ordem_id")) ? 0 : reader.GetInt32("status_ordem_id")
+                    id = reader.GetInt32("id"),
+                    usuario_id = reader.GetInt32("usuario_id"),
+                    status_ordem_id = reader.GetInt32("status_ordem_id"),
+                    valor_total = reader.GetInt32("valor_total"),
+                    created_at = reader.GetString("created_at")
                 };
             }
-            reader.Close();
-            return ordemdecompra;
+
+            return null;
         }
 
-        public OrdemDeCompra BuscarPorProdutoId(int? id)
+
+        public IEnumerable<OrdemDeCompra> BuscarPorUsuarioId(int usuarioId)
         {
+            var ordens = new List<OrdemDeCompra>();
+
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT * FROM ordem_de_compra WHERE produto_id = @produto_id", connection);
-            cmd.Parameters.AddWithValue("@produto_id", id);
+            string sql = "SELECT * FROM ordem_de_compra WHERE usuario_id = @usuario_id";
+
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
+
             using var reader = cmd.ExecuteReader();
-            OrdemDeCompra? ordemdecompra = null;
+
             while (reader.Read())
             {
-                ordemdecompra = new OrdemDeCompra
+                ordens.Add(new OrdemDeCompra
                 {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    produto_id = reader.IsDBNull(reader.GetOrdinal("produto_id")) ? 0 : reader.GetInt32("produto_id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    status_ordem_id = reader.IsDBNull(reader.GetOrdinal("status_ordem_id")) ? 0 : reader.GetInt32("status_ordem_id")
-                };
+                    id = reader.GetInt32("id"),
+                    usuario_id = reader.GetInt32("usuario_id"),
+                    status_ordem_id = reader.GetInt32("status_ordem_id"),
+                    valor_total = reader.GetInt32("valor_total"),
+                    created_at = reader.GetString("created_at")
+                });
             }
-            reader.Close();
-            return ordemdecompra;
+
+            return ordens;
         }
-        public OrdemDeCompra BuscarPorUsuarioId(int? id)
+
+        public IEnumerable<OrdemDeCompra> BuscarPorStatusDeCompraId(int statusId)
         {
+            var ordens = new List<OrdemDeCompra>();
+
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("SELECT * FROM ordem_de_compra WHERE usuario_id = @usuario_id", connection);
-            cmd.Parameters.AddWithValue("@usuario_id", id);
-            using var reader = cmd.ExecuteReader();
-            OrdemDeCompra? ordemdecompra = null;
-            while (reader.Read())
-            {
-                ordemdecompra = new OrdemDeCompra
-                {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    produto_id = reader.IsDBNull(reader.GetOrdinal("produto_id")) ? 0 : reader.GetInt32("produto_id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    status_ordem_id = reader.IsDBNull(reader.GetOrdinal("status_ordem_id")) ? 0 : reader.GetInt32("status_ordem_id")
-                };
-            }
-            reader.Close();
-            return ordemdecompra;
-        }
-        public OrdemDeCompra BuscarPorStatusDeCompraId(int? id)
-        {
-            using var connection = new MySqlConnection(_connectionString);
-            connection.Open();
+            string sql = "SELECT * FROM ordem_de_compra WHERE status_ordem_id = @status_ordem_id";
 
-            using var cmd = new MySqlCommand("SELECT * FROM ordem_de_compra WHERE status_ordem_id = @status_ordem_id", connection);
-            cmd.Parameters.AddWithValue("@status_ordem_id", id);
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@status_ordem_id", statusId);
+
             using var reader = cmd.ExecuteReader();
-            OrdemDeCompra? ordemdecompra = null;
+
             while (reader.Read())
             {
-                ordemdecompra = new OrdemDeCompra
+                ordens.Add(new OrdemDeCompra
                 {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    produto_id = reader.IsDBNull(reader.GetOrdinal("produto_id")) ? 0 : reader.GetInt32("produto_id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    status_ordem_id = reader.IsDBNull(reader.GetOrdinal("status_ordem_id")) ? 0 : reader.GetInt32("status_ordem_id")
-                };
+                    id = reader.GetInt32("id"),
+                    usuario_id = reader.GetInt32("usuario_id"),
+                    status_ordem_id = reader.GetInt32("status_ordem_id"),
+                    valor_total = reader.GetInt32("valor_total"),
+                    created_at = reader.GetString("created_at")
+                });
             }
-            reader.Close();
-            return ordemdecompra;
+
+            return ordens;
         }
 
         public void Adicionar(OrdemDeCompra ordem)
         {
-
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("INSERT INTO ordem_de_compra (produto_id, usuario_id, status_ordem_id) VALUES (@produto_id, @usuario_id, @status_ordem_id); SELECT LAST_INSERT_ID();", connection);
-            cmd.Parameters.AddWithValue("@produto_id", ordem.produto_id);
+            string sql = @"INSERT INTO ordem_de_compra 
+                           (usuario_id, status_ordem_id, valor_total) 
+                           VALUES (@usuario_id, @status_ordem_id, @valor_total);
+                           SELECT LAST_INSERT_ID();";
+
+            using var cmd = new MySqlCommand(sql, connection);
+
             cmd.Parameters.AddWithValue("@usuario_id", ordem.usuario_id);
             cmd.Parameters.AddWithValue("@status_ordem_id", ordem.status_ordem_id);
+            cmd.Parameters.AddWithValue("@valor_total", ordem.valor_total);
 
             var novoId = Convert.ToInt32(cmd.ExecuteScalar());
             ordem.id = novoId;
-
-
         }
 
-        public OrdemDeCompra Atualizar(int id, OrdemDeCompraUpdateDTO ordem)
+        public OrdemDeCompra Atualizar(int id, OrdemDeCompraUpdateDTO dto)
         {
-            var ordemExistente = BuscarPorId(id);
-            if (ordemExistente == null)
+            var existente = BuscarPorId(id);
+            if (existente == null)
             {
-                throw new InvalidOperationException("Nenhuma ordem de compra encontrada");
+                throw new InvalidOperationException("Nenhuma ordem de compra encontrada.");
             }
-            int produtoIdFinal = ordem.produto_id.HasValue ? ordem.produto_id.Value : ordemExistente.produto_id;
-            int usuarioIdFinal = ordem.usuario_id.HasValue ? ordem.usuario_id.Value : ordemExistente.usuario_id;
-            int StatusOrdemFinal = ordem.status_ordem_id.HasValue ? ordem.status_ordem_id.Value : ordemExistente.status_ordem_id;
+
+            int usuarioFinal = dto.usuario_id ?? existente.usuario_id;
+            int statusFinal = dto.status_ordem_id ?? existente.status_ordem_id;
+            int valorFinal = dto.valor_total ?? existente.valor_total;
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("UPDATE ordem_de_compra SET produto_id = @produto_id, usuario_id = @usuario_id, status_ordem_id = @status_ordem_id WHERE id = @id", connection);
+            string sql = @"UPDATE ordem_de_compra 
+                           SET usuario_id = @usuario_id,
+                               status_ordem_id = @status_ordem_id,
+                               valor_total = @valor_total
+                           WHERE id = @id";
+
+            using var cmd = new MySqlCommand(sql, connection);
+
             cmd.Parameters.AddWithValue("@id", id);
-            cmd.Parameters.AddWithValue("@produto_id", produtoIdFinal);
-            cmd.Parameters.AddWithValue("@usuario_id", usuarioIdFinal);
-            cmd.Parameters.AddWithValue("@status_ordem_id", StatusOrdemFinal);
-            
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioFinal);
+            cmd.Parameters.AddWithValue("@status_ordem_id", statusFinal);
+            cmd.Parameters.AddWithValue("@valor_total", valorFinal);
+
             cmd.ExecuteNonQuery();
+
             return new OrdemDeCompra
             {
                 id = id,
-                produto_id = produtoIdFinal,
-                usuario_id = usuarioIdFinal,
-                status_ordem_id = StatusOrdemFinal
+                usuario_id = usuarioFinal,
+                status_ordem_id = statusFinal,
+                valor_total = valorFinal,
+                created_at = existente.created_at
             };
         }
+        public void Deletar(int id)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            string sql = "DELETE FROM ordem_de_compra WHERE id = @id";
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            cmd.ExecuteNonQuery();
+        }
+
     }
 }

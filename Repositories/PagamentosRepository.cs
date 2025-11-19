@@ -19,185 +19,142 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * from Pagamentos";
-
+            string sql = "SELECT * FROM Pagamentos";
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 sql += " WHERE status = @status";
-            }
 
             using var cmd = new MySqlCommand(sql, connection);
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 cmd.Parameters.AddWithValue("@status", status);
-            }
-            using var reader = cmd.ExecuteReader();
 
+            using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
                 pagamentos.Add(new Pagamentos
                 {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    formas_de_pagamento_id = reader.IsDBNull(reader.GetOrdinal("formas_de_pagamento_id")) ? 0 : reader.GetInt32("formas_de_pagamento_id"),
-                    status_de_pagamento_id = reader.IsDBNull(reader.GetOrdinal("status_de_pagamento_id")) ? 0 : reader.GetInt32("status_de_pagamento_id"),
+                    id = reader.GetInt32("id"),
+                    usuario_id = reader.GetInt32("usuario_id"),
+                    forma_pagamento_id = reader.GetInt32("forma_pagamento_id"),
+                    status_pagamento_id = reader.GetInt32("status_pagamento_id"),
+                    ordem_id = reader.GetInt32("ordem_id"),
+                    valor = reader.GetInt32("valor"),
                     observacao = reader.IsDBNull(reader.GetOrdinal("observacao")) ? "" : reader.GetString("observacao"),
                     createdAt = reader.IsDBNull(reader.GetOrdinal("createdAt")) ? "" : reader.GetString("createdAt"),
-                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updatedAt")) ? "" : reader.GetString("updatedAT"),
+                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updatedAt")) ? "" : reader.GetString("updatedAt"),
                     status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
-                }); 
+                });
             }
 
             return pagamentos;
         }
 
-        public Pagamentos BuscarPorId(int? id, string? status = null)
+        public Pagamentos BuscarPorId(int id, string? status = null)
         {
-
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
             string sql = "SELECT * FROM Pagamentos WHERE id = @id";
-
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 sql += " AND status = @status";
-            }
+
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 cmd.Parameters.AddWithValue("@status", status);
-            }
+
             using var reader = cmd.ExecuteReader();
-            Pagamentos? pagamentos = null;
-            while (reader.Read())
+            if (reader.Read())
             {
-                pagamentos = new Pagamentos
+                return new Pagamentos
                 {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    formas_de_pagamento_id = reader.IsDBNull(reader.GetOrdinal("formas_de_pagamento_id")) ? 0 : reader.GetInt32("formas_de_pagamento_id"),
-                    status_de_pagamento_id = reader.IsDBNull(reader.GetOrdinal("status_de_pagamento_id")) ? 0 : reader.GetInt32("status_de_pagamento_id"),
+                    id = reader.GetInt32("id"),
+                    usuario_id = reader.GetInt32("usuario_id"),
+                    forma_pagamento_id = reader.GetInt32("forma_pagamento_id"),
+                    status_pagamento_id = reader.GetInt32("status_pagamento_id"),
+                    ordem_id = reader.GetInt32("ordem_id"),
+                    valor = reader.GetInt32("valor"),
                     observacao = reader.IsDBNull(reader.GetOrdinal("observacao")) ? "" : reader.GetString("observacao"),
                     createdAt = reader.IsDBNull(reader.GetOrdinal("createdAt")) ? "" : reader.GetString("createdAt"),
-                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updatedAt")) ? "" : reader.GetString("updatedAT"),
+                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updatedAt")) ? "" : reader.GetString("updatedAt"),
                     status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
                 };
             }
-            reader.Close();
-            return pagamentos;
+            return null!;
         }
-
-       
-        public Pagamentos BuscarPorUsuarioId(int? id, string? status = null)
-        {
-            using var connection = new MySqlConnection(_connectionString);
-            connection.Open();
-
-            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id";
-
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                sql += " AND status = @status";
-            }
-
-            using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@usuario_id", id);
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                cmd.Parameters.AddWithValue("@status", status);
-            }
-            using var reader = cmd.ExecuteReader();
-            Pagamentos? pagamentos = null;
-            while (reader.Read())
-            {
-                pagamentos = new Pagamentos
-                {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    formas_de_pagamento_id = reader.IsDBNull(reader.GetOrdinal("formas_de_pagamento_id")) ? 0 : reader.GetInt32("formas_de_pagamento_id"),
-                    status_de_pagamento_id = reader.IsDBNull(reader.GetOrdinal("status_de_pagamento_id")) ? 0 : reader.GetInt32("status_de_pagamento_id"),
-                    observacao = reader.IsDBNull(reader.GetOrdinal("observacao")) ? "" : reader.GetString("observacao"),
-                    createdAt = reader.IsDBNull(reader.GetOrdinal("createdAt")) ? "" : reader.GetString("createdAt"),
-                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updatedAt")) ? "" : reader.GetString("updatedAT"),
-                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
-                };
-            }
-            reader.Close();
-            return pagamentos;
-        }
-        
 
         public void Adicionar(Pagamentos pagamento)
         {
-
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var data = DateTime.UtcNow;
-            pagamento.createdAt = data.ToString("dd/MM/yyyy HH:mm:ss");
+            pagamento.createdAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+            pagamento.status = string.IsNullOrWhiteSpace(pagamento.status) ? "ativo" : pagamento.status;
 
-            using var cmd = new MySqlCommand("INSERT INTO Pagamentos (usuario_id, formas_de_pagamento_id, status_de_pagamento_id," +
-                "observacao, createdAt, updatedAt, status) " +
-                "VALUES (@usuario_id, @formas_de_pagamento_id, @status_de_pagamento_id, @observacao, @createdAt, @updatedAt, @status); SELECT LAST_INSERT_ID();", connection);
+            using var cmd = new MySqlCommand(
+                "INSERT INTO Pagamentos (usuario_id, forma_pagamento_id, status_pagamento_id, ordem_id, valor, observacao, createdAt, status) " +
+                "VALUES (@usuario_id, @forma_pagamento_id, @status_pagamento_id, @ordem_id, @valor, @observacao, @createdAt, @status); " +
+                "SELECT LAST_INSERT_ID();", connection);
+
             cmd.Parameters.AddWithValue("@usuario_id", pagamento.usuario_id);
-            cmd.Parameters.AddWithValue("@formas_de_pagamento_id", pagamento.formas_de_pagamento_id);
-            cmd.Parameters.AddWithValue("@status_de_pagamento_id", pagamento.status_de_pagamento_id);
+            cmd.Parameters.AddWithValue("@forma_pagamento_id", pagamento.forma_pagamento_id);
+            cmd.Parameters.AddWithValue("@status_pagamento_id", pagamento.status_pagamento_id);
+            cmd.Parameters.AddWithValue("@ordem_id", pagamento.ordem_id);
+            cmd.Parameters.AddWithValue("@valor", pagamento.valor);
             cmd.Parameters.AddWithValue("@observacao", pagamento.observacao);
             cmd.Parameters.AddWithValue("@createdAt", pagamento.createdAt);
-            cmd.Parameters.AddWithValue("@updatedAt", pagamento.updatedAt);
-            cmd.Parameters.AddWithValue("@status", string.IsNullOrWhiteSpace(pagamento.status) ? "ativo" : pagamento.status);
+            cmd.Parameters.AddWithValue("@status", pagamento.status);
 
-            var novoId = Convert.ToInt32(cmd.ExecuteScalar());
-            pagamento.id = novoId;
-
-
+            pagamento.id = Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-        public Pagamentos Atualizar(int id, PagamentosUpdateDTO pagamento, string? statusquery = null)
+        public Pagamentos Atualizar(int id, PagamentosUpdateDTO pagamento, string? statusQuery = null)
         {
-            var pagamentoExistente = BuscarPorId(id, statusquery);
-            if (pagamentoExistente == null)
-            {
-                throw new InvalidOperationException("Nenhum pagamento encontrado");
-            }
-            
-            int usuarioIdFinal = pagamento.usuario_id.HasValue ? pagamento.usuario_id.Value : pagamentoExistente.usuario_id;
-            int formasPagamentoIdFinal = pagamento.formas_de_pagamento_id.HasValue ? pagamento.formas_de_pagamento_id.Value : pagamentoExistente.formas_de_pagamento_id;
-            int statusPagamentoIdFinal = pagamento.status_de_pagamento_id.HasValue ? pagamento.status_de_pagamento_id.Value : pagamentoExistente.status_de_pagamento_id;
-            var observacao = string.IsNullOrWhiteSpace(pagamento.observacao) ? pagamentoExistente.observacao : pagamento.observacao;
-            var createdAt = string.IsNullOrWhiteSpace(pagamento.createdAt) ? pagamentoExistente.createdAt : pagamento.createdAt;
-            var updatedAt = string.IsNullOrWhiteSpace(pagamento.updatedAt) ? pagamentoExistente.updatedAt : pagamento.updatedAt;
-            var status = string.IsNullOrWhiteSpace(pagamento.status) ? pagamentoExistente.status : pagamento.status;
+            var existente = BuscarPorId(id, statusQuery);
+            if (existente == null)
+                throw new InvalidOperationException("Pagamento não encontrado");
+
+            int usuarioIdFinal = pagamento.usuario_id ?? existente.usuario_id;
+            int formaPagamentoIdFinal = pagamento.forma_pagamento_id ?? existente.forma_pagamento_id;
+            int statusPagamentoIdFinal = pagamento.status_pagamento_id ?? existente.status_pagamento_id;
+            int ordemIdFinal = pagamento.ordem_id ?? existente.ordem_id;
+            int valorFinal = pagamento.valor ?? existente.valor;
+            string observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao) ? existente.observacao : pagamento.observacao;
+            string createdAtFinal = string.IsNullOrWhiteSpace(pagamento.createdAt) ? existente.createdAt : pagamento.createdAt;
+            string updatedAtFinal = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+            string statusFinal = string.IsNullOrWhiteSpace(pagamento.status) ? existente.status : pagamento.status;
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("UPDATE Pagamentos SET " +
-                "usuario_id = @usuario_id, formas_de_pagamento_id = @formas_de_pagamento_id, status_de_pagamento_id = @status_de_pagamento_id," +
-                " observacao = @observacao, createdAt = @createdAt, updatedAt = @updatedAt, status = @status WHERE id = @id", connection);
+            var cmd = new MySqlCommand(
+                "UPDATE Pagamentos SET usuario_id = @usuario_id, forma_pagamento_id = @forma_pagamento_id, status_pagamento_id = @status_pagamento_id, " +
+                "ordem_id = @ordem_id, valor = @valor, observacao = @observacao, createdAt = @createdAt, updatedAt = @updatedAt, status = @status WHERE id = @id", connection);
+
             cmd.Parameters.AddWithValue("@id", id);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioIdFinal);
-            cmd.Parameters.AddWithValue("@formas_de_pagamento_id", formasPagamentoIdFinal);
-            cmd.Parameters.AddWithValue("@status_de_pagamento_id", statusPagamentoIdFinal);
-            cmd.Parameters.AddWithValue("@observacao", observacao);
-            cmd.Parameters.AddWithValue("@createdAt", createdAt);
-            cmd.Parameters.AddWithValue("@updatedAt", updatedAt);
-            cmd.Parameters.AddWithValue("@status", status);
+            cmd.Parameters.AddWithValue("@forma_pagamento_id", formaPagamentoIdFinal);
+            cmd.Parameters.AddWithValue("@status_pagamento_id", statusPagamentoIdFinal);
+            cmd.Parameters.AddWithValue("@ordem_id", ordemIdFinal);
+            cmd.Parameters.AddWithValue("@valor", valorFinal);
+            cmd.Parameters.AddWithValue("@observacao", observacaoFinal);
+            cmd.Parameters.AddWithValue("@createdAt", createdAtFinal);
+            cmd.Parameters.AddWithValue("@updatedAt", updatedAtFinal);
+            cmd.Parameters.AddWithValue("@status", statusFinal);
 
             cmd.ExecuteNonQuery();
+
             return new Pagamentos
             {
                 id = id,
                 usuario_id = usuarioIdFinal,
-                formas_de_pagamento_id = formasPagamentoIdFinal,
-                status_de_pagamento_id = statusPagamentoIdFinal,
-                observacao = observacao,
-                createdAt = createdAt,
-                updatedAt = updatedAt,
-                status = status,
-
+                forma_pagamento_id = formaPagamentoIdFinal,
+                status_pagamento_id = statusPagamentoIdFinal,
+                ordem_id = ordemIdFinal,
+                valor = valorFinal,
+                observacao = observacaoFinal,
+                createdAt = createdAtFinal,
+                updatedAt = updatedAtFinal,
+                status = statusFinal
             };
         }
     }
