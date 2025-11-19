@@ -32,7 +32,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32("usuario_id"),
                     status_ordem_id = reader.GetInt32("status_ordem_id"),
                     valor_total = reader.GetInt32("valor_total"),
-                    created_at = reader.GetString("created_at")
+                    created_at = reader.GetDateTime("created_at")
                 });
             }
 
@@ -57,13 +57,12 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32("usuario_id"),
                     status_ordem_id = reader.GetInt32("status_ordem_id"),
                     valor_total = reader.GetInt32("valor_total"),
-                    created_at = reader.GetString("created_at")
+                    created_at = reader.GetDateTime("created_at")
                 };
             }
 
             return null;
         }
-
 
         public IEnumerable<OrdemDeCompra> BuscarPorUsuarioId(int usuarioId)
         {
@@ -87,7 +86,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32("usuario_id"),
                     status_ordem_id = reader.GetInt32("status_ordem_id"),
                     valor_total = reader.GetInt32("valor_total"),
-                    created_at = reader.GetString("created_at")
+                    created_at = reader.GetDateTime("created_at")
                 });
             }
 
@@ -116,7 +115,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32("usuario_id"),
                     status_ordem_id = reader.GetInt32("status_ordem_id"),
                     valor_total = reader.GetInt32("valor_total"),
-                    created_at = reader.GetString("created_at")
+                    created_at = reader.GetDateTime("created_at")
                 });
             }
 
@@ -179,9 +178,10 @@ namespace BackendDesapegaJa.Repositories
                 usuario_id = usuarioFinal,
                 status_ordem_id = statusFinal,
                 valor_total = valorFinal,
-                created_at = existente.created_at
+                created_at = existente.created_at 
             };
         }
+
         public void Deletar(int id)
         {
             using var connection = new MySqlConnection(_connectionString);
@@ -193,6 +193,5 @@ namespace BackendDesapegaJa.Repositories
 
             cmd.ExecuteNonQuery();
         }
-
     }
 }

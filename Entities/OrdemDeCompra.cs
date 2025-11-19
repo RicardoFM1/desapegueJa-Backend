@@ -14,7 +14,7 @@ namespace BackendDesapegaJa.Entities
 
         public int valor_total { get; set; }
 
-        public string created_at { get; set; }
+        public DateTime created_at { get; set; }
     }
 
     public class OrdemDeCompraCreateDTO
@@ -33,6 +33,6 @@ namespace BackendDesapegaJa.Entities
 
         public int? valor_total { get; set; }
 
-        public string? created_at { get; set; }
+        public DateTime created_at { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace BackendDesapegaJa.Entities
 {
@@ -21,8 +22,8 @@ namespace BackendDesapegaJa.Entities
         public string? observacao { get; set; }
         public int valor { get; set; }
 
-        public string? createdAt { get; set; }
-        public string? updatedAt { get; set; }
+        public DateTime? createdAt { get; set; }
+        public DateTime? updatedAt { get; set; }
 
         public string? status { get; set; }
     }
@@ -35,8 +36,8 @@ namespace BackendDesapegaJa.Entities
         public int? ordem_id { get; set; }
         public string? observacao { get; set; }
         public int? valor { get; set; }
-        public string? createdAt { get; set; }
-        public string? updatedAt { get; set; }
+        public DateTime? createdAt { get; set; }
+        public DateTime? updatedAt { get; set; }
         public string? status { get; set; }
     }
 }

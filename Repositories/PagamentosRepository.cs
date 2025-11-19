@@ -1,6 +1,7 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
 using MySql.Data.MySqlClient;
+using System;
 
 namespace BackendDesapegaJa.Repositories
 {
@@ -38,10 +39,10 @@ namespace BackendDesapegaJa.Repositories
                     status_pagamento_id = reader.GetInt32("status_pagamento_id"),
                     ordem_id = reader.GetInt32("ordem_id"),
                     valor = reader.GetInt32("valor"),
-                    observacao = reader.IsDBNull(reader.GetOrdinal("observacao")) ? "" : reader.GetString("observacao"),
-                    createdAt = reader.IsDBNull(reader.GetOrdinal("created_at")) ? "" : reader.GetString("created_at"),
-                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? "" : reader.GetString("updated_at"),
-                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
+                    observacao = reader.IsDBNull(reader.GetOrdinal("observacao")) ? null : reader.GetString("observacao"),
+                    createdAt = reader.IsDBNull(reader.GetOrdinal("created_at")) ? null : reader.GetDateTime("created_at"),
+                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime("updated_at"),
+                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? null : reader.GetString("status")
                 });
             }
 
@@ -73,10 +74,10 @@ namespace BackendDesapegaJa.Repositories
                     status_pagamento_id = reader.GetInt32("status_pagamento_id"),
                     ordem_id = reader.GetInt32("ordem_id"),
                     valor = reader.GetInt32("valor"),
-                    observacao = reader.IsDBNull(reader.GetOrdinal("observacao")) ? "" : reader.GetString("observacao"),
-                    createdAt = reader.IsDBNull(reader.GetOrdinal("created_at")) ? "" : reader.GetString("created_at"),
-                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? "" : reader.GetString("updated_at"),
-                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
+                    observacao = reader.IsDBNull(reader.GetOrdinal("observacao")) ? null : reader.GetString("observacao"),
+                    createdAt = reader.IsDBNull(reader.GetOrdinal("created_at")) ? null : reader.GetDateTime("created_at"),
+                    updatedAt = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime("updated_at"),
+                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? null : reader.GetString("status")
                 };
             }
             return null!;
@@ -87,8 +88,8 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            pagamento.createdAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-            pagamento.status = string.IsNullOrWhiteSpace(pagamento.status) ? "ativo" : pagamento.status;
+            pagamento.createdAt = DateTime.UtcNow;
+            pagamento.status ??= "ativo";
 
             using var cmd = new MySqlCommand(
                 "INSERT INTO Pagamentos (usuario_id, forma_pagamento_id, status_pagamento_id, ordem_id, valor, observacao, created_at, status) " +
@@ -101,7 +102,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@ordem_id", pagamento.ordem_id);
             cmd.Parameters.AddWithValue("@valor", pagamento.valor);
             cmd.Parameters.AddWithValue("@observacao", pagamento.observacao);
-            cmd.Parameters.AddWithValue("@created_at", pagamento.createdAt);
+            cmd.Parameters.AddWithValue("@createdAt", pagamento.createdAt);
             cmd.Parameters.AddWithValue("@status", pagamento.status);
 
             pagamento.id = Convert.ToInt32(cmd.ExecuteScalar());
@@ -118,10 +119,10 @@ namespace BackendDesapegaJa.Repositories
             int statusPagamentoIdFinal = pagamento.status_pagamento_id ?? existente.status_pagamento_id;
             int ordemIdFinal = pagamento.ordem_id ?? existente.ordem_id;
             int valorFinal = pagamento.valor ?? existente.valor;
-            string observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao) ? existente.observacao : pagamento.observacao;
-            string createdAtFinal = string.IsNullOrWhiteSpace(pagamento.createdAt) ? existente.createdAt : pagamento.createdAt;
-            string updatedAtFinal = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-            string statusFinal = string.IsNullOrWhiteSpace(pagamento.status) ? existente.status : pagamento.status;
+            string? observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao) ? existente.observacao : pagamento.observacao;
+            DateTime createdAtFinal = pagamento.createdAt ?? existente.createdAt ?? DateTime.UtcNow;
+            DateTime updatedAtFinal = DateTime.UtcNow;
+            string? statusFinal = string.IsNullOrWhiteSpace(pagamento.status) ? existente.status : pagamento.status;
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
