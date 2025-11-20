@@ -38,7 +38,7 @@ namespace BackendDesapegaJa.Services
 
         public Pagamentos CriarPagamento(Pagamentos pagamento)
         {
-            // Verifica se já existe pagamento para o usuário
+         
             var pagamentoExistente = _repo.BuscarPorUsuarioId(pagamento.usuario_id);
             if (pagamentoExistente != null)
                 throw new InvalidOperationException("O usuário já possui um pagamento");
@@ -80,6 +80,7 @@ namespace BackendDesapegaJa.Services
             string? pixQrFinal = pagamento.pix_qr_code ?? existente.pix_qr_code;
             string? pixCopiaFinal = pagamento.pix_copia_codigo ?? existente.pix_copia_codigo;
             string? boletoUrlFinal = pagamento.boleto_url ?? existente.boleto_url;
+            string? pagUUIDFinal = pagamento.pagamento_uuid ?? existente.pagamento_uuid;
             DateTime? expiracaoFinal = pagamento.expiracao ?? existente.expiracao;
             int? valorPagoFinal = pagamento.valor_pago ?? existente.valor_pago;
 
@@ -110,7 +111,8 @@ namespace BackendDesapegaJa.Services
                 pix_copia_codigo = pixCopiaFinal,
                 boleto_url = boletoUrlFinal,
                 expiracao = expiracaoFinal,
-                valor_pago = valorPagoFinal
+                valor_pago = valorPagoFinal,
+                pagamento_uuid = pagUUIDFinal
             });
         }
 

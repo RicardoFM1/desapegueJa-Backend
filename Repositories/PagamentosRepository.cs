@@ -2,6 +2,7 @@
 using BackendDesapegaJa.Interfaces;
 using MySql.Data.MySqlClient;
 using System;
+using System.Data;
 
 namespace BackendDesapegaJa.Repositories
 {
@@ -14,7 +15,9 @@ namespace BackendDesapegaJa.Repositories
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
 
-        
+        // ------------------------------------------------------
+        // LISTAR TODOS
+        // ------------------------------------------------------
         public IEnumerable<Pagamentos> ListarTodos()
         {
             var pagamentos = new List<Pagamentos>();
@@ -32,7 +35,9 @@ namespace BackendDesapegaJa.Repositories
             return pagamentos;
         }
 
-        
+        // ------------------------------------------------------
+        // BUSCAR POR ID
+        // ------------------------------------------------------
         public Pagamentos? BuscarPorId(int id)
         {
             using var connection = new MySqlConnection(_connectionString);
@@ -43,12 +48,13 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@id", id);
 
             using var reader = cmd.ExecuteReader();
-            if (reader.Read())
-                return MapReaderToPagamento(reader);
-
-            return null;
+            return reader.Read() ? MapReaderToPagamento(reader) : null;
         }
 
+        // ------------------------------------------------------
+        // BUSCAR POR USUARIO_ID
+        // (regra: só pode existir um por usuário)
+        // ------------------------------------------------------
         public Pagamentos? BuscarPorUsuarioId(int usuarioId)
         {
             using var connection = new MySqlConnection(_connectionString);
@@ -59,12 +65,12 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
             using var reader = cmd.ExecuteReader();
-            if (reader.Read())
-                return MapReaderToPagamento(reader);
-
-            return null;
+            return reader.Read() ? MapReaderToPagamento(reader) : null;
         }
 
+        // ------------------------------------------------------
+        // MAP READER
+        // ------------------------------------------------------
         private Pagamentos MapReaderToPagamento(MySqlDataReader reader)
         {
             return new Pagamentos
@@ -75,32 +81,48 @@ namespace BackendDesapegaJa.Repositories
                 status_pagamento_id = reader.GetInt32("status_pagamento_id"),
                 ordem_id = reader.GetInt32("ordem_id"),
                 valor = reader.GetInt32("valor"),
-                observacao = reader.IsDBNull(reader.GetOrdinal("observacao")) ? null : reader.GetString("observacao"),
-                createdAt = reader.IsDBNull(reader.GetOrdinal("created_at")) ? null : reader.GetDateTime("created_at"),
-                updatedAt = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime("updated_at"),
-                pix_qr_code = reader.IsDBNull(reader.GetOrdinal("pix_qr_code")) ? null : reader.GetString("pix_qr_code"),
-                pix_copia_codigo = reader.IsDBNull(reader.GetOrdinal("pix_copia_codigo")) ? null : reader.GetString("pix_copia_codigo"),
-                boleto_url = reader.IsDBNull(reader.GetOrdinal("boleto_url")) ? null : reader.GetString("boleto_url"),
-                expiracao = reader.IsDBNull(reader.GetOrdinal("expiracao")) ? null : reader.GetDateTime("expiracao"),
-                valor_pago = reader.IsDBNull(reader.GetOrdinal("valor_pago")) ? null : reader.GetInt32("valor_pago")
+
+                observacao = reader.IsDBNull("observacao") ? null : reader.GetString("observacao"),
+
+                pagamento_uuid = reader.IsDBNull("pagamento_uuid") ? null : reader.GetString("pagamento_uuid"),
+
+                createdAt = reader.IsDBNull("created_at") ? null : reader.GetDateTime("created_at"),
+                updatedAt = reader.IsDBNull("updated_at") ? null : reader.GetDateTime("updated_at"),
+
+                pix_qr_code = reader.IsDBNull("pix_qr_code") ? null : reader.GetString("pix_qr_code"),
+                pix_copia_codigo = reader.IsDBNull("pix_copia_codigo") ? null : reader.GetString("pix_copia_codigo"),
+                boleto_url = reader.IsDBNull("boleto_url") ? null : reader.GetString("boleto_url"),
+
+                expiracao = reader.IsDBNull("expiracao") ? null : reader.GetDateTime("expiracao"),
+                valor_pago = reader.IsDBNull("valor_pago") ? null : reader.GetInt32("valor_pago"),
             };
         }
 
-    
+        // ------------------------------------------------------
+        // ADICIONAR (AGORA impede duplicação por usuário)
+        // ------------------------------------------------------
         public void Adicionar(Pagamentos pagamento)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
+            // ❗ Não permitir mais de 1 pagamento por usuário
+            var existente = BuscarPorUsuarioId(pagamento.usuario_id);
+            if (existente != null)
+                throw new InvalidOperationException("Este usuário já possui um pagamento gerado.");
+
             pagamento.createdAt = DateTime.UtcNow;
 
-            using var cmd = new MySqlCommand(
+            // Gera o UUID aqui
+            pagamento.pagamento_uuid = Guid.NewGuid().ToString();
+
+            var cmd = new MySqlCommand(
                 @"INSERT INTO Pagamentos 
-                    (usuario_id, forma_pagamento_id, status_pagamento_id, ordem_id, valor, observacao, created_at,
-                     pix_qr_code, pix_copia_codigo, boleto_url, expiracao, valor_pago) 
+                    (usuario_id, forma_pagamento_id, status_pagamento_id, ordem_id, valor, observacao,
+                     pagamento_uuid, created_at, pix_qr_code, pix_copia_codigo, boleto_url, expiracao, valor_pago)
                   VALUES 
-                    (@usuario_id, @forma_pagamento_id, @status_pagamento_id, @ordem_id, @valor, @observacao, @createdAt,
-                     @pix_qr_code, @pix_copia_codigo, @boleto_url, @expiracao, @valor_pago);
+                    (@usuario_id, @forma_pagamento_id, @status_pagamento_id, @ordem_id, @valor, @observacao,
+                     @pagamento_uuid, @createdAt, @pix_qr_code, @pix_copia_codigo, @boleto_url, @expiracao, @valor_pago);
                   SELECT LAST_INSERT_ID();", connection);
 
             cmd.Parameters.AddWithValue("@usuario_id", pagamento.usuario_id);
@@ -109,6 +131,9 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@ordem_id", pagamento.ordem_id);
             cmd.Parameters.AddWithValue("@valor", pagamento.valor);
             cmd.Parameters.AddWithValue("@observacao", pagamento.observacao ?? (object)DBNull.Value);
+
+            cmd.Parameters.AddWithValue("@pagamento_uuid", pagamento.pagamento_uuid);
+
             cmd.Parameters.AddWithValue("@createdAt", pagamento.createdAt);
             cmd.Parameters.AddWithValue("@pix_qr_code", pagamento.pix_qr_code ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@pix_copia_codigo", pagamento.pix_copia_codigo ?? (object)DBNull.Value);
@@ -119,100 +144,81 @@ namespace BackendDesapegaJa.Repositories
             pagamento.id = Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-    
+        // ------------------------------------------------------
+        // ATUALIZAR PELO usuario_id
+        // ------------------------------------------------------
         public Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento)
         {
             var existente = BuscarPorUsuarioId(usuarioId);
             if (existente == null)
                 throw new InvalidOperationException("Pagamento não encontrado para este usuário");
 
-            int usuarioIdFinal = pagamento.usuario_id ?? existente.usuario_id;
             int formaPagamentoIdFinal = pagamento.forma_pagamento_id ?? existente.forma_pagamento_id;
-            int statusPagamentoIdFinal = pagamento.status_pagamento_id ?? existente.status_pagamento_id;
-            int ordemIdFinal = pagamento.ordem_id ?? existente.ordem_id;
+            int statusFinal = pagamento.status_pagamento_id ?? existente.status_pagamento_id;
+            int ordemFinal = pagamento.ordem_id ?? existente.ordem_id;
             int valorFinal = pagamento.valor ?? existente.valor;
-            string? observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao) ? existente.observacao : pagamento.observacao;
-            DateTime createdAtFinal = pagamento.createdAt ?? existente.createdAt ?? DateTime.UtcNow;
-            DateTime updatedAtFinal = DateTime.UtcNow;
+
+            string? observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao)
+                                        ? existente.observacao
+                                        : pagamento.observacao;
 
             string? pixQrFinal = pagamento.pix_qr_code ?? existente.pix_qr_code;
             string? pixCopiaFinal = pagamento.pix_copia_codigo ?? existente.pix_copia_codigo;
-            string? boletoUrlFinal = pagamento.boleto_url ?? existente.boleto_url;
+            string? boletoFinal = pagamento.boleto_url ?? existente.boleto_url;
             DateTime? expiracaoFinal = pagamento.expiracao ?? existente.expiracao;
-            int? valorPagoFinal = pagamento.valor_pago ?? existente.valor_pago;
+            int? pagoFinal = pagamento.valor_pago ?? existente.valor_pago;
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
             var cmd = new MySqlCommand(
-                @"UPDATE Pagamentos SET 
-                    usuario_id = @usuario_id, 
-                    forma_pagamento_id = @forma_pagamento_id, 
-                    status_pagamento_id = @status_pagamento_id,
-                    ordem_id = @ordem_id,
+                @"UPDATE Pagamentos SET
+                    forma_pagamento_id = @forma,
+                    status_pagamento_id = @status,
+                    ordem_id = @ordem,
                     valor = @valor,
-                    observacao = @observacao,
-                    created_at = @createdAt,
-                    updated_at = @updatedAt,
-                    pix_qr_code = @pix_qr_code,
-                    pix_copia_codigo = @pix_copia_codigo,
-                    boleto_url = @boleto_url,
-                    expiracao = @expiracao,
-                    valor_pago = @valor_pago
+                    observacao = @obs,
+                    updated_at = @updated,
+                    pix_qr_code = @qr,
+                    pix_copia_codigo = @copia,
+                    boleto_url = @boleto,
+                    expiracao = @exp,
+                    valor_pago = @pago
                   WHERE usuario_id = @usuario_id", connection);
 
-            cmd.Parameters.AddWithValue("@usuario_id", usuarioIdFinal);
-            cmd.Parameters.AddWithValue("@forma_pagamento_id", formaPagamentoIdFinal);
-            cmd.Parameters.AddWithValue("@status_pagamento_id", statusPagamentoIdFinal);
-            cmd.Parameters.AddWithValue("@ordem_id", ordemIdFinal);
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
+            cmd.Parameters.AddWithValue("@forma", formaPagamentoIdFinal);
+            cmd.Parameters.AddWithValue("@status", statusFinal);
+            cmd.Parameters.AddWithValue("@ordem", ordemFinal);
             cmd.Parameters.AddWithValue("@valor", valorFinal);
-            cmd.Parameters.AddWithValue("@observacao", observacaoFinal ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@createdAt", createdAtFinal);
-            cmd.Parameters.AddWithValue("@updatedAt", updatedAtFinal);
-            cmd.Parameters.AddWithValue("@pix_qr_code", pixQrFinal ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@pix_copia_codigo", pixCopiaFinal ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@boleto_url", boletoUrlFinal ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@expiracao", expiracaoFinal ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@valor_pago", valorPagoFinal ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@obs", observacaoFinal ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@updated", DateTime.UtcNow);
+            cmd.Parameters.AddWithValue("@qr", pixQrFinal ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@copia", pixCopiaFinal ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@boleto", boletoFinal ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@exp", expiracaoFinal ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@pago", pagoFinal ?? (object)DBNull.Value);
 
             cmd.ExecuteNonQuery();
 
-            return new Pagamentos
-            {
-                id = existente.id,
-                usuario_id = usuarioIdFinal,
-                forma_pagamento_id = formaPagamentoIdFinal,
-                status_pagamento_id = statusPagamentoIdFinal,
-                ordem_id = ordemIdFinal,
-                valor = valorFinal,
-                observacao = observacaoFinal,
-                createdAt = createdAtFinal,
-                updatedAt = updatedAtFinal,
-                pix_qr_code = pixQrFinal,
-                pix_copia_codigo = pixCopiaFinal,
-                boleto_url = boletoUrlFinal,
-                expiracao = expiracaoFinal,
-                valor_pago = valorPagoFinal
-            };
+            return BuscarPorUsuarioId(usuarioId)!;
         }
 
-
+        // ------------------------------------------------------
+        // DELETAR PELO usuario_id
+        // ------------------------------------------------------
         public void DeletarPorUsuarioId(int usuarioId)
         {
-            
             var existente = BuscarPorUsuarioId(usuarioId);
             if (existente == null)
-                throw new InvalidOperationException("Não existe pagamento para esse usuário");
+                throw new InvalidOperationException("Nenhum pagamento encontrado para este usuário");
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "DELETE FROM Pagamentos WHERE usuario_id = @usuario_id";
-            using var cmd = new MySqlCommand(sql, connection);
+            var cmd = new MySqlCommand("DELETE FROM Pagamentos WHERE usuario_id = @usuario_id", connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
-
             cmd.ExecuteNonQuery();
         }
-
     }
 }

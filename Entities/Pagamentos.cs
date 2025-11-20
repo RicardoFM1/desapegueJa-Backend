@@ -31,9 +31,12 @@ namespace BackendDesapegaJa.Entities
         public DateTime? expiracao { get; set; }
         public int? valor_pago { get; set; }
 
+        public string? pagamento_uuid { get; set; }
+
+
     }
 
-        public class PagamentosUpdateDTO
+    public class PagamentosUpdateDTO
         {
             public int? usuario_id { get; set; }
             public int? forma_pagamento_id { get; set; }
@@ -49,7 +52,9 @@ namespace BackendDesapegaJa.Entities
             public string? boleto_url { get; set; }
             public DateTime? expiracao { get; set; }
             public int? valor_pago { get; set; }
-        }
+        public string? pagamento_uuid { get; set; }
+
+    }
 
 
 }
