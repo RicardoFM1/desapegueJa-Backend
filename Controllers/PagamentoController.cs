@@ -16,6 +16,7 @@ namespace BackendDesapegaJa.Controllers
             _service = service;
         }
 
+     
         [HttpGet]
         public IActionResult Get([FromQuery] string? status)
         {
@@ -33,12 +34,15 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetById(int id, [FromQuery] string? status)
+        
+
+       
+        [HttpGet("usuario/{usuarioId}")]
+        public IActionResult GetByUsuarioId(int usuarioId, [FromQuery] string? status)
         {
             try
             {
-                return Ok(_service.GetPagamentosById(id, status));
+                return Ok(_service.GetPagamentosByUsuarioId(usuarioId, status));
             }
             catch (InvalidOperationException ex)
             {
@@ -50,6 +54,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+        
         [HttpPost]
         public IActionResult CriarPagamento([FromBody] Pagamentos pagamento)
         {
@@ -72,7 +77,8 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        [HttpPatch("{id}")]
+        
+        [HttpPatch("usuario/{id}")]
         public IActionResult AtualizarPagamento(int id, [FromBody] PagamentosUpdateDTO pagamento, [FromQuery] string? status)
         {
             try
@@ -82,7 +88,7 @@ namespace BackendDesapegaJa.Controllers
                     return StatusCode(403, new { message = "Sem autorização para efetuar esse pagamento" });
 
                 var isAdmin = User.FindFirst("isAdmin")?.Value == "true";
-                var pagamentoExistente = _service.GetPagamentosById(id, status);
+                var pagamentoExistente = _service.GetPagamentosByUsuarioId(id, status);
 
                 if (pagamentoExistente.status?.ToLower() == "inativo" && !isAdmin)
                     return StatusCode(403, new { message = "Sem autorização para atualizar pagamento inativo" });

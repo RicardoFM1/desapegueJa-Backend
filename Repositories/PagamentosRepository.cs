@@ -57,6 +57,26 @@ namespace BackendDesapegaJa.Repositories
 
             return null!;
         }
+        public Pagamentos? BuscarPorUsuarioId(int usuarioId, string? status = null)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id";
+            if (!string.IsNullOrWhiteSpace(status))
+                sql += " AND status = @status";
+
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
+            if (!string.IsNullOrWhiteSpace(status))
+                cmd.Parameters.AddWithValue("@status", status);
+
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+                return MapReaderToPagamento(reader);
+
+            return null;
+        }
 
         private Pagamentos MapReaderToPagamento(MySqlDataReader reader)
         {
@@ -114,12 +134,13 @@ namespace BackendDesapegaJa.Repositories
             pagamento.id = Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-        public Pagamentos Atualizar(int id, PagamentosUpdateDTO pagamento, string? statusQuery = null)
+        public Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento, string? statusQuery = null)
         {
-            var existente = BuscarPorId(id, statusQuery);
+            var existente = BuscarPorUsuarioId(usuarioId, statusQuery);
             if (existente == null)
-                throw new InvalidOperationException("Pagamento não encontrado");
+                throw new InvalidOperationException("Pagamento não encontrado para este usuário");
 
+           
             int usuarioIdFinal = pagamento.usuario_id ?? existente.usuario_id;
             int formaPagamentoIdFinal = pagamento.forma_pagamento_id ?? existente.forma_pagamento_id;
             int statusPagamentoIdFinal = pagamento.status_pagamento_id ?? existente.status_pagamento_id;
@@ -130,7 +151,6 @@ namespace BackendDesapegaJa.Repositories
             DateTime updatedAtFinal = DateTime.UtcNow;
             string? statusFinal = string.IsNullOrWhiteSpace(pagamento.status) ? existente.status : pagamento.status;
 
-          
             string? pixQrFinal = pagamento.pix_qr_code ?? existente.pix_qr_code;
             string? pixCopiaFinal = pagamento.pix_copia_codigo ?? existente.pix_copia_codigo;
             string? boletoUrlFinal = pagamento.boleto_url ?? existente.boleto_url;
@@ -142,23 +162,22 @@ namespace BackendDesapegaJa.Repositories
 
             var cmd = new MySqlCommand(
                 @"UPDATE Pagamentos SET 
-                    usuario_id = @usuario_id, 
-                    forma_pagamento_id = @forma_pagamento_id, 
-                    status_pagamento_id = @status_pagamento_id,
-                    ordem_id = @ordem_id,
-                    valor = @valor,
-                    observacao = @observacao,
-                    created_at = @createdAt,
-                    updated_at = @updatedAt,
-                    status = @status,
-                    pix_qr_code = @pix_qr_code,
-                    pix_copia_codigo = @pix_copia_codigo,
-                    boleto_url = @boleto_url,
-                    expiracao = @expiracao,
-                    valor_pago = @valor_pago
-                  WHERE id = @id", connection);
+            usuario_id = @usuario_id, 
+            forma_pagamento_id = @forma_pagamento_id, 
+            status_pagamento_id = @status_pagamento_id,
+            ordem_id = @ordem_id,
+            valor = @valor,
+            observacao = @observacao,
+            created_at = @createdAt,
+            updated_at = @updatedAt,
+            status = @status,
+            pix_qr_code = @pix_qr_code,
+            pix_copia_codigo = @pix_copia_codigo,
+            boleto_url = @boleto_url,
+            expiracao = @expiracao,
+            valor_pago = @valor_pago
+          WHERE usuario_id = @usuario_id", connection);
 
-            cmd.Parameters.AddWithValue("@id", id);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioIdFinal);
             cmd.Parameters.AddWithValue("@forma_pagamento_id", formaPagamentoIdFinal);
             cmd.Parameters.AddWithValue("@status_pagamento_id", statusPagamentoIdFinal);
@@ -178,7 +197,7 @@ namespace BackendDesapegaJa.Repositories
 
             return new Pagamentos
             {
-                id = id,
+                id = existente.id,
                 usuario_id = usuarioIdFinal,
                 forma_pagamento_id = formaPagamentoIdFinal,
                 status_pagamento_id = statusPagamentoIdFinal,
@@ -195,5 +214,6 @@ namespace BackendDesapegaJa.Repositories
                 valor_pago = valorPagoFinal
             };
         }
+
     }
 }

@@ -28,9 +28,9 @@ namespace BackendDesapegaJa.Services
             return _repo.ListarTodos(status);
         }
 
-        public Pagamentos GetPagamentosById(int id, string? status = null)
+        public Pagamentos GetPagamentosByUsuarioId(int id, string? status = null)
         {
-            var pagamento = _repo.BuscarPorId(id, status);
+            var pagamento = _repo.BuscarPorUsuarioId(id, status);
             if (pagamento == null)
                 throw new InvalidOperationException("Não foi possível encontrar esse pagamento");
             return pagamento;
@@ -61,7 +61,7 @@ namespace BackendDesapegaJa.Services
 
         public Pagamentos AtualizarPagamentos(int id, PagamentosUpdateDTO pagamento, string? statusQuery = null)
         {
-            var existente = _repo.BuscarPorId(id, statusQuery);
+            var existente = _repo.BuscarPorUsuarioId(id, statusQuery);
             if (existente == null)
                 throw new InvalidOperationException("Pagamento não encontrado");
 
