@@ -69,7 +69,7 @@ namespace BackendDesapegaJa.Services
             if (!string.IsNullOrWhiteSpace(ordem.metodo_entrega) &&
                 ordem.metodo_entrega.ToLower() == "entrega")
             {
-                total += 15;
+                total += 1500;
             }
 
             ordem.valor_total = total;
