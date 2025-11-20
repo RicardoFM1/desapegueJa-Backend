@@ -54,6 +54,7 @@ namespace BackendDesapegaJa.Services
             pagamento.createdAt = DateTime.UtcNow;
             pagamento.status = string.IsNullOrWhiteSpace(pagamento.status) ? "ativo" : pagamento.status;
 
+            
             _repo.Adicionar(pagamento);
             return pagamento;
         }
@@ -69,10 +70,17 @@ namespace BackendDesapegaJa.Services
             int statusPagamentoIdFinal = pagamento.status_pagamento_id ?? existente.status_pagamento_id;
             int ordemIdFinal = pagamento.ordem_id ?? existente.ordem_id;
             int valorFinal = pagamento.valor ?? existente.valor;
-            string observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao) ? existente.observacao : pagamento.observacao;
+            string? observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao) ? existente.observacao : pagamento.observacao;
             DateTime createdAtFinal = pagamento.createdAt ?? existente.createdAt ?? DateTime.UtcNow;
             DateTime updatedAtFinal = DateTime.UtcNow;
-            string statusFinal = string.IsNullOrWhiteSpace(pagamento.status) ? existente.status : pagamento.status;
+            string? statusFinal = string.IsNullOrWhiteSpace(pagamento.status) ? existente.status : pagamento.status;
+
+            
+            string? pixQrFinal = pagamento.pix_qr_code ?? existente.pix_qr_code;
+            string? pixCopiaFinal = pagamento.pix_copia_codigo ?? existente.pix_copia_codigo;
+            string? boletoUrlFinal = pagamento.boleto_url ?? existente.boleto_url;
+            DateTime? expiracaoFinal = pagamento.expiracao ?? existente.expiracao;
+            int? valorPagoFinal = pagamento.valor_pago ?? existente.valor_pago;
 
             var usuario = _repoUser.BuscarPorId(usuarioIdFinal);
             var formaPagamento = _repoFormaPagamento.BuscarPorId(formaPagamentoIdFinal);
@@ -97,7 +105,12 @@ namespace BackendDesapegaJa.Services
                 observacao = observacaoFinal,
                 createdAt = createdAtFinal,
                 updatedAt = updatedAtFinal,
-                status = statusFinal
+                status = statusFinal,
+                pix_qr_code = pixQrFinal,
+                pix_copia_codigo = pixCopiaFinal,
+                boleto_url = boletoUrlFinal,
+                expiracao = expiracaoFinal,
+                valor_pago = valorPagoFinal
             });
         }
     }
