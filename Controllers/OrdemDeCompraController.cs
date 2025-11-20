@@ -38,12 +38,12 @@ namespace BackendDesapegaJa.Controllers
 
         [HttpGet("{id}")]
 
-        public IActionResult GetById(int id)
+        public IActionResult GetByUsuarioId(int id)
         {
             try
             {
 
-            var ordem = _service.GetById(id);
+            var ordem = _service.GetByUsuarioId(id);
             return Ok(ordem);
             }
             catch (InvalidOperationException ex)

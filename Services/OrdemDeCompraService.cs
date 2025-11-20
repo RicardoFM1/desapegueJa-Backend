@@ -31,9 +31,9 @@ namespace BackendDesapegaJa.Services
             return _repo.ListarTodos();
         }
 
-        public OrdemDeCompra GetById(int id)
+        public OrdemDeCompra GetByUsuarioId(int id)
         {
-            var ordem = _repo.BuscarPorId(id);
+            var ordem = _repo.BuscarPorUsuarioId(id);
             if (ordem == null)
                 throw new InvalidOperationException("Não foi possível encontrar essa ordem de compra");
 
@@ -90,7 +90,7 @@ namespace BackendDesapegaJa.Services
 
         public OrdemDeCompra AtualizarOrdemDeCompra(int id, OrdemDeCompraUpdateDTO ordem)
         {
-            var existente = _repo.BuscarPorId(id);
+            var existente = _repo.BuscarPorUsuarioId(id);
             if (existente == null)
                 throw new InvalidOperationException("Ordem de compra não existe");
 

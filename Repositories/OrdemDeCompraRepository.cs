@@ -66,9 +66,9 @@ namespace BackendDesapegaJa.Repositories
             return null;
         }
 
-        public IEnumerable<OrdemDeCompra> BuscarPorUsuarioId(int usuarioId)
+        public OrdemDeCompra BuscarPorUsuarioId(int usuarioId)
         {
-            var ordens = new List<OrdemDeCompra>();
+            OrdemDeCompra? ordem = null;
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
@@ -79,7 +79,7 @@ namespace BackendDesapegaJa.Repositories
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                ordens.Add(new OrdemDeCompra
+                ordem = new OrdemDeCompra
                 {
                     id = reader.GetInt32("id"),
                     usuario_id = reader.GetInt32("usuario_id"),
@@ -87,10 +87,10 @@ namespace BackendDesapegaJa.Repositories
                     valor_total = reader.GetInt32("valor_total"),
                     metodo_entrega = reader["metodo_entrega"] == DBNull.Value ? "combinar" : reader.GetString("metodo_entrega"),
                     created_at = reader.GetDateTime("created_at")
-                });
+                };
             }
 
-            return ordens;
+            return ordem;
         }
 
         public IEnumerable<OrdemDeCompra> BuscarPorStatusDeCompraId(int statusId)
