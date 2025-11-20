@@ -11,7 +11,7 @@ namespace BackendDesapegaJa.Entities
         public int valor_total { get; set; }
         public DateTime created_at { get; set; }
 
-        public string metodo_entrega { get; set; };
+        public string metodo_entrega { get; set; }
     }
 
 
@@ -35,7 +35,7 @@ namespace BackendDesapegaJa.Entities
 
         public int? valor_total { get; set; }
 
-        public string? metodo_entrega { get; set; };
+        public string? metodo_entrega { get; set; }
 
         public DateTime created_at { get; set; }
     }
