@@ -4,12 +4,13 @@ namespace BackendDesapegaJa.Interfaces
 {
     public interface IPagamentosRepository
     {
-        IEnumerable<Pagamentos> ListarTodos(string? status = null);
-        Pagamentos BuscarPorId(int id, string? status = null);
+        IEnumerable<Pagamentos> ListarTodos();
+        Pagamentos BuscarPorId(int id);
 
-        Pagamentos? BuscarPorUsuarioId(int usuarioId, string? status = null);
+        Pagamentos? BuscarPorUsuarioId(int usuarioId);
         void Adicionar(Pagamentos pagamento);
-        Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento, string? statusQuery = null);
-   
+        Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento);
+
+        void DeletarPorUsuarioId(int usuarioId);
     }
 }

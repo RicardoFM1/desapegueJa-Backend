@@ -131,5 +131,32 @@ namespace BackendDesapegaJa.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+        [HttpDelete("{usuarioId}")]
+        public IActionResult DeletarOrdemDeCompra(int usuarioId)
+        {
+            try
+            {
+                var loggedUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var isAdmin = User.FindFirst("isAdmin")?.Value.ToLower() == "true";
+
+                if (!int.TryParse(loggedUserIdStr, out int loggedUserIdInt) && !isAdmin)
+                    return StatusCode(403, new { message = "Sem autorização para deletar essa ordem de compra" });
+
+                if (!isAdmin && usuarioId != loggedUserIdInt)
+                    return StatusCode(403, new { message = "Sem autorização para deletar essa ordem de compra" });
+
+                _service.DeletarOrdemDeCompra(usuarioId);
+                return Ok(new { message = "Ordem de compra deletada com sucesso." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
     }
 }

@@ -25,8 +25,6 @@ namespace BackendDesapegaJa.Entities
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
 
-        public string? status { get; set; }
-
         public string? pix_qr_code { get; set; }
         public string? pix_copia_codigo { get; set; }
         public string? boleto_url { get; set; }
@@ -45,8 +43,6 @@ namespace BackendDesapegaJa.Entities
             public int? valor { get; set; }
             public DateTime? createdAt { get; set; }
             public DateTime? updatedAt { get; set; }
-            public string? status { get; set; }
-
           
             public string? pix_qr_code { get; set; }
             public string? pix_copia_codigo { get; set; }

@@ -23,14 +23,14 @@ namespace BackendDesapegaJa.Services
             _repoStatusPagamento = statusPagamento;
         }
 
-        public IEnumerable<Pagamentos> GetPagamentos(string? status = null)
+        public IEnumerable<Pagamentos> GetPagamentos()
         {
-            return _repo.ListarTodos(status);
+            return _repo.ListarTodos();
         }
 
-        public Pagamentos GetPagamentosByUsuarioId(int id, string? status = null)
+        public Pagamentos GetPagamentoByUsuarioId(int usuarioId)
         {
-            var pagamento = _repo.BuscarPorUsuarioId(id, status);
+            var pagamento = _repo.BuscarPorUsuarioId(usuarioId);
             if (pagamento == null)
                 throw new InvalidOperationException("Não foi possível encontrar esse pagamento");
             return pagamento;
@@ -38,6 +38,11 @@ namespace BackendDesapegaJa.Services
 
         public Pagamentos CriarPagamento(Pagamentos pagamento)
         {
+            // Verifica se já existe pagamento para o usuário
+            var pagamentoExistente = _repo.BuscarPorUsuarioId(pagamento.usuario_id);
+            if (pagamentoExistente != null)
+                throw new InvalidOperationException("O usuário já possui um pagamento");
+
             var usuario = _repoUser.BuscarPorId(pagamento.usuario_id);
             var formaPagamento = _repoFormaPagamento.BuscarPorId(pagamento.forma_pagamento_id);
             var statusPagamento = _repoStatusPagamento.BuscarPorId(pagamento.status_pagamento_id);
@@ -52,16 +57,14 @@ namespace BackendDesapegaJa.Services
                 throw new InvalidOperationException("Status de pagamento não encontrado e/ou inativo");
 
             pagamento.createdAt = DateTime.UtcNow;
-            pagamento.status = string.IsNullOrWhiteSpace(pagamento.status) ? "ativo" : pagamento.status;
 
-            
             _repo.Adicionar(pagamento);
             return pagamento;
         }
 
-        public Pagamentos AtualizarPagamentos(int id, PagamentosUpdateDTO pagamento, string? statusQuery = null)
+        public Pagamentos AtualizarPagamento(int usuarioId, PagamentosUpdateDTO pagamento)
         {
-            var existente = _repo.BuscarPorUsuarioId(id, statusQuery);
+            var existente = _repo.BuscarPorUsuarioId(usuarioId);
             if (existente == null)
                 throw new InvalidOperationException("Pagamento não encontrado");
 
@@ -73,9 +76,7 @@ namespace BackendDesapegaJa.Services
             string? observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao) ? existente.observacao : pagamento.observacao;
             DateTime createdAtFinal = pagamento.createdAt ?? existente.createdAt ?? DateTime.UtcNow;
             DateTime updatedAtFinal = DateTime.UtcNow;
-            string? statusFinal = string.IsNullOrWhiteSpace(pagamento.status) ? existente.status : pagamento.status;
 
-            
             string? pixQrFinal = pagamento.pix_qr_code ?? existente.pix_qr_code;
             string? pixCopiaFinal = pagamento.pix_copia_codigo ?? existente.pix_copia_codigo;
             string? boletoUrlFinal = pagamento.boleto_url ?? existente.boleto_url;
@@ -95,7 +96,7 @@ namespace BackendDesapegaJa.Services
             if (statusPagamento == null || statusPagamento.status.ToLower() == "inativo")
                 throw new InvalidOperationException("Status de pagamento não encontrado e/ou inativo");
 
-            return _repo.Atualizar(id, new PagamentosUpdateDTO
+            return _repo.Atualizar(usuarioId, new PagamentosUpdateDTO
             {
                 usuario_id = usuarioIdFinal,
                 forma_pagamento_id = formaPagamentoIdFinal,
@@ -105,13 +106,21 @@ namespace BackendDesapegaJa.Services
                 observacao = observacaoFinal,
                 createdAt = createdAtFinal,
                 updatedAt = updatedAtFinal,
-                status = statusFinal,
                 pix_qr_code = pixQrFinal,
                 pix_copia_codigo = pixCopiaFinal,
                 boleto_url = boletoUrlFinal,
                 expiracao = expiracaoFinal,
                 valor_pago = valorPagoFinal
             });
+        }
+
+        public void DeletarPagamentoPorUsuarioId(int usuarioId)
+        {
+            var pagamento = _repo.BuscarPorUsuarioId(usuarioId);
+            if (pagamento == null)
+                throw new InvalidOperationException("Pagamento não encontrado para esse usuário");
+
+            _repo.DeletarPorUsuarioId(usuarioId);
         }
     }
 }

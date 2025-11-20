@@ -1,5 +1,5 @@
 ﻿using BackendDesapegaJa.Entities;
-using BackendDesapegaJa.Interfaces;
+using BackendDesapegaJa.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackendDesapegaJa.Controllers
@@ -8,66 +8,73 @@ namespace BackendDesapegaJa.Controllers
     [Route("desapega/ordemProduto")]
     public class OrdemProdutoController : ControllerBase
     {
-        private readonly IOrdemProdutoRepository _repo;
+        private readonly OrdemProdutoService _service;
 
-        public OrdemProdutoController(IOrdemProdutoRepository repo)
+        public OrdemProdutoController(OrdemProdutoService service)
         {
-            _repo = repo;
+            _service = service;
         }
 
-      
         [HttpGet]
         public IActionResult ListarTodos()
         {
-            var itens = _repo.ListarTodos();
-            return Ok(itens);
+            return Ok(_service.ListarTodos());
         }
 
-   
-        [HttpGet("{id}")]
-        public IActionResult BuscarPorId(int id)
+        [HttpGet("usuario/{usuarioId}")]
+        public IActionResult BuscarPorUsuarioId(int usuarioId)
         {
-            var item = _repo.BuscarPorId(id);
-            if (item == null)
-                return NotFound("Item de ordem_produto não encontrado.");
-
-            return Ok(item);
+            try
+            {
+                var item = _service.BuscarPorUsuarioId(usuarioId);
+                return Ok(item);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
-  
-        [HttpPost]
-        public IActionResult Criar([FromBody] OrdemProduto item)
+        [HttpPost("usuario/{usuarioId}")]
+        public IActionResult Criar(int usuarioId, [FromBody] OrdemProduto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            _repo.Adicionar(item);
-            return CreatedAtAction(nameof(BuscarPorId), new { id = item.id }, item);
+            try
+            {
+                var item = _service.CriarOrdemProduto(usuarioId, dto);
+                return CreatedAtAction(nameof(BuscarPorUsuarioId), new { usuarioId = usuarioId }, item);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-
-        [HttpPut("{id}")]
-        public IActionResult Atualizar(int id, [FromBody] OrdemProdutoUpdateDTO dto)
+        [HttpPut("usuario/{usuarioId}")]
+        public IActionResult Atualizar(int usuarioId, [FromBody] OrdemProdutoUpdateDTO dto)
         {
-            var existente = _repo.BuscarPorId(id);
-            if (existente == null)
-                return NotFound("Item de ordem_produto não encontrado.");
-
-            _repo.Atualizar(id, dto);
-            return Ok(dto);
+            try
+            {
+                var item = _service.AtualizarOrdemProduto(usuarioId, dto);
+                return Ok(item);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-
-
-        [HttpDelete("{id}")]
-        public IActionResult Deletar(int id)
+        [HttpDelete("usuario/{usuarioId}")]
+        public IActionResult Deletar(int usuarioId)
         {
-            var existente = _repo.BuscarPorId(id);
-            if (existente == null)
-                return NotFound("Item de ordem_produto não encontrado.");
-
-            _repo.Deletar(id);
-            return NoContent();
+            try
+            {
+                _service.DeletarPorUsuarioId(usuarioId);
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
     }
 }

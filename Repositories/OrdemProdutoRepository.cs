@@ -38,40 +38,19 @@ namespace BackendDesapegaJa.Repositories
             return lista;
         }
 
-        public IEnumerable<OrdemProduto> ListarPorOrdemId(int ordem_id)
-        {
-            var lista = new List<OrdemProduto>();
-            using var connection = new MySqlConnection(_connectionString);
-            connection.Open();
-
-            string sql = "SELECT * FROM ordem_produto WHERE ordem_id = @ordem_id";
-            using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@ordem_id", ordem_id);
-
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                lista.Add(new OrdemProduto
-                {
-                    id = reader.GetInt32("id"),
-                    ordem_id = reader.GetInt32("ordem_id"),
-                    produto_id = reader.GetInt32("produto_id"),
-                    quantidade = reader.GetInt32("quantidade"),
-                    preco_unitario = reader.GetInt32("preco_unitario")
-                });
-            }
-
-            return lista;
-        }
-
-        public OrdemProduto? BuscarPorId(int id)
+        public OrdemProduto? BuscarPorUsuarioId(int usuarioId)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * FROM ordem_produto WHERE id = @id";
+            string sql = @"
+                SELECT op.* 
+                FROM ordem_produto op
+                INNER JOIN ordem_de_compra oc ON op.ordem_id = oc.id
+                WHERE oc.usuario_id = @usuario_id
+                LIMIT 1";
             using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@id", id);
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
             using var reader = cmd.ExecuteReader();
             if (reader.Read())
@@ -85,6 +64,7 @@ namespace BackendDesapegaJa.Repositories
                     preco_unitario = reader.GetInt32("preco_unitario")
                 };
             }
+
             return null;
         }
 
@@ -93,8 +73,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = @"INSERT INTO ordem_produto 
-                           (ordem_id, produto_id, quantidade, preco_unitario) 
+            string sql = @"INSERT INTO ordem_produto (ordem_id, produto_id, quantidade, preco_unitario) 
                            VALUES (@ordem_id, @produto_id, @quantidade, @preco_unitario);
                            SELECT LAST_INSERT_ID();";
 
@@ -104,17 +83,15 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@quantidade", ordemProduto.quantidade);
             cmd.Parameters.AddWithValue("@preco_unitario", ordemProduto.preco_unitario);
 
-            var novoId = Convert.ToInt32(cmd.ExecuteScalar());
-            ordemProduto.id = novoId;
+            ordemProduto.id = Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-        public OrdemProduto Atualizar(int id, OrdemProdutoUpdateDTO dto)
+        public OrdemProduto AtualizarPorUsuarioId(int usuarioId, OrdemProdutoUpdateDTO dto)
         {
-            var existente = BuscarPorId(id);
+            var existente = BuscarPorUsuarioId(usuarioId);
             if (existente == null)
-                throw new InvalidOperationException("Nenhuma relação ordem-produto encontrada.");
+                throw new InvalidOperationException("OrdemProduto do usuário não existe.");
 
-            int ordemFinal = dto.ordem_id ?? existente.ordem_id;
             int produtoFinal = dto.produto_id ?? existente.produto_id;
             int quantidadeFinal = dto.quantidade ?? existente.quantidade;
             int precoFinal = dto.preco_unitario ?? existente.preco_unitario;
@@ -122,13 +99,12 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = @"UPDATE ordem_produto 
-                           SET ordem_id=@ordem_id, produto_id=@produto_id, quantidade=@quantidade, preco_unitario=@preco_unitario
+            string sql = @"UPDATE ordem_produto
+                           SET produto_id=@produto_id, quantidade=@quantidade, preco_unitario=@preco_unitario
                            WHERE id=@id";
 
             using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.Parameters.AddWithValue("@ordem_id", ordemFinal);
+            cmd.Parameters.AddWithValue("@id", existente.id);
             cmd.Parameters.AddWithValue("@produto_id", produtoFinal);
             cmd.Parameters.AddWithValue("@quantidade", quantidadeFinal);
             cmd.Parameters.AddWithValue("@preco_unitario", precoFinal);
@@ -137,33 +113,26 @@ namespace BackendDesapegaJa.Repositories
 
             return new OrdemProduto
             {
-                id = id,
-                ordem_id = ordemFinal,
+                id = existente.id,
+                ordem_id = existente.ordem_id,
                 produto_id = produtoFinal,
                 quantidade = quantidadeFinal,
                 preco_unitario = precoFinal
             };
         }
 
-        public void Deletar(int id)
+        public void DeletarPorUsuarioId(int usuarioId)
         {
+            var existente = BuscarPorUsuarioId(usuarioId);
+            if (existente == null)
+                throw new InvalidOperationException("OrdemProduto do usuário não existe.");
+
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
             string sql = "DELETE FROM ordem_produto WHERE id=@id";
             using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.ExecuteNonQuery();
-        }
-
-        public void DeletarPorOrdemId(int ordem_id)
-        {
-            using var connection = new MySqlConnection(_connectionString);
-            connection.Open();
-
-            string sql = "DELETE FROM ordem_produto WHERE ordem_id=@ordem_id";
-            using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@ordem_id", ordem_id);
+            cmd.Parameters.AddWithValue("@id", existente.id);
             cmd.ExecuteNonQuery();
         }
     }

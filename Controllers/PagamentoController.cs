@@ -16,13 +16,13 @@ namespace BackendDesapegaJa.Controllers
             _service = service;
         }
 
-     
+        // GET /desapega/pagamentos
         [HttpGet]
-        public IActionResult Get([FromQuery] string? status)
+        public IActionResult Get()
         {
             try
             {
-                return Ok(_service.GetPagamentos(status));
+                return Ok(_service.GetPagamentos());
             }
             catch (InvalidOperationException ex)
             {
@@ -34,15 +34,13 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        
-
-       
+        // GET /desapega/pagamentos/usuario/{usuarioId}
         [HttpGet("usuario/{usuarioId}")]
-        public IActionResult GetByUsuarioId(int usuarioId, [FromQuery] string? status)
+        public IActionResult GetByUsuarioId(int usuarioId)
         {
             try
             {
-                return Ok(_service.GetPagamentosByUsuarioId(usuarioId, status));
+                return Ok(_service.GetPagamentoByUsuarioId(usuarioId));
             }
             catch (InvalidOperationException ex)
             {
@@ -54,7 +52,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        
+        // POST /desapega/pagamentos
         [HttpPost]
         public IActionResult CriarPagamento([FromBody] Pagamentos pagamento)
         {
@@ -77,24 +75,41 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        
-        [HttpPatch("usuario/{id}")]
-        public IActionResult AtualizarPagamento(int id, [FromBody] PagamentosUpdateDTO pagamento, [FromQuery] string? status)
+        // PATCH /desapega/pagamentos/usuario/{usuarioId}
+        [HttpPatch("usuario/{usuarioId}")]
+        public IActionResult AtualizarPagamento(int usuarioId, [FromBody] PagamentosUpdateDTO pagamento)
         {
             try
             {
                 var loggedUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (loggedUserId == null)
-                    return StatusCode(403, new { message = "Sem autorização para efetuar esse pagamento" });
+                    return StatusCode(403, new { message = "Sem autorização para atualizar esse pagamento" });
 
-                var isAdmin = User.FindFirst("isAdmin")?.Value == "true";
-                var pagamentoExistente = _service.GetPagamentosByUsuarioId(id, status);
-
-                if (pagamentoExistente.status?.ToLower() == "inativo" && !isAdmin)
-                    return StatusCode(403, new { message = "Sem autorização para atualizar pagamento inativo" });
-
-                var pagamentoAtualizado = _service.AtualizarPagamentos(id, pagamento, status);
+                var pagamentoAtualizado = _service.AtualizarPagamento(usuarioId, pagamento);
                 return Ok(pagamentoAtualizado);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // DELETE /desapega/pagamentos/usuario/{usuarioId}
+        [HttpDelete("usuario/{usuarioId}")]
+        public IActionResult DeletarPagamento(int usuarioId)
+        {
+            try
+            {
+                var loggedUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (loggedUserId == null)
+                    return StatusCode(403, new { message = "Sem autorização para deletar esse pagamento" });
+
+                _service.DeletarPagamentoPorUsuarioId(usuarioId);
+                return NoContent();
             }
             catch (InvalidOperationException ex)
             {

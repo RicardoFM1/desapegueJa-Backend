@@ -5,11 +5,9 @@ namespace BackendDesapegaJa.Interfaces
     public interface IOrdemProdutoRepository
     {
         IEnumerable<OrdemProduto> ListarTodos();
-        IEnumerable<OrdemProduto> ListarPorOrdemId(int ordem_id);
-        OrdemProduto? BuscarPorId(int id);
+        OrdemProduto? BuscarPorUsuarioId(int usuarioId);
         void Adicionar(OrdemProduto ordemProduto);
-        OrdemProduto Atualizar(int id, OrdemProdutoUpdateDTO ordemProduto);
-        void Deletar(int id);
-        void DeletarPorOrdemId(int ordem_id); 
+        OrdemProduto AtualizarPorUsuarioId(int usuarioId, OrdemProdutoUpdateDTO dto);
+        void DeletarPorUsuarioId(int usuarioId);
     }
 }

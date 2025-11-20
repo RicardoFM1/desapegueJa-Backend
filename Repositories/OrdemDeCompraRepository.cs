@@ -66,20 +66,22 @@ namespace BackendDesapegaJa.Repositories
             return null;
         }
 
-        public OrdemDeCompra BuscarPorUsuarioId(int usuarioId)
+        public OrdemDeCompra? BuscarPorUsuarioId(int usuarioId)
         {
-            OrdemDeCompra? ordem = null;
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * FROM ordem_de_compra WHERE usuario_id = @usuario_id";
+            string sql = @"SELECT * FROM ordem_de_compra 
+                   WHERE usuario_id = @usuario_id
+                   LIMIT 1";
+
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
             using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            if (reader.Read())
             {
-                ordem = new OrdemDeCompra
+                return new OrdemDeCompra
                 {
                     id = reader.GetInt32("id"),
                     usuario_id = reader.GetInt32("usuario_id"),
@@ -90,8 +92,9 @@ namespace BackendDesapegaJa.Repositories
                 };
             }
 
-            return ordem;
+            return null;
         }
+
 
         public IEnumerable<OrdemDeCompra> BuscarPorStatusDeCompraId(int statusId)
         {
@@ -182,16 +185,17 @@ namespace BackendDesapegaJa.Repositories
             };
         }
 
-        public void Deletar(int id)
+        public void DeletarPorUsuarioId(int usuarioId)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "DELETE FROM ordem_de_compra WHERE id = @id";
+            string sql = "DELETE FROM ordem_de_compra WHERE usuario_id = @usuario_id";
             using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@id", id);
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
             cmd.ExecuteNonQuery();
         }
+
     }
 }

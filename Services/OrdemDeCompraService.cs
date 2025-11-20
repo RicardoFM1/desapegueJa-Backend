@@ -42,6 +42,11 @@ namespace BackendDesapegaJa.Services
 
         public OrdemDeCompraCreateDTO CriarOrdemDeCompra(OrdemDeCompraCreateDTO ordem, List<OrdemProduto> itens)
         {
+            
+            var ordemExistente = _repo.BuscarPorUsuarioId(ordem.usuario_id);
+            if (ordemExistente != null && ordemExistente.status_ordem_id != 0) 
+                throw new InvalidOperationException("O usuário já possui uma ordem de compra ativa");
+
             var usuario = _repoUser.BuscarPorId(ordem.usuario_id);
             var status = _repoStatusOrdem.BuscarPorId(ordem.status_ordem_id);
 
@@ -61,11 +66,9 @@ namespace BackendDesapegaJa.Services
                     throw new InvalidOperationException($"Produto ID {item.produto_id} não encontrado/inativo.");
 
                 item.preco_unitario = produto.preco;
-
                 total += produto.preco * item.quantidade;
             }
 
-            
             if (!string.IsNullOrWhiteSpace(ordem.metodo_entrega) &&
                 ordem.metodo_entrega.ToLower() == "entrega")
             {
@@ -108,5 +111,19 @@ namespace BackendDesapegaJa.Services
 
             return _repo.Atualizar(id, ordem);
         }
+        public void DeletarOrdemDeCompra(int usuarioId)
+        {
+            var ordem = _repo.BuscarPorUsuarioId(usuarioId);
+            if (ordem == null)
+                throw new InvalidOperationException("Nenhuma ordem de compra encontrada para este usuário.");
+
+           
+            _repoOrdemProduto.DeletarPorUsuarioId(usuarioId);
+
+          
+            _repo.DeletarPorUsuarioId(usuarioId);
+        }
+
+
     }
 }

@@ -12,89 +12,68 @@ namespace BackendDesapegaJa.Services
         public OrdemProdutoService(
             IOrdemProdutoRepository repo,
             IOrdemDeCompraRepository repoOC,
-            IProdutoRepository repoProd
-        )
+            IProdutoRepository repoProd)
         {
             _repo = repo;
             _repoOrdemCompra = repoOC;
             _repoProduto = repoProd;
         }
 
-        public IEnumerable<OrdemProduto> GetOrdemProdutos()
+        public IEnumerable<OrdemProduto> ListarTodos()
         {
             return _repo.ListarTodos();
         }
 
-        public OrdemProduto GetById(int id)
+        public OrdemProduto BuscarPorUsuarioId(int usuarioId)
         {
-            var ordemProduto = _repo.BuscarPorId(id);
-
-            if (ordemProduto == null)
-            {
-                throw new InvalidOperationException("Não foi possível encontrar o item da ordem");
-            }
-
-            return ordemProduto;
+            var item = _repo.BuscarPorUsuarioId(usuarioId);
+            if (item == null)
+                throw new InvalidOperationException("OrdemProduto do usuário não encontrada.");
+            return item;
         }
 
-        public OrdemProduto CriarOrdemProduto(OrdemProduto ordemProduto)
+        public OrdemProduto CriarOrdemProduto(int usuarioId, OrdemProduto ordemProduto)
         {
-            var ordemExistente = _repoOrdemCompra.BuscarPorId(ordemProduto.ordem_id);
-            var produtoExistente = _repoProduto.BuscarPorId(ordemProduto.produto_id);
+            var existente = _repo.BuscarPorUsuarioId(usuarioId);
+            if (existente != null)
+                throw new InvalidOperationException("O usuário já possui uma OrdemProduto.");
 
-            if (ordemExistente == null)
-            {
-                throw new InvalidOperationException("A ordem de compra referenciada não existe");
-            }
+            var ordemCompra = _repoOrdemCompra.BuscarPorUsuarioId(usuarioId);
+            if (ordemCompra == null)
+                throw new InvalidOperationException("O usuário não possui uma Ordem de Compra.");
 
-            if (produtoExistente == null || produtoExistente.status.ToLower() == "inativo")
-            {
-                throw new InvalidOperationException("Produto referenciado não encontrado e/ou inativo");
-            }
+            var produto = _repoProduto.BuscarPorId(ordemProduto.produto_id);
+            if (produto == null || produto.status.ToLower() == "inativo")
+                throw new InvalidOperationException("Produto não encontrado ou inativo.");
 
             if (ordemProduto.quantidade <= 0)
-            {
-                throw new InvalidOperationException("A quantidade deve ser maior que zero");
-            }
+                throw new InvalidOperationException("Quantidade deve ser maior que zero.");
 
+            ordemProduto.ordem_id = ordemCompra.id;
             _repo.Adicionar(ordemProduto);
 
             return ordemProduto;
         }
 
-        public OrdemProduto AtualizarOrdemProduto(int id, OrdemProdutoUpdateDTO dto)
+        public OrdemProduto AtualizarOrdemProduto(int usuarioId, OrdemProdutoUpdateDTO dto)
         {
-            var ordemProdutoExistente = _repo.BuscarPorId(id);
+            var existente = _repo.BuscarPorUsuarioId(usuarioId);
+            if (existente == null)
+                throw new InvalidOperationException("O usuário não possui uma OrdemProduto.");
 
-            if (ordemProdutoExistente == null)
-            {
-                throw new InvalidOperationException("O item da ordem não existe");
-            }
+            var produto = _repoProduto.BuscarPorId(dto.produto_id ?? existente.produto_id);
+            if (produto == null || produto.status.ToLower() == "inativo")
+                throw new InvalidOperationException("Produto não encontrado ou inativo.");
 
-            int ordemFinal = dto.ordem_id ?? ordemProdutoExistente.ordem_id;
-            int produtoFinal = dto.produto_id ?? ordemProdutoExistente.produto_id;
-            int quantidadeFinal = dto.quantidade ?? ordemProdutoExistente.quantidade;
+            if ((dto.quantidade ?? existente.quantidade) <= 0)
+                throw new InvalidOperationException("Quantidade deve ser maior que zero.");
 
-            var ordemExistente = _repoOrdemCompra.BuscarPorId(ordemFinal);
-            var produtoExistente = _repoProduto.BuscarPorId(produtoFinal);
+            return _repo.AtualizarPorUsuarioId(usuarioId, dto);
+        }
 
-            if (ordemExistente == null)
-            {
-                throw new InvalidOperationException("A ordem de compra referenciada não existe");
-            }
-
-            if (produtoExistente == null || produtoExistente.status.ToLower() == "inativo")
-            {
-                throw new InvalidOperationException("Produto referenciado não encontrado e/ou inativo");
-            }
-
-            if (quantidadeFinal <= 0)
-            {
-                throw new InvalidOperationException("A quantidade deve ser maior que zero");
-            }
-
-            var atualizado = _repo.Atualizar(id, dto);
-            return atualizado;
+        public void DeletarPorUsuarioId(int usuarioId)
+        {
+            _repo.DeletarPorUsuarioId(usuarioId);
         }
     }
 }
