@@ -36,7 +36,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("/usuario/{id}")]
 
         public IActionResult GetByUsuarioId(int id)
         {
