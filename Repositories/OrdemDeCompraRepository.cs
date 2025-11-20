@@ -134,7 +134,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@usuario_id", ordem.usuario_id);
             cmd.Parameters.AddWithValue("@status_ordem_id", ordem.status_ordem_id);
             cmd.Parameters.AddWithValue("@valor_total", ordem.valor_total);
-            cmd.Parameters.AddWithValue("@metodo_entrega", string.IsNullOrWhiteSpace(ordem.metodo_entrega) ? "retirada" : ordem.metodo_entrega);
+            cmd.Parameters.AddWithValue("@metodo_entrega", string.IsNullOrWhiteSpace(ordem.metodo_entrega) ? "combinar" : ordem.metodo_entrega);
 
             var novoId = Convert.ToInt32(cmd.ExecuteScalar());
             ordem.id = novoId;
