@@ -32,7 +32,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32("usuario_id"),
                     status_ordem_id = reader.GetInt32("status_ordem_id"),
                     valor_total = reader.GetInt32("valor_total"),
-                    metodo_entrega = reader["metodo_entrega"] == DBNull.Value ? "retirada" : reader.GetString("metodo_entrega"),
+                    metodo_entrega = reader["metodo_entrega"] == DBNull.Value ? "combinar" : reader.GetString("metodo_entrega"),
                     created_at = reader.GetDateTime("created_at")
                 });
             }
@@ -58,7 +58,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32("usuario_id"),
                     status_ordem_id = reader.GetInt32("status_ordem_id"),
                     valor_total = reader.GetInt32("valor_total"),
-                    metodo_entrega = reader["metodo_entrega"] == DBNull.Value ? "retirada" : reader.GetString("metodo_entrega"),
+                    metodo_entrega = reader["metodo_entrega"] == DBNull.Value ? "combinar" : reader.GetString("metodo_entrega"),
                     created_at = reader.GetDateTime("created_at")
                 };
             }
@@ -85,7 +85,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32("usuario_id"),
                     status_ordem_id = reader.GetInt32("status_ordem_id"),
                     valor_total = reader.GetInt32("valor_total"),
-                    metodo_entrega = reader["metodo_entrega"] == DBNull.Value ? "retirada" : reader.GetString("metodo_entrega"),
+                    metodo_entrega = reader["metodo_entrega"] == DBNull.Value ? "combinar" : reader.GetString("metodo_entrega"),
                     created_at = reader.GetDateTime("created_at")
                 });
             }
@@ -112,7 +112,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32("usuario_id"),
                     status_ordem_id = reader.GetInt32("status_ordem_id"),
                     valor_total = reader.GetInt32("valor_total"),
-                    metodo_entrega = reader["metodo_entrega"] == DBNull.Value ? "retirada" : reader.GetString("metodo_entrega"),
+                    metodo_entrega = reader["metodo_entrega"] == DBNull.Value ? "combinar" : reader.GetString("metodo_entrega"),
                     created_at = reader.GetDateTime("created_at")
                 });
             }

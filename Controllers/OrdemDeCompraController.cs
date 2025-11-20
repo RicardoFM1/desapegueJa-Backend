@@ -73,7 +73,8 @@ namespace BackendDesapegaJa.Controllers
                 {
                     usuario_id = dto.usuario_id,
                     status_ordem_id = dto.status_ordem_id,
-                    valor_total = dto.valor_total
+                    valor_total = dto.valor_total,
+                    metodo_entrega = dto.metodo_entrega
                 };
 
                 var itens = dto.itens.Select(i => new OrdemProduto

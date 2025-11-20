@@ -11,7 +11,7 @@ namespace BackendDesapegaJa.Entities
         public int valor_total { get; set; }
         public DateTime created_at { get; set; }
 
-        public string metodo_entrega { get; set; } = "retirada";
+        public string metodo_entrega { get; set; };
     }
 
 
@@ -20,7 +20,7 @@ namespace BackendDesapegaJa.Entities
         public int usuario_id { get; set; }
         public int status_ordem_id { get; set; }
         public int valor_total { get; set; }
-        public string metodo_entrega { get; set; } = "retirada"; 
+        public string metodo_entrega { get; set; }
         public List<OrdemProdutoCreateDTO> itens { get; set; } = new();
 
         public DateTime created_at { get; set; }
@@ -35,7 +35,7 @@ namespace BackendDesapegaJa.Entities
 
         public int? valor_total { get; set; }
 
-        public string? metodo_entrega { get; set; } = "retirada";
+        public string? metodo_entrega { get; set; };
 
         public DateTime created_at { get; set; }
     }
