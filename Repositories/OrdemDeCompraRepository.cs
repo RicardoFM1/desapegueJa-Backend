@@ -120,15 +120,15 @@ namespace BackendDesapegaJa.Repositories
             return ordens;
         }
 
-        public void Adicionar(OrdemDeCompra ordem)
+        public void Adicionar(OrdemDeCompraCreateDTO ordem)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
             string sql = @"INSERT INTO ordem_de_compra 
-                           (usuario_id, status_ordem_id, valor_total, metodo_entrega) 
-                           VALUES (@usuario_id, @status_ordem_id, @valor_total, @metodo_entrega);
-                           SELECT LAST_INSERT_ID();";
+                   (usuario_id, status_ordem_id, valor_total, metodo_entrega) 
+                   VALUES (@usuario_id, @status_ordem_id, @valor_total, @metodo_entrega);
+                   SELECT LAST_INSERT_ID();";
 
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", ordem.usuario_id);
@@ -139,6 +139,7 @@ namespace BackendDesapegaJa.Repositories
             var novoId = Convert.ToInt32(cmd.ExecuteScalar());
             ordem.id = novoId;
         }
+
 
         public OrdemDeCompra Atualizar(int id, OrdemDeCompraUpdateDTO dto)
         {

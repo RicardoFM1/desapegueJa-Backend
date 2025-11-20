@@ -17,6 +17,7 @@ namespace BackendDesapegaJa.Entities
 
     public class OrdemDeCompraCreateDTO
     {
+        public int id { get; set; }
         public int usuario_id { get; set; }
         public int status_ordem_id { get; set; }
         public int valor_total { get; set; }

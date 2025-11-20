@@ -6,7 +6,7 @@ namespace BackendDesapegaJa.Interfaces
     {
         IEnumerable<OrdemDeCompra> ListarTodos();
         OrdemDeCompra? BuscarPorId(int id);
-        void Adicionar(OrdemDeCompra ordem);
+        void Adicionar(OrdemDeCompraCreateDTO ordem);
         OrdemDeCompra Atualizar(int id, OrdemDeCompraUpdateDTO ordem);
         void Deletar(int id);
     }

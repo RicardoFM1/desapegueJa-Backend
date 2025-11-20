@@ -69,7 +69,7 @@ namespace BackendDesapegaJa.Controllers
                     return StatusCode(403, new { message = "Sem autorização para criar essa ordem de compra" });
 
             
-                var ordem = new OrdemDeCompra
+                var ordem = new OrdemDeCompraCreateDTO
                 {
                     usuario_id = dto.usuario_id,
                     status_ordem_id = dto.status_ordem_id,

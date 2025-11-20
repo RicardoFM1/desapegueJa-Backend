@@ -40,7 +40,7 @@ namespace BackendDesapegaJa.Services
             return ordem;
         }
 
-        public OrdemDeCompra CriarOrdemDeCompra(OrdemDeCompra ordem, List<OrdemProduto> itens)
+        public OrdemDeCompraCreateDTO CriarOrdemDeCompra(OrdemDeCompraCreateDTO ordem, List<OrdemProduto> itens)
         {
             var usuario = _repoUser.BuscarPorId(ordem.usuario_id);
             var status = _repoStatusOrdem.BuscarPorId(ordem.status_ordem_id);
@@ -51,7 +51,7 @@ namespace BackendDesapegaJa.Services
             if (status == null || status.status.ToLower() == "inativo")
                 throw new InvalidOperationException("Status da ordem inválido");
 
-            decimal total = 0;
+            int total = 0;
 
             foreach (var item in itens)
             {
@@ -60,15 +60,19 @@ namespace BackendDesapegaJa.Services
                 if (produto == null || produto.status.ToLower() == "inativo")
                     throw new InvalidOperationException($"Produto ID {item.produto_id} não encontrado/inativo.");
 
-                
                 item.preco_unitario = produto.preco;
 
                 total += produto.preco * item.quantidade;
             }
 
+            
+            if (!string.IsNullOrWhiteSpace(ordem.metodo_entrega) &&
+                ordem.metodo_entrega.ToLower() == "entrega")
+            {
+                total += 15;
+            }
 
-            ordem.valor_total = (int)total;
-
+            ordem.valor_total = total;
             ordem.created_at = DateTime.UtcNow;
 
             _repo.Adicionar(ordem);
@@ -81,6 +85,7 @@ namespace BackendDesapegaJa.Services
 
             return ordem;
         }
+
 
 
         public OrdemDeCompra AtualizarOrdemDeCompra(int id, OrdemDeCompraUpdateDTO ordem)
