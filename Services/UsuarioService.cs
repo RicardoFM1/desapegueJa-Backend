@@ -14,10 +14,12 @@ namespace BackendDesapegaJa.Services
     public class UsuarioService
     {
         private readonly IUsuarioRepository _repo;
+        private readonly IConfiguration _configuration;
 
-        public UsuarioService(IUsuarioRepository repo)
+        public UsuarioService(IUsuarioRepository repo, IConfiguration configuration) 
         {
             _repo = repo;
+            _configuration = configuration;
         }
 
         public IEnumerable<Usuario> ObterUsuarios(string? status = null)
@@ -67,13 +69,17 @@ namespace BackendDesapegaJa.Services
                 throw new InvalidOperationException("Senha e/ou email inválidos");
             }
 
-
             var tokenHandler = new JwtSecurityTokenHandler();
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .Build();
 
-            var chave = config["TokenKEY:SECRET_KEY"];
+            
+            var chave = _configuration["TokenKEY:SECRET_KEY"];
+
+            if (string.IsNullOrWhiteSpace(chave))
+            {
+                throw new InvalidOperationException("Chave JWT ausente no sistema de configuração.");
+            }
+
+
             var key = Encoding.ASCII.GetBytes(chave);
 
             var tokenDescriptor = new SecurityTokenDescriptor
