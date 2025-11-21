@@ -1,5 +1,7 @@
 ﻿using BackendDesapegaJa.Entities;
+using BackendDesapegaJa.Helpers;
 using BackendDesapegaJa.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -10,10 +12,12 @@ namespace BackendDesapegaJa.Controllers
     public class PagamentoController : ControllerBase
     {
         private readonly PagamentoService _service;
+        private readonly PagSeguroIntegration _pagSeguro;
 
-        public PagamentoController(PagamentoService service)
+        public PagamentoController(PagamentoService service, PagSeguroIntegration pagSeguro)
         {
             _service = service;
+            _pagSeguro = pagSeguro; 
         }
 
         // GET /desapega/pagamentos
@@ -31,6 +35,50 @@ namespace BackendDesapegaJa.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
+            }
+        }
+        [HttpPost("webhook")]
+        [AllowAnonymous]
+        public IActionResult HandlePagSeguroWebhook([FromHeader(Name = "X-Webhook-Token")] string? token, [FromBody] PagSeguroWebhookNotification data)
+        {
+            try
+            {
+                // 1. Validação de Segurança (Obrigatória!)
+                if (string.IsNullOrWhiteSpace(token) || !_pagSeguro.ValidateWebhookToken(token))
+                {
+                    return Unauthorized(new { message = "Token de Webhook inválido." });
+                }
+
+                // ... (Verificação de dados e mapeamento de status) ...
+                int novoStatusId;
+                switch (data.status?.ToUpper())
+                {
+                    case "PAID":
+                    case "COMPLETED":
+                        novoStatusId = 2;
+                        break;
+                    case "CANCELED":
+                    case "EXPIRED":
+                        novoStatusId = 4;
+                        break;
+                    default:
+                        return Ok();
+                }
+
+                // 2. Atualiza o status no seu sistema
+                _service.AtualizarStatusPagamentoPorReferencia(
+                    data.reference_id!,
+                    novoStatusId,
+                    data.amount_paid
+                );
+
+                // 3. Resposta obrigatória ao PagSeguro
+                return Ok();
+            }
+            // ... (Tratamento de exceções) ...
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro ao processar Webhook: " + ex.Message });
             }
         }
 

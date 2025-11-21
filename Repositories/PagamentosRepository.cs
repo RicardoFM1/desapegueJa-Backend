@@ -15,9 +15,6 @@ namespace BackendDesapegaJa.Repositories
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
 
-        // ------------------------------------------------------
-        // LISTAR TODOS
-        // ------------------------------------------------------
         public IEnumerable<Pagamentos> ListarTodos()
         {
             var pagamentos = new List<Pagamentos>();
@@ -35,9 +32,7 @@ namespace BackendDesapegaJa.Repositories
             return pagamentos;
         }
 
-        // ------------------------------------------------------
-        // BUSCAR POR ID
-        // ------------------------------------------------------
+        
         public Pagamentos? BuscarPorId(int id)
         {
             using var connection = new MySqlConnection(_connectionString);
@@ -51,10 +46,6 @@ namespace BackendDesapegaJa.Repositories
             return reader.Read() ? MapReaderToPagamento(reader) : null;
         }
 
-        // ------------------------------------------------------
-        // BUSCAR POR USUARIO_ID
-        // (regra: só pode existir um por usuário)
-        // ------------------------------------------------------
         public Pagamentos? BuscarPorUsuarioId(int usuarioId)
         {
             using var connection = new MySqlConnection(_connectionString);
@@ -68,9 +59,21 @@ namespace BackendDesapegaJa.Repositories
             return reader.Read() ? MapReaderToPagamento(reader) : null;
         }
 
-        // ------------------------------------------------------
-        // MAP READER
-        // ------------------------------------------------------
+
+        public Pagamentos? BuscarPorUUID(string uuid)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            string sql = "SELECT * FROM Pagamentos WHERE pagamento_uuid = @uuid";
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@uuid", uuid);
+
+            using var reader = cmd.ExecuteReader();
+            
+            return reader.Read() ? MapReaderToPagamento(reader) : null;
+        }
+
         private Pagamentos MapReaderToPagamento(MySqlDataReader reader)
         {
             return new Pagamentos
@@ -98,22 +101,18 @@ namespace BackendDesapegaJa.Repositories
             };
         }
 
-        // ------------------------------------------------------
-        // ADICIONAR (AGORA impede duplicação por usuário)
-        // ------------------------------------------------------
         public void Adicionar(Pagamentos pagamento)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            // ❗ Não permitir mais de 1 pagamento por usuário
             var existente = BuscarPorUsuarioId(pagamento.usuario_id);
             if (existente != null)
                 throw new InvalidOperationException("Este usuário já possui um pagamento gerado.");
 
             pagamento.createdAt = DateTime.UtcNow;
 
-            // Gera o UUID aqui
+           
             pagamento.pagamento_uuid = Guid.NewGuid().ToString();
 
             var cmd = new MySqlCommand(
@@ -144,9 +143,7 @@ namespace BackendDesapegaJa.Repositories
             pagamento.id = Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-        // ------------------------------------------------------
-        // ATUALIZAR PELO usuario_id
-        // ------------------------------------------------------
+     
         public Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento)
         {
             var existente = BuscarPorUsuarioId(usuarioId);
@@ -204,9 +201,7 @@ namespace BackendDesapegaJa.Repositories
             return BuscarPorUsuarioId(usuarioId)!;
         }
 
-        // ------------------------------------------------------
-        // DELETAR PELO usuario_id
-        // ------------------------------------------------------
+      
         public void DeletarPorUsuarioId(int usuarioId)
         {
             var existente = BuscarPorUsuarioId(usuarioId);

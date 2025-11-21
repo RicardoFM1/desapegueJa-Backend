@@ -1,13 +1,14 @@
+using BackendDesapegaJa.Helpers;
 using BackendDesapegaJa.Interfaces;
 using BackendDesapegaJa.Repositories;
 using BackendDesapegaJa.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using MySql.Data.MySqlClient;
-using Microsoft.Extensions.FileProviders;
 using System;
-using System.Text;
 using System.IO;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -107,7 +108,7 @@ builder.Services.AddScoped<PagamentoService>();
 
 builder.Services.AddScoped<ICarrinhoRepository, CarrinhoRepository>();
 builder.Services.AddScoped<CarrinhoService>();
-
+builder.Services.AddHttpClient<PagSeguroIntegration>();
 // ------------------------
 // Build app
 // ------------------------

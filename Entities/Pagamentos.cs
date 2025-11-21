@@ -55,6 +55,28 @@ namespace BackendDesapegaJa.Entities
         public string? pagamento_uuid { get; set; }
 
     }
+    public class PagamentoRetornoApi
+    {
+        public string? TransacaoIdExterno { get; set; } 
+        public string? PixCopiaCodigo { get; set; }
+        public string? PixQrCodeBase64 { get; set; } 
+        public string? BoletoUrl { get; set; }
+        public DateTime? Expiracao { get; set; }
+    }
+    public class PagSeguroWebhookNotification
+    {
+        public string? id { get; set; } 
 
+
+        public string? reference_id { get; set; }
+
+        
+        public string? status { get; set; }
+
+    
+        public int? amount_paid { get; set; }
+
+      
+    }
 
 }

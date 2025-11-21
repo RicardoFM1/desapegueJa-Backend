@@ -12,6 +12,7 @@ namespace BackendDesapegaJa.Services
         private readonly IStatusDePagamentoRepository _repoStatusPagamento;
         private readonly IConfiguration _config;
         private readonly IOrdemDeCompraRepository _repoOrdem;
+        private readonly PagSeguroIntegration _pagSeguro;
 
         public PagamentoService(
             IPagamentosRepository repo,
@@ -19,7 +20,8 @@ namespace BackendDesapegaJa.Services
             IFormasDePagamentoRepository formasPagamento,
             IStatusDePagamentoRepository statusPagamento,
             IConfiguration config,
-            IOrdemDeCompraRepository repoOrdem
+            IOrdemDeCompraRepository repoOrdem,
+            PagSeguroIntegration pagSeguro
         )
         {
             _repo = repo;
@@ -28,6 +30,7 @@ namespace BackendDesapegaJa.Services
             _repoStatusPagamento = statusPagamento;
             _config = config;
             _repoOrdem = repoOrdem;
+            _pagSeguro = pagSeguro;
         }
 
         public IEnumerable<Pagamentos> GetPagamentos()
@@ -43,9 +46,9 @@ namespace BackendDesapegaJa.Services
             return pagamento;
         }
 
+        
         public Pagamentos CriarPagamento(Pagamentos pagamento)
         {
-            
             var pagamentoExistente = _repo.BuscarPorUsuarioId(pagamento.usuario_id);
             if (pagamentoExistente != null)
                 throw new InvalidOperationException("O usuário já possui um pagamento em aberto.");
@@ -57,47 +60,31 @@ namespace BackendDesapegaJa.Services
             if (usuario == null || usuario.status.ToLower() == "inativo") throw new InvalidOperationException("Usuário inválido");
             if (formaPagamento == null || formaPagamento.status.ToLower() == "inativo") throw new InvalidOperationException("Forma de pagamento inválida");
 
-            
+
             pagamento.createdAt = DateTime.UtcNow;
+
+            var ordem = _repoOrdem.BuscarPorId(pagamento.ordem_id)
+                ?? throw new InvalidOperationException("Ordem de compra não encontrada.");
+            
+
             
 
             if (formaPagamento.forma.ToLower().Contains("pix"))
             {
-              
-                string chavePix = _config["PixConfig:Chave"] ?? "+5551984018587";
-                string nomeRecebedor = _config["PixConfig:Nome"] ?? "RICARDO MOURA";
-                string cidadeRecebedor = _config["PixConfig:Cidade"] ?? "SANTA CRUZ SUL";
-
-               
-                string txid = $"PEDIDO{pagamento.ordem_id}"; 
-
-               
-                decimal valorEmReais = (decimal)pagamento.valor / 100m;
-
-             
-                string payloadPix = PixGenerator.GerarPayloadPix(
-                    chavePix,
-                    nomeRecebedor,
-                    cidadeRecebedor,
-                    txid,
-                    valorEmReais
-                );
-
-              
-                pagamento.pix_copia_codigo = payloadPix;
-
                 
-                pagamento.pix_qr_code = payloadPix;
-            }
+                var dadosCobranca = _pagSeguro.CriarCobrancaPixAsync(ordem, usuario).GetAwaiter().GetResult();
 
-            
-            if (formaPagamento.forma.ToLower().Contains("boleto"))
-            {
+                pagamento.pix_copia_codigo = dadosCobranca.PixCopiaCodigo;
+                
+                pagamento.pix_qr_code = dadosCobranca.PixQrCodeBase64 ?? dadosCobranca.PixCopiaCodigo;
+                pagamento.expiracao = dadosCobranca.Expiracao;
                
+                pagamento.pagamento_uuid = dadosCobranca.TransacaoIdExterno;
+                pagamento.status_pagamento_id = 1;
             }
+           
 
             _repo.Adicionar(pagamento);
-
             return pagamento;
         }
 
@@ -154,7 +141,20 @@ namespace BackendDesapegaJa.Services
                 pagamento_uuid = pagUUIDFinal
             });
         }
+        public void AtualizarStatusPagamentoPorReferencia(string transacaoIdReferencia, int novoStatusId, int? valorPago)
+        {
+            var pagamento = _repo.BuscarPorUUID(transacaoIdReferencia);
+            if (pagamento == null) throw new InvalidOperationException("Pagamento não encontrado pela referência da transação.");
 
+            var updateDto = new PagamentosUpdateDTO
+            {
+                status_pagamento_id = novoStatusId,
+                valor_pago = valorPago
+            };
+
+            _repo.Atualizar(pagamento.usuario_id, updateDto);
+            
+        }
         public void DeletarPagamentoPorUsuarioId(int usuarioId)
         {
             var pagamento = _repo.BuscarPorUsuarioId(usuarioId);
