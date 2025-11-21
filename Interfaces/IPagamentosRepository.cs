@@ -8,7 +8,7 @@ namespace BackendDesapegaJa.Interfaces
         Pagamentos BuscarPorId(int id);
 
         Pagamentos? BuscarPorUsuarioId(int usuarioId);
-        void Adicionar(Pagamentos pagamento);
+        Task AdicionarAsync(Pagamentos pagamento);
         Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento);
 
         void DeletarPorUsuarioId(int usuarioId);

@@ -101,10 +101,10 @@ namespace BackendDesapegaJa.Repositories
             };
         }
 
-        public void Adicionar(Pagamentos pagamento)
+        public async Task AdicionarAsync(Pagamentos pagamento)
         {
             using var connection = new MySqlConnection(_connectionString);
-            connection.Open();
+            await connection.OpenAsync();
 
             var existente = BuscarPorUsuarioId(pagamento.usuario_id);
             if (existente != null)
@@ -140,7 +140,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@expiracao", pagamento.expiracao ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@valor_pago", pagamento.valor_pago ?? (object)DBNull.Value);
 
-            pagamento.id = Convert.ToInt32(cmd.ExecuteScalar());
+            pagamento.id = Convert.ToInt32(await cmd.ExecuteScalarAsync());
         }
 
      

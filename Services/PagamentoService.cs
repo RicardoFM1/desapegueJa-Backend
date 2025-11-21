@@ -46,13 +46,15 @@ namespace BackendDesapegaJa.Services
             return pagamento;
         }
 
-        
-        public Pagamentos CriarPagamento(Pagamentos pagamento)
+
+        // Seu método no PagamentoService.cs deve ser assíncrono (Task<...>)
+        public async Task<Pagamentos> CriarPagamentoAsync(Pagamentos pagamento)
         {
             var pagamentoExistente = _repo.BuscarPorUsuarioId(pagamento.usuario_id);
             if (pagamentoExistente != null)
                 throw new InvalidOperationException("O usuário já possui um pagamento em aberto.");
 
+           
             var usuario = _repoUser.BuscarPorId(pagamento.usuario_id);
             var formaPagamento = _repoFormaPagamento.BuscarPorId(pagamento.forma_pagamento_id);
             var statusPagamento = _repoStatusPagamento.BuscarPorId(pagamento.status_pagamento_id);
@@ -60,31 +62,28 @@ namespace BackendDesapegaJa.Services
             if (usuario == null || usuario.status.ToLower() == "inativo") throw new InvalidOperationException("Usuário inválido");
             if (formaPagamento == null || formaPagamento.status.ToLower() == "inativo") throw new InvalidOperationException("Forma de pagamento inválida");
 
-
             pagamento.createdAt = DateTime.UtcNow;
 
             var ordem = _repoOrdem.BuscarPorId(pagamento.ordem_id)
                 ?? throw new InvalidOperationException("Ordem de compra não encontrada.");
-            
-
-            
 
             if (formaPagamento.forma.ToLower().Contains("pix"))
             {
                 
-                var dadosCobranca = _pagSeguro.CriarCobrancaPixAsync(ordem, usuario).GetAwaiter().GetResult();
+                var dadosCobranca = await _pagSeguro.CriarCobrancaPixAsync(ordem, usuario);
 
                 pagamento.pix_copia_codigo = dadosCobranca.PixCopiaCodigo;
-                
+
+             
                 pagamento.pix_qr_code = dadosCobranca.PixQrCodeBase64 ?? dadosCobranca.PixCopiaCodigo;
                 pagamento.expiracao = dadosCobranca.Expiracao;
-               
+
                 pagamento.pagamento_uuid = dadosCobranca.TransacaoIdExterno;
                 pagamento.status_pagamento_id = 1;
             }
-           
 
-            _repo.Adicionar(pagamento);
+            await _repo.AdicionarAsync(pagamento); 
+
             return pagamento;
         }
 

@@ -7,6 +7,7 @@ using System.Security.Claims;
 
 namespace BackendDesapegaJa.Controllers
 {
+
     [ApiController]
     [Route("desapega/pagamentos")]
     public class PagamentoController : ControllerBase
@@ -101,16 +102,15 @@ namespace BackendDesapegaJa.Controllers
         }
 
         // POST /desapega/pagamentos
+
         [HttpPost]
-        public IActionResult CriarPagamento([FromBody] Pagamentos pagamento)
+        [Authorize] 
+        public async Task<IActionResult> CriarPagamento([FromBody] Pagamentos pagamento) 
         {
             try
             {
-                var loggedUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (loggedUserId == null)
-                    return StatusCode(403, new { message = "Sem autorização para efetuar esse pagamento" });
-
-                var pagamentoNovo = _service.CriarPagamento(pagamento);
+              
+                var pagamentoNovo = await _service.CriarPagamentoAsync(pagamento);
                 return StatusCode(201, pagamentoNovo);
             }
             catch (InvalidOperationException ex)
@@ -119,6 +119,7 @@ namespace BackendDesapegaJa.Controllers
             }
             catch (Exception ex)
             {
+               
                 return StatusCode(500, new { message = ex.Message });
             }
         }
