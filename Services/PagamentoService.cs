@@ -1,4 +1,5 @@
 ﻿using BackendDesapegaJa.Entities;
+using BackendDesapegaJa.Helpers;
 using BackendDesapegaJa.Interfaces;
 
 namespace BackendDesapegaJa.Services
@@ -9,18 +10,21 @@ namespace BackendDesapegaJa.Services
         private readonly IUsuarioRepository _repoUser;
         private readonly IFormasDePagamentoRepository _repoFormaPagamento;
         private readonly IStatusDePagamentoRepository _repoStatusPagamento;
+        private readonly IConfiguration _config;
 
         public PagamentoService(
             IPagamentosRepository repo,
             IUsuarioRepository user,
             IFormasDePagamentoRepository formasPagamento,
-            IStatusDePagamentoRepository statusPagamento
+            IStatusDePagamentoRepository statusPagamento,
+            IConfiguration config
         )
         {
             _repo = repo;
             _repoUser = user;
             _repoFormaPagamento = formasPagamento;
             _repoStatusPagamento = statusPagamento;
+            _config = config;
         }
 
         public IEnumerable<Pagamentos> GetPagamentos()
@@ -38,27 +42,59 @@ namespace BackendDesapegaJa.Services
 
         public Pagamentos CriarPagamento(Pagamentos pagamento)
         {
-         
+            
             var pagamentoExistente = _repo.BuscarPorUsuarioId(pagamento.usuario_id);
             if (pagamentoExistente != null)
-                throw new InvalidOperationException("O usuário já possui um pagamento");
+                throw new InvalidOperationException("O usuário já possui um pagamento em aberto.");
 
             var usuario = _repoUser.BuscarPorId(pagamento.usuario_id);
             var formaPagamento = _repoFormaPagamento.BuscarPorId(pagamento.forma_pagamento_id);
             var statusPagamento = _repoStatusPagamento.BuscarPorId(pagamento.status_pagamento_id);
 
-            if (usuario == null || usuario.status.ToLower() == "inativo")
-                throw new InvalidOperationException("Usuário referenciado não encontrado e/ou inativo");
+            if (usuario == null || usuario.status.ToLower() == "inativo") throw new InvalidOperationException("Usuário inválido");
+            if (formaPagamento == null || formaPagamento.status.ToLower() == "inativo") throw new InvalidOperationException("Forma de pagamento inválida");
 
-            if (formaPagamento == null || formaPagamento.status.ToLower() == "inativo")
-                throw new InvalidOperationException("Forma de pagamento referenciada não encontrada e/ou inativa");
-
-            if (statusPagamento == null || statusPagamento.status.ToLower() == "inativo")
-                throw new InvalidOperationException("Status de pagamento não encontrado e/ou inativo");
-
+            
             pagamento.createdAt = DateTime.UtcNow;
+            
+
+            if (formaPagamento.forma.ToLower().Contains("pix"))
+            {
+              
+                string chavePix = _config["PixConfig:Chave"] ?? "+5551984018587";
+                string nomeRecebedor = _config["PixConfig:Nome"] ?? "RICARDO MOURA";
+                string cidadeRecebedor = _config["PixConfig:Cidade"] ?? "SANTA CRUZ SUL";
+
+               
+                string txid = $"PEDIDO{pagamento.ordem_id}"; 
+
+               
+                decimal valorEmReais = (decimal)pagamento.valor / 100m;
+
+             
+                string payloadPix = PixGenerator.GerarPayloadPix(
+                    chavePix,
+                    nomeRecebedor,
+                    cidadeRecebedor,
+                    txid,
+                    valorEmReais
+                );
+
+              
+                pagamento.pix_copia_codigo = payloadPix;
+
+                
+                pagamento.pix_qr_code = payloadPix;
+            }
+
+            
+            if (formaPagamento.forma.ToLower().Contains("boleto"))
+            {
+               
+            }
 
             _repo.Adicionar(pagamento);
+
             return pagamento;
         }
 
