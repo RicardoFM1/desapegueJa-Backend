@@ -159,12 +159,14 @@ namespace BackendDesapegaJa.Services
         {
             var pagamento = _repo.BuscarPorUsuarioId(usuarioId);
             if (pagamento == null)
+            {
                 throw new InvalidOperationException("Pagamento não encontrado para esse usuário");
-            _repo.DeletarPorUsuarioId(usuarioId);
+            }
+ 
 
             
-            _repoOrdem.DeletarPorUsuarioId(usuarioId);
             _repo.DeletarPorUsuarioId(usuarioId);
+            _repoOrdem.DeletarPorUsuarioId(usuarioId);
         }
     }
 }
