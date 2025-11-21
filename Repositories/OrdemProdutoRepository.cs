@@ -121,19 +121,6 @@ namespace BackendDesapegaJa.Repositories
             };
         }
 
-        public void DeletarPorUsuarioId(int usuarioId)
-        {
-            var existente = BuscarPorUsuarioId(usuarioId);
-            if (existente == null)
-                throw new InvalidOperationException("OrdemProduto do usuário não existe.");
-
-            using var connection = new MySqlConnection(_connectionString);
-            connection.Open();
-
-            string sql = "DELETE FROM ordem_produto WHERE id=@id";
-            using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@id", existente.id);
-            cmd.ExecuteNonQuery();
-        }
+       
     }
 }

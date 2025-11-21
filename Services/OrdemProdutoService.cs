@@ -71,9 +71,6 @@ namespace BackendDesapegaJa.Services
             return _repo.AtualizarPorUsuarioId(usuarioId, dto);
         }
 
-        public void DeletarPorUsuarioId(int usuarioId)
-        {
-            _repo.DeletarPorUsuarioId(usuarioId);
-        }
+        
     }
 }

@@ -8,6 +8,6 @@ namespace BackendDesapegaJa.Interfaces
         OrdemProduto? BuscarPorUsuarioId(int usuarioId);
         void Adicionar(OrdemProduto ordemProduto);
         OrdemProduto AtualizarPorUsuarioId(int usuarioId, OrdemProdutoUpdateDTO dto);
-        void DeletarPorUsuarioId(int usuarioId);
+        
     }
 }

@@ -117,9 +117,7 @@ namespace BackendDesapegaJa.Services
             if (ordem == null)
                 throw new InvalidOperationException("Nenhuma ordem de compra encontrada para este usuário.");
 
-           
-            _repoOrdemProduto.DeletarPorUsuarioId(usuarioId);
-
+         
           
             _repo.DeletarPorUsuarioId(usuarioId);
         }

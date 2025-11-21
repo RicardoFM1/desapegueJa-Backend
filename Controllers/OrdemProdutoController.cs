@@ -63,18 +63,6 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        [HttpDelete("usuario/{usuarioId}")]
-        public IActionResult Deletar(int usuarioId)
-        {
-            try
-            {
-                _service.DeletarPorUsuarioId(usuarioId);
-                return NoContent();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-        }
+        
     }
 }
