@@ -11,13 +11,15 @@ namespace BackendDesapegaJa.Services
         private readonly IFormasDePagamentoRepository _repoFormaPagamento;
         private readonly IStatusDePagamentoRepository _repoStatusPagamento;
         private readonly IConfiguration _config;
+        private readonly IOrdemDeCompraRepository _repoOrdem;
 
         public PagamentoService(
             IPagamentosRepository repo,
             IUsuarioRepository user,
             IFormasDePagamentoRepository formasPagamento,
             IStatusDePagamentoRepository statusPagamento,
-            IConfiguration config
+            IConfiguration config,
+            IOrdemDeCompraRepository repoOrdem
         )
         {
             _repo = repo;
@@ -25,6 +27,7 @@ namespace BackendDesapegaJa.Services
             _repoFormaPagamento = formasPagamento;
             _repoStatusPagamento = statusPagamento;
             _config = config;
+            _repoOrdem = repoOrdem;
         }
 
         public IEnumerable<Pagamentos> GetPagamentos()
@@ -157,7 +160,10 @@ namespace BackendDesapegaJa.Services
             var pagamento = _repo.BuscarPorUsuarioId(usuarioId);
             if (pagamento == null)
                 throw new InvalidOperationException("Pagamento não encontrado para esse usuário");
+            _repo.DeletarPorUsuarioId(usuarioId);
 
+            
+            _repoOrdem.DeletarPorUsuarioId(usuarioId);
             _repo.DeletarPorUsuarioId(usuarioId);
         }
     }
