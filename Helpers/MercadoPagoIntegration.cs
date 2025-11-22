@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json.Serialization;
 
 namespace BackendDesapegaJa.Helpers
 {
@@ -48,7 +47,6 @@ namespace BackendDesapegaJa.Helpers
                 notification_url = _webhookUrl
             };
 
-        
             var idempotencyKey = Guid.NewGuid().ToString();
             _httpClient.DefaultRequestHeaders.Remove("X-Idempotency-Key");
             _httpClient.DefaultRequestHeaders.Add("X-Idempotency-Key", idempotencyKey);
@@ -59,7 +57,6 @@ namespace BackendDesapegaJa.Helpers
             if (!response.IsSuccessStatusCode)
                 throw new Exception($"Erro Mercado Pago: {response.StatusCode} - {jsonString}");
 
-            
             var paymentResponse = JsonConvert.DeserializeObject<PaymentPixResponse>(jsonString);
 
             var pixInfo = paymentResponse.PointOfInteraction.TransactionData;
@@ -73,7 +70,6 @@ namespace BackendDesapegaJa.Helpers
             };
         }
 
-
         public async Task<MercadoPagoPagamento?> ObterPagamentoPorId(string paymentId)
         {
             var response = await _httpClient.GetAsync($"v1/payments/{paymentId}");
@@ -85,7 +81,5 @@ namespace BackendDesapegaJa.Helpers
 
             return JsonConvert.DeserializeObject<MercadoPagoPagamento>(json);
         }
-
-
     }
 }
