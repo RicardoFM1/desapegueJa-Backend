@@ -168,8 +168,16 @@ namespace BackendDesapegaJa.Controllers
                 var pagamentoNovo = await _service.CriarPagamentoAsync(pagamento);
                 return StatusCode(201, pagamentoNovo);
             }
+            catch (InvalidOperationException ex) 
+            {
+               
+                Console.WriteLine($"ERRO DE OPERAÇÃO: {ex.Message}");
+                return BadRequest(new { message = ex.Message }); 
+            }
             catch (Exception ex)
             {
+                Console.WriteLine($"ERRO GERAL: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
                 return StatusCode(500, new { message = ex.Message });
             }
         }
