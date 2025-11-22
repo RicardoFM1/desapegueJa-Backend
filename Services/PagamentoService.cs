@@ -67,6 +67,12 @@ namespace BackendDesapegaJa.Services
             return status?.id ?? 0;
         }
 
+        public IEnumerable<Pagamentos> ListarPagamentosExpirados(int idStatusPendente)
+        {
+           
+            return _repo.ListarExpirados(DateTime.UtcNow, idStatusPendente);
+        }
+
         public async Task<Pagamentos> CriarPagamentoAsync(Pagamentos pagamento)
         {
             var pagamentoExistente = _repo.BuscarPorUsuarioId(pagamento.usuario_id);

@@ -11,6 +11,8 @@ namespace BackendDesapegaJa.Interfaces
 
         Pagamentos? BuscarPorTransacaoIdExterno(string transacaoIdExterno);
 
+        IEnumerable<Pagamentos> ListarExpirados(DateTime dataLimite, int idStatusPendente);
+
         Task AdicionarAsync(Pagamentos pagamento);
         Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento);
 

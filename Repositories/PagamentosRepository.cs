@@ -32,7 +32,33 @@ namespace BackendDesapegaJa.Repositories
             return pagamentos;
         }
 
-        
+        public IEnumerable<Pagamentos> ListarExpirados(DateTime dataLimite, int idStatusPendente)
+        {
+            var pagamentos = new List<Pagamentos>();
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            // A string SQL utiliza o parâmetro numérico para o status
+            string sql = @"
+        SELECT p.* FROM Pagamentos p
+        WHERE p.expiracao IS NOT NULL 
+        AND p.expiracao < @dataLimite
+        AND p.status_pagamento_id = @idStatusPendente";
+
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@dataLimite", dataLimite);
+            // Adiciona o novo parâmetro com o ID numérico
+            cmd.Parameters.AddWithValue("@idStatusPendente", idStatusPendente);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                pagamentos.Add(MapReaderToPagamento(reader));
+            }
+
+            return pagamentos;
+        }
+
         public Pagamentos? BuscarPorId(int id)
         {
             using var connection = new MySqlConnection(_connectionString);

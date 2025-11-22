@@ -69,8 +69,6 @@ namespace BackendDesapegaJa.Controllers
                 string webhookSecret = _config["MercadoPago:WebhookSecret"]
                                  ?? throw new InvalidOperationException("Webhook Secret do Mercado Pago não configurado.");
 
-                // Nota: O 'webhookSecret' está pronto para ser usado para validar a assinatura do request.
-                // A lógica de validação de Hash (segurança) viria aqui antes de ObterPagamentoPorId.
 
                 string paymentId = data.data.id;
 
