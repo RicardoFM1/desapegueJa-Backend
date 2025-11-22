@@ -57,7 +57,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        [HttpPost("webhook")]
+        [HttpPost("weebhook")]
         [AllowAnonymous]
         public async Task<IActionResult> HandleMercadoPagoWebhook([FromBody] MercadoPagoWebhook data)
         {
