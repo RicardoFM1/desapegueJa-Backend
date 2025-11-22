@@ -13,16 +13,15 @@ namespace BackendDesapegaJa.Controllers
     {
         private readonly PagamentoService _service;
         private readonly MercadoPagoIntegration _mp;
+        private readonly IConfiguration _config;
 
-        public PagamentoController(PagamentoService service, MercadoPagoIntegration mp)
+        public PagamentoController(PagamentoService service, MercadoPagoIntegration mp, IConfiguration config)
         {
             _service = service;
             _mp = mp;
+            _config = config;
         }
 
-        // =========================================
-        // GET geral
-        // =========================================
         [HttpGet]
         public IActionResult Get()
         {
@@ -36,9 +35,28 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        // =========================================
-        // WEBHOOK MERCADO PAGO
-        // =========================================
+        [HttpGet("status/{transacaoIdExterno}")]
+        public IActionResult GetStatusPagamento(string transacaoIdExterno)
+        {
+            try
+            {
+                var pagamento = _service.GetPagamentoByTransacaoIdExterno(transacaoIdExterno);
+
+                if (pagamento == null)
+                    return NotFound(new { message = "Pagamento não encontrado" });
+
+                return Ok(new { statusId = pagamento.status_pagamento_id });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
         [HttpPost("webhook")]
         [AllowAnonymous]
         public async Task<IActionResult> HandleMercadoPagoWebhook([FromBody] MercadoPagoWebhook data)
@@ -48,10 +66,15 @@ namespace BackendDesapegaJa.Controllers
                 if (data == null || data.data == null || string.IsNullOrWhiteSpace(data.data.id))
                     return BadRequest(new { message = "Payload inválido" });
 
+                string webhookSecret = _config["MercadoPago:WebhookSecret"]
+                                 ?? throw new InvalidOperationException("Webhook Secret do Mercado Pago não configurado.");
+
+                // Nota: O 'webhookSecret' está pronto para ser usado para validar a assinatura do request.
+                // A lógica de validação de Hash (segurança) viria aqui antes de ObterPagamentoPorId.
+
                 string paymentId = data.data.id;
 
                 var pagamentoMP = await _mp.ObterPagamentoPorId(paymentId);
-
 
                 if (pagamentoMP == null)
                     return NotFound(new { message = "Pagamento não encontrado" });
@@ -84,7 +107,6 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-
         [HttpGet("usuario/{usuarioId}")]
         public IActionResult GetByUsuarioId(int usuarioId)
         {
@@ -113,7 +135,6 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-    
         [HttpPatch("usuario/{usuarioId}")]
         public IActionResult AtualizarPagamento(int usuarioId, [FromBody] PagamentosUpdateDTO pagamento)
         {

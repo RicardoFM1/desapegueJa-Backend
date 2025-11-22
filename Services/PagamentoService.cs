@@ -45,9 +45,18 @@ namespace BackendDesapegaJa.Services
                 throw new InvalidOperationException("Não foi possível encontrar esse pagamento");
             return pagamento;
         }
+        public Pagamentos GetPagamentoByTransacaoIdExterno(string transacaoIdExterno)
+        {
+            
+            var pagamento = _repo.BuscarPorUUID(transacaoIdExterno);
+
+            if (pagamento == null)
+                throw new InvalidOperationException($"Não foi possível encontrar o pagamento com o ID de transação externo '{transacaoIdExterno}'.");
+
+            return pagamento;
+        }
 
 
-  
         public async Task<Pagamentos> CriarPagamentoAsync(Pagamentos pagamento)
         {
             var pagamentoExistente = _repo.BuscarPorUsuarioId(pagamento.usuario_id);

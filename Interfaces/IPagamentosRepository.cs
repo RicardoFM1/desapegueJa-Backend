@@ -8,6 +8,9 @@ namespace BackendDesapegaJa.Interfaces
         Pagamentos BuscarPorId(int id);
 
         Pagamentos? BuscarPorUsuarioId(int usuarioId);
+
+        Pagamentos? BuscarPorTransacaoIdExterno(string transacaoIdExterno);
+
         Task AdicionarAsync(Pagamentos pagamento);
         Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento);
 

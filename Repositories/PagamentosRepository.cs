@@ -59,6 +59,22 @@ namespace BackendDesapegaJa.Repositories
             return reader.Read() ? MapReaderToPagamento(reader) : null;
         }
 
+        
+        public Pagamentos? BuscarPorTransacaoIdExterno(string transacaoIdExterno)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+           
+            string sql = "SELECT * FROM Pagamentos WHERE pagamento_uuid = @transacaoIdExterno";
+
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@transacaoIdExterno", transacaoIdExterno);
+
+            using var reader = cmd.ExecuteReader();
+         
+            return reader.Read() ? MapReaderToPagamento(reader) : null;
+        }
 
         public Pagamentos? BuscarPorUUID(string uuid)
         {
