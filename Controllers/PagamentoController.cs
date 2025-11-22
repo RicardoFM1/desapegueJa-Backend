@@ -106,11 +106,13 @@ namespace BackendDesapegaJa.Controllers
 
                 if (novoStatusId == 0) return Ok();
 
+                Console.WriteLine($"[DEBUG] Valor do MP: {pagamentoMP.TransactionAmount}");
+
                 int? valorPago = pagamentoMP.Status == "approved"
                     ? (int)(pagamentoMP.TransactionAmount * 100)
                     : null;
 
-              
+
                 try
                 {
                   

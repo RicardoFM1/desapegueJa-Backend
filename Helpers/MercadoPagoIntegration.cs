@@ -59,6 +59,19 @@ namespace BackendDesapegaJa.Helpers
 
             var paymentResponse = JsonConvert.DeserializeObject<PaymentPixResponse>(jsonString);
 
+           
+            if (paymentResponse == null)
+                throw new InvalidOperationException("Resposta do Mercado Pago veio nula ao deserializar.");
+
+            if (paymentResponse.PointOfInteraction == null ||
+                paymentResponse.PointOfInteraction.TransactionData == null)
+            {
+           
+                Console.WriteLine($"ERRO JSON MP: {jsonString}");
+                throw new InvalidOperationException("Mercado Pago não retornou dados do QR Code (PointOfInteraction nulo).");
+            }
+            
+
             var pixInfo = paymentResponse.PointOfInteraction.TransactionData;
 
             return new PagamentoRetornoApi
