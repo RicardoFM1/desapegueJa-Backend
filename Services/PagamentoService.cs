@@ -12,7 +12,7 @@ namespace BackendDesapegaJa.Services
         private readonly IStatusDePagamentoRepository _repoStatusPagamento;
         private readonly IConfiguration _config;
         private readonly IOrdemDeCompraRepository _repoOrdem;
-        private readonly PagSeguroIntegration _pagSeguro;
+        private readonly MercadoPagoIntegration _mercadoPago;
 
         public PagamentoService(
             IPagamentosRepository repo,
@@ -21,7 +21,7 @@ namespace BackendDesapegaJa.Services
             IStatusDePagamentoRepository statusPagamento,
             IConfiguration config,
             IOrdemDeCompraRepository repoOrdem,
-            PagSeguroIntegration pagSeguro
+            MercadoPagoIntegration mercadoPago
         )
         {
             _repo = repo;
@@ -30,7 +30,7 @@ namespace BackendDesapegaJa.Services
             _repoStatusPagamento = statusPagamento;
             _config = config;
             _repoOrdem = repoOrdem;
-            _pagSeguro = pagSeguro;
+            _mercadoPago = mercadoPago;
         }
 
         public IEnumerable<Pagamentos> GetPagamentos()
@@ -47,7 +47,7 @@ namespace BackendDesapegaJa.Services
         }
 
 
-        // Seu método no PagamentoService.cs deve ser assíncrono (Task<...>)
+  
         public async Task<Pagamentos> CriarPagamentoAsync(Pagamentos pagamento)
         {
             var pagamentoExistente = _repo.BuscarPorUsuarioId(pagamento.usuario_id);
@@ -69,8 +69,8 @@ namespace BackendDesapegaJa.Services
 
             if (formaPagamento.forma.ToLower().Contains("pix"))
             {
-                
-                var dadosCobranca = await _pagSeguro.CriarCobrancaPixAsync(ordem, usuario);
+
+                var dadosCobranca = await _mercadoPago.CriarCobrancaPixAsync(ordem, usuario);
 
                 pagamento.pix_copia_codigo = dadosCobranca.PixCopiaCodigo;
 

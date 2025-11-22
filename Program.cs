@@ -108,7 +108,7 @@ builder.Services.AddScoped<PagamentoService>();
 
 builder.Services.AddScoped<ICarrinhoRepository, CarrinhoRepository>();
 builder.Services.AddScoped<CarrinhoService>();
-builder.Services.AddHttpClient<PagSeguroIntegration>();
+builder.Services.AddHttpClient<MercadoPagoIntegration>();
 // ------------------------
 // Build app
 // ------------------------

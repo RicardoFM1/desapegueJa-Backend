@@ -7,21 +7,22 @@ using System.Security.Claims;
 
 namespace BackendDesapegaJa.Controllers
 {
-
     [ApiController]
     [Route("desapega/pagamentos")]
     public class PagamentoController : ControllerBase
     {
         private readonly PagamentoService _service;
-        private readonly PagSeguroIntegration _pagSeguro;
+        private readonly MercadoPagoIntegration _mp;
 
-        public PagamentoController(PagamentoService service, PagSeguroIntegration pagSeguro)
+        public PagamentoController(PagamentoService service, MercadoPagoIntegration mp)
         {
             _service = service;
-            _pagSeguro = pagSeguro; 
+            _mp = mp;
         }
 
-        // GET /desapega/pagamentos
+        // =========================================
+        // GET geral
+        // =========================================
         [HttpGet]
         public IActionResult Get()
         {
@@ -29,61 +30,61 @@ namespace BackendDesapegaJa.Controllers
             {
                 return Ok(_service.GetPagamentos());
             }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        // =========================================
+        // WEBHOOK MERCADO PAGO
+        // =========================================
         [HttpPost("webhook")]
         [AllowAnonymous]
-        public IActionResult HandlePagSeguroWebhook([FromHeader(Name = "X-Webhook-Token")] string? token, [FromBody] PagSeguroWebhookNotification data)
+        public async Task<IActionResult> HandleMercadoPagoWebhook([FromBody] MercadoPagoWebhook data)
         {
             try
             {
-                // 1. Validação de Segurança (Obrigatória!)
-                if (string.IsNullOrWhiteSpace(token) || !_pagSeguro.ValidateWebhookToken(token))
-                {
-                    return Unauthorized(new { message = "Token de Webhook inválido." });
-                }
+                if (data == null || data.data == null || string.IsNullOrWhiteSpace(data.data.id))
+                    return BadRequest(new { message = "Payload inválido" });
 
-                // ... (Verificação de dados e mapeamento de status) ...
-                int novoStatusId;
-                switch (data.status?.ToUpper())
-                {
-                    case "PAID":
-                    case "COMPLETED":
-                        novoStatusId = 2;
-                        break;
-                    case "CANCELED":
-                    case "EXPIRED":
-                        novoStatusId = 4;
-                        break;
-                    default:
-                        return Ok();
-                }
+                string paymentId = data.data.id;
 
-                // 2. Atualiza o status no seu sistema
+                var pagamentoMP = await _mp.ObterPagamentoPorId(paymentId);
+
+
+                if (pagamentoMP == null)
+                    return NotFound(new { message = "Pagamento não encontrado" });
+
+                int novoStatusId = pagamentoMP.Status switch
+                {
+                    "approved" => 2,
+                    "rejected" or "cancelled" => 4,
+                    _ => 0
+                };
+
+                if (novoStatusId == 0)
+                    return Ok();
+
+                int? valorPago = pagamentoMP.Status == "approved"
+                    ? (int)(pagamentoMP.TransactionAmount * 100)
+                    : null;
+
                 _service.AtualizarStatusPagamentoPorReferencia(
-                    data.reference_id!,
+                    pagamentoMP.ExternalReference!,
                     novoStatusId,
-                    data.amount_paid
+                    valorPago
                 );
 
-                // 3. Resposta obrigatória ao PagSeguro
                 return Ok();
             }
-            // ... (Tratamento de exceções) ...
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro ao processar Webhook: " + ex.Message });
+                return StatusCode(500, new { message = "Erro ao processar webhook: " + ex.Message });
             }
         }
 
-        // GET /desapega/pagamentos/usuario/{usuarioId}
+
         [HttpGet("usuario/{usuarioId}")]
         public IActionResult GetByUsuarioId(int usuarioId)
         {
@@ -91,55 +92,40 @@ namespace BackendDesapegaJa.Controllers
             {
                 return Ok(_service.GetPagamentoByUsuarioId(usuarioId));
             }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
         }
 
-        // POST /desapega/pagamentos
-
         [HttpPost]
-        [Authorize] 
-        public async Task<IActionResult> CriarPagamento([FromBody] Pagamentos pagamento) 
+        [Authorize]
+        public async Task<IActionResult> CriarPagamento([FromBody] Pagamentos pagamento)
         {
             try
             {
-              
                 var pagamentoNovo = await _service.CriarPagamentoAsync(pagamento);
                 return StatusCode(201, pagamentoNovo);
             }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
             catch (Exception ex)
             {
-               
                 return StatusCode(500, new { message = ex.Message });
             }
         }
 
-        // PATCH /desapega/pagamentos/usuario/{usuarioId}
+    
         [HttpPatch("usuario/{usuarioId}")]
         public IActionResult AtualizarPagamento(int usuarioId, [FromBody] PagamentosUpdateDTO pagamento)
         {
             try
             {
                 var loggedUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (loggedUserId == null)
-                    return StatusCode(403, new { message = "Sem autorização para atualizar esse pagamento" });
 
-                var pagamentoAtualizado = _service.AtualizarPagamento(usuarioId, pagamento);
-                return Ok(pagamentoAtualizado);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
+                if (loggedUserId == null)
+                    return StatusCode(403, new { message = "Sem autorização" });
+
+                var resultado = _service.AtualizarPagamento(usuarioId, pagamento);
+                return Ok(resultado);
             }
             catch (Exception ex)
             {
@@ -147,22 +133,18 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        // DELETE /desapega/pagamentos/usuario/{usuarioId}
         [HttpDelete("usuario/{usuarioId}")]
         public IActionResult DeletarPagamento(int usuarioId)
         {
             try
             {
                 var loggedUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
                 if (loggedUserId == null)
-                    return StatusCode(403, new { message = "Sem autorização para deletar esse pagamento" });
+                    return StatusCode(403, new { message = "Sem autorização" });
 
                 _service.DeletarPagamentoPorUsuarioId(usuarioId);
                 return NoContent();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
