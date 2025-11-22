@@ -4,6 +4,7 @@ using BackendDesapegaJa.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace BackendDesapegaJa.Controllers
 {
@@ -59,15 +60,15 @@ namespace BackendDesapegaJa.Controllers
 
         [HttpPost("/desapega/pagamentos/webhook")]
         [AllowAnonymous]
-        public async Task<IActionResult> HandleMercadoPagoWebhook([FromBody] object debugData)
+        public async Task<IActionResult> HandleMercadoPagoWebhook([FromBody] JsonElement debugData) 
         {
             try
             {
-               
-                var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(debugData);
+                
+                string jsonString = debugData.GetRawText();
 
-               
-                Console.WriteLine("--- WEBHOOK PAYLOAD ---");
+                
+                Console.WriteLine("--- WEBHOOK PAYLOAD (CORRIGIDO) ---");
                 Console.WriteLine(jsonString);
 
                
@@ -77,7 +78,6 @@ namespace BackendDesapegaJa.Controllers
                 if (data == null || data.data == null || string.IsNullOrWhiteSpace(data.data.id))
                 {
                     Console.WriteLine("AVISO: Payload incompleto ou ID nulo.");
-                   
                     return Ok();
                 }
 
@@ -92,11 +92,9 @@ namespace BackendDesapegaJa.Controllers
                 if (pagamentoMP == null)
                 {
                     Console.WriteLine($"Pagamento {paymentId} não encontrado na API do MP.");
-                   
                     return Ok();
                 }
 
-               
                 int novoStatusId = pagamentoMP.Status switch
                 {
                     "approved" => 2,
@@ -106,19 +104,20 @@ namespace BackendDesapegaJa.Controllers
 
                 if (novoStatusId == 0) return Ok();
 
-                Console.WriteLine($"[DEBUG] Valor do MP: {pagamentoMP.TransactionAmount}");
-
                 int? valorPago = pagamentoMP.Status == "approved"
                     ? (int)(pagamentoMP.TransactionAmount * 100)
                     : null;
 
+                
+                Console.WriteLine($"[DEBUG] Valor vindo do MP: {pagamentoMP.TransactionAmount}");
+                Console.WriteLine($"[DEBUG] Valor calculado (centavos): {valorPago}");
 
+                
                 try
                 {
-                  
                     if (string.IsNullOrEmpty(pagamentoMP.ExternalReference))
                     {
-                        Console.WriteLine("AVISO: Pagamento sem ExternalReference. Ignorando atualização no DB.");
+                        Console.WriteLine("AVISO: Pagamento sem ExternalReference.");
                         return Ok();
                     }
 
@@ -132,7 +131,6 @@ namespace BackendDesapegaJa.Controllers
                 catch (Exception dbEx)
                 {
                     Console.WriteLine($"ERRO DE BANCO: {dbEx.Message}");
-                   
                 }
 
                 return Ok();
@@ -140,8 +138,6 @@ namespace BackendDesapegaJa.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"ERRO CRÍTICO: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
-                
                 return StatusCode(500, new { message = "Erro interno: " + ex.Message });
             }
         }
