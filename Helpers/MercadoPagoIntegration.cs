@@ -27,7 +27,7 @@ namespace BackendDesapegaJa.Helpers
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public async Task<PagamentoRetornoApi> CriarCobrancaPixAsync(OrdemDeCompra ordem, Usuario usuario, string uuidExterno)
+        public async Task<PagamentoRetornoApi> CriarCobrancaPixAsync(OrdemDeCompra ordem, Usuario usuario, string uuidExterno) // <--- Novo parâmetro
         {
             var payload = new
             {

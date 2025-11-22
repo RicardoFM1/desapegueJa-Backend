@@ -60,33 +60,25 @@ namespace BackendDesapegaJa.Controllers
 
         [HttpPost("/desapega/pagamentos/webhook")]
         [AllowAnonymous]
-        public async Task<IActionResult> HandleMercadoPagoWebhook([FromBody] JsonElement debugData) 
+        public async Task<IActionResult> HandleMercadoPagoWebhook([FromBody] JsonElement debugData)
         {
             try
             {
-                
                 string jsonString = debugData.GetRawText();
-
-                
                 Console.WriteLine("--- WEBHOOK PAYLOAD (CORRIGIDO) ---");
                 Console.WriteLine(jsonString);
 
-               
                 var data = Newtonsoft.Json.JsonConvert.DeserializeObject<MercadoPagoWebhook>(jsonString);
 
-               
                 if (data == null || data.data == null || string.IsNullOrWhiteSpace(data.data.id))
                 {
                     Console.WriteLine("AVISO: Payload incompleto ou ID nulo.");
                     return Ok();
                 }
 
-                string webhookSecret = _config["MercadoPago:WebhookSecret"];
-
                 string paymentId = data.data.id;
                 Console.WriteLine($"Buscando Pagamento ID no MP: {paymentId}");
 
-                
                 var pagamentoMP = await _mp.ObterPagamentoPorId(paymentId);
 
                 if (pagamentoMP == null)
@@ -108,37 +100,60 @@ namespace BackendDesapegaJa.Controllers
                     ? (int)(pagamentoMP.TransactionAmount * 100)
                     : null;
 
-                
                 Console.WriteLine($"[DEBUG] Valor vindo do MP: {pagamentoMP.TransactionAmount}");
                 Console.WriteLine($"[DEBUG] Valor calculado (centavos): {valorPago}");
 
-                
-                try
+
+              
+                const int maxRetries = 3;
+                const int delayMs = 500;
+
+                if (string.IsNullOrEmpty(pagamentoMP.ExternalReference))
                 {
-                    if (string.IsNullOrEmpty(pagamentoMP.ExternalReference))
+                    Console.WriteLine("AVISO: Pagamento sem ExternalReference. Verifique se o campo external_reference foi enviado na criação do Pix.");
+                    return Ok();
+                }
+
+                for (int attempt = 0; attempt < maxRetries; attempt++)
+                {
+                    try
                     {
-                        Console.WriteLine("AVISO: Pagamento sem ExternalReference.");
-                        return Ok();
+                        _service.AtualizarStatusPagamentoPorReferencia(
+                            pagamentoMP.ExternalReference,
+                            novoStatusId,
+                            valorPago
+                        );
+                        Console.WriteLine($"SUCESSO: Banco de dados atualizado na tentativa {attempt + 1}!");
+                        return Ok(); 
                     }
-
-                    _service.AtualizarStatusPagamentoPorReferencia(
-                        pagamentoMP.ExternalReference,
-                        novoStatusId,
-                        valorPago
-                    );
-                    Console.WriteLine("SUCESSO: Banco de dados atualizado!");
+                    catch (InvalidOperationException ex) when (ex.Message.Contains("Pagamento não encontrado"))
+                    {
+                      
+                        if (attempt < maxRetries - 1)
+                        {
+                            Console.WriteLine($"AVISO: Pagamento {pagamentoMP.ExternalReference} não encontrado no DB. Tentando novamente em {delayMs}ms (Tentativa {attempt + 2})...");
+                            await Task.Delay(delayMs);
+                        }
+                        else
+                        {
+                         
+                            Console.WriteLine($"ERRO CRÍTICO: Pagamento {pagamentoMP.ExternalReference} não encontrado após {maxRetries} tentativas. {ex.Message}");
+                           
+                            return StatusCode(500, new { message = "Erro interno: Pagamento não encontrado no DB após tentativas." });
+                        }
+                    }
+                    
                 }
-                catch (Exception dbEx)
-                {
-                    Console.WriteLine($"ERRO DE BANCO: {dbEx.Message}");
-                }
+          
 
-                return Ok();
+
+                return Ok(); 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERRO CRÍTICO: {ex.Message}");
-                return StatusCode(500, new { message = "Erro interno: " + ex.Message });
+                Console.WriteLine($"ERRO GERAL NO WEBHOOK: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { message = "Erro interno no webhook: " + ex.Message });
             }
         }
 
