@@ -27,7 +27,7 @@ namespace BackendDesapegaJa.Helpers
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public async Task<PagamentoRetornoApi> CriarCobrancaPixAsync(OrdemDeCompra ordem, Usuario usuario)
+        public async Task<PagamentoRetornoApi> CriarCobrancaPixAsync(OrdemDeCompra ordem, Usuario usuario, string uuidExterno)
         {
             var payload = new
             {
@@ -44,7 +44,8 @@ namespace BackendDesapegaJa.Helpers
                         number = usuario.Cpf.Replace(".", "").Replace("-", "")
                     }
                 },
-                notification_url = _webhookUrl
+                notification_url = _webhookUrl,
+                external_reference = uuidExterno 
             };
 
             var idempotencyKey = Guid.NewGuid().ToString();

@@ -79,7 +79,7 @@ namespace BackendDesapegaJa.Services
             if (pagamentoExistente != null)
                 throw new InvalidOperationException("O usuário já possui um pagamento em aberto.");
 
-           
+
             var usuario = _repoUser.BuscarPorId(pagamento.usuario_id);
             var formaPagamento = _repoFormaPagamento.BuscarPorId(pagamento.forma_pagamento_id);
             var statusPagamento = _repoStatusPagamento.BuscarPorId(pagamento.status_pagamento_id);
@@ -95,19 +95,23 @@ namespace BackendDesapegaJa.Services
             if (formaPagamento.forma.ToLower().Contains("pix"))
             {
 
-                var dadosCobranca = await _mercadoPago.CriarCobrancaPixAsync(ordem, usuario);
+                string novoUUID = Guid.NewGuid().ToString();
+
+                
+                var dadosCobranca = await _mercadoPago.CriarCobrancaPixAsync(ordem, usuario, novoUUID);
 
                 pagamento.pix_copia_codigo = dadosCobranca.PixCopiaCodigo;
 
-             
+
                 pagamento.pix_qr_code = dadosCobranca.PixQrCodeBase64 ?? dadosCobranca.PixCopiaCodigo;
                 pagamento.expiracao = dadosCobranca.Expiracao;
 
-                pagamento.pagamento_uuid = dadosCobranca.TransacaoIdExterno;
+               
+                pagamento.pagamento_uuid = novoUUID;
                 pagamento.status_pagamento_id = 1;
             }
 
-            await _repo.AdicionarAsync(pagamento); 
+            await _repo.AdicionarAsync(pagamento);
 
             return pagamento;
         }
