@@ -55,7 +55,17 @@ namespace BackendDesapegaJa.Services
 
             return pagamento;
         }
+        public int GetStatusIdByNome(string nome)
+        {
+           
+            string nomeNormalizado = nome.ToLower();
 
+            
+            var status = _repoStatusPagamento.BuscarPorDescricao(nomeNormalizado);
+
+           
+            return status?.id ?? 0;
+        }
 
         public async Task<Pagamentos> CriarPagamentoAsync(Pagamentos pagamento)
         {
