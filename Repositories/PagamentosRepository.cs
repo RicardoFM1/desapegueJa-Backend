@@ -223,15 +223,15 @@ namespace BackendDesapegaJa.Repositories
         }
 
      
-        public Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento)
+        public Pagamentos Atualizar(string pagamentoUUID, PagamentosUpdateDTO pagamento)
         {
-            var existente = BuscarPorUsuarioId(usuarioId);
+            var existente = BuscarPorUUID(pagamentoUUID);
             if (existente == null)
                 throw new InvalidOperationException("Pagamento não encontrado para este usuário");
 
             int formaPagamentoIdFinal = pagamento.forma_pagamento_id ?? existente.forma_pagamento_id;
             int statusFinal = pagamento.status_pagamento_id ?? existente.status_pagamento_id;
-            int ordemIdFinal = (int)(pagamento.ordem_id ?? existente.ordem_id);
+            int? ordemIdFinal = pagamento.ordem_id ?? existente.ordem_id;
             int valorFinal = pagamento.valor ?? existente.valor;
 
             string? observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao)
@@ -262,9 +262,9 @@ namespace BackendDesapegaJa.Repositories
                     expiracao = @exp,
                     valor_pago = @pago,
                     pagamento_uuid = @uuid
-                  WHERE usuario_id = @usuario_id", connection);
+                  WHERE pagamento_uuid = @uuid_existente", connection);
 
-            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
+            cmd.Parameters.AddWithValue("@uuid_existente", pagamentoUUID);
             cmd.Parameters.AddWithValue("@forma", formaPagamentoIdFinal);
             cmd.Parameters.AddWithValue("@status", statusFinal);
             cmd.Parameters.AddWithValue("@ordem", ordemIdFinal);
@@ -280,7 +280,7 @@ namespace BackendDesapegaJa.Repositories
 
             cmd.ExecuteNonQuery();
 
-            return BuscarPorUsuarioId(usuarioId)!;
+            return BuscarPorUUID(pagamentoUUID)!;
         }
 
       

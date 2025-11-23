@@ -14,7 +14,7 @@ namespace BackendDesapegaJa.Interfaces
         IEnumerable<Pagamentos> ListarExpirados(DateTime dataLimite, int idStatusPendente);
 
         Task AdicionarAsync(Pagamentos pagamento);
-        Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento);
+        Pagamentos Atualizar(string pagamentoUUID, PagamentosUpdateDTO pagamento);
 
         Pagamentos? BuscarPagamentoEmAberto(int usuarioId);
 

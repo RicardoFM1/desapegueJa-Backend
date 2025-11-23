@@ -210,7 +210,7 @@ return Ok();
         }
 
         [HttpPatch("usuario/{usuarioId}")]
-        public IActionResult AtualizarPagamento(int usuarioId, [FromBody] PagamentosUpdateDTO pagamento)
+        public IActionResult AtualizarPagamento(string pagamentoUUID, [FromBody] PagamentosUpdateDTO pagamento)
         {
             try
             {
@@ -219,7 +219,7 @@ return Ok();
                 if (loggedUserId == null)
                     return StatusCode(403, new { message = "Sem autorização" });
 
-                var resultado = _service.AtualizarPagamento(usuarioId, pagamento);
+                var resultado = _service.AtualizarPagamento(pagamentoUUID, pagamento);
                 return Ok(resultado);
             }
             catch (Exception ex)

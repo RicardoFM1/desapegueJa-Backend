@@ -117,7 +117,7 @@ namespace BackendDesapegaJa.Services
                     updatedAt = DateTime.UtcNow
                 };
 
-                _repo.Atualizar(pagamento.usuario_id, updateDto);
+                _repo.Atualizar(pagamento.pagamento_uuid, updateDto);
             }
 
             return pagamento;
@@ -125,9 +125,9 @@ namespace BackendDesapegaJa.Services
 
 
 
-        public Pagamentos AtualizarPagamento(int usuarioId, PagamentosUpdateDTO pagamento)
+        public Pagamentos AtualizarPagamento(string pagamentoUUID, PagamentosUpdateDTO pagamento)
         {
-            var existente = _repo.BuscarPorUsuarioId(usuarioId);
+            var existente = _repo.BuscarPorUUID(pagamentoUUID);
             if (existente == null)
                 throw new InvalidOperationException("Pagamento não encontrado");
 
@@ -160,7 +160,7 @@ namespace BackendDesapegaJa.Services
             if (statusPagamento == null || statusPagamento.status.ToLower() == "inativo")
                 throw new InvalidOperationException("Status de pagamento não encontrado e/ou inativo");
 
-            return _repo.Atualizar(usuarioId, new PagamentosUpdateDTO
+            return _repo.Atualizar(pagamentoUUID, new PagamentosUpdateDTO
             {
                 usuario_id = usuarioIdFinal,
                 forma_pagamento_id = formaPagamentoIdFinal,
@@ -189,7 +189,7 @@ namespace BackendDesapegaJa.Services
               
                 if (pagamento.status_pagamento_id == (int)StatusPagamento.pago) return pagamento;
 
-                AtualizarStatusPorUsuario(pagamento.usuario_id, novoStatusId, valorPago, novoUuidMp);
+                AtualizarStatusPorUsuario(pagamento.pagamento_uuid, novoStatusId, valorPago, novoUuidMp);
                 return pagamento;
             }
 
@@ -199,7 +199,7 @@ namespace BackendDesapegaJa.Services
         }
 
 
-        public void AtualizarStatusPorUsuario(int usuarioId, int novoStatusId, int? valorPago, string novoUuidMp)
+        public void AtualizarStatusPorUsuario(string pagamentoUUID, int novoStatusId, int? valorPago, string novoUuidMp)
         {
             var updateDto = new PagamentosUpdateDTO
             {
@@ -209,47 +209,34 @@ namespace BackendDesapegaJa.Services
             };
 
            
-            _repo.Atualizar(usuarioId, updateDto);
+            _repo.Atualizar(pagamentoUUID, updateDto);
         }
 
 
 
         public void AtualizarStatusPagamentoPorReferencia(string transacaoIdReferencia, int novoStatusId, int? valorPago)
         {
-         
+
             var pagamento = _repo.BuscarPorUUID(transacaoIdReferencia);
 
-          
+           
             if (pagamento == null)
             {
-                int idStatusPendente = GetStatusIdByNome("pendente");
-
-                if (idStatusPendente == 0)
-                    throw new InvalidOperationException("Erro: Status de pagamento 'pendente' não encontrado no DB.");
-
-                var pagamentoContingencia = _repo.BuscarUltimoPagamentoPendente(idStatusPendente);
-
-                if (pagamentoContingencia != null)
-                {
-                    Console.WriteLine($"[AVISO CRÍTICO] UUID '{transacaoIdReferencia}' não encontrado. Usando pagamento pendente como fallback.");
-                    pagamento = pagamentoContingencia;
-                }
+                Console.WriteLine($"[ERRO WEBHOOK] Pagamento com UUID '{transacaoIdReferencia}' não encontrado. Requisição descartada.");
+                throw new InvalidOperationException($"Pagamento não encontrado para o UUID: {transacaoIdReferencia}");
             }
-
-            if (pagamento == null)
-                throw new InvalidOperationException("Pagamento não encontrado pela referência da transação.");
 
            
             var updateDto = new PagamentosUpdateDTO
             {
                 status_pagamento_id = novoStatusId,
                 valor_pago = valorPago,
+               
                 pagamento_uuid = transacaoIdReferencia
             };
 
-            _repo.Atualizar(pagamento.usuario_id, updateDto);
-
-           
+          
+            _repo.Atualizar(pagamento.pagamento_uuid, updateDto);
         }
 
 
