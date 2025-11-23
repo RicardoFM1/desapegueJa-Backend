@@ -100,7 +100,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id";
+            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id AND status_pagamento_id = 1";
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
