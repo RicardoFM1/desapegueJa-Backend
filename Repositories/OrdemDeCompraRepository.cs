@@ -40,7 +40,7 @@ namespace BackendDesapegaJa.Repositories
             return ordens;
         }
 
-        public OrdemDeCompra BuscarPorId(int id)
+        public OrdemDeCompra BuscarPorId(int? id)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();

@@ -134,7 +134,7 @@ namespace BackendDesapegaJa.Services
             int usuarioIdFinal = pagamento.usuario_id ?? existente.usuario_id;
             int formaPagamentoIdFinal = pagamento.forma_pagamento_id ?? existente.forma_pagamento_id;
             int statusPagamentoIdFinal = pagamento.status_pagamento_id ?? existente.status_pagamento_id;
-            int ordemIdFinal = pagamento.ordem_id ?? existente.ordem_id;
+            int ordemIdFinal = (int)(pagamento.ordem_id ?? existente.ordem_id);
             int valorFinal = pagamento.valor ?? existente.valor;
             string? observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao) ? existente.observacao : pagamento.observacao;
             DateTime createdAtFinal = pagamento.createdAt ?? existente.createdAt ?? DateTime.UtcNow;
@@ -253,7 +253,6 @@ namespace BackendDesapegaJa.Services
         }
 
 
-       
 
         public void DeletarPagamentoPorUsuarioId(int usuarioId)
         {

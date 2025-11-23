@@ -82,7 +82,7 @@ namespace BackendDesapegaJa.Repositories
             return pagamentos;
         }
 
-        public Pagamentos? BuscarPorId(int id)
+        public Pagamentos? BuscarPorId(int? id)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
@@ -231,7 +231,7 @@ namespace BackendDesapegaJa.Repositories
 
             int formaPagamentoIdFinal = pagamento.forma_pagamento_id ?? existente.forma_pagamento_id;
             int statusFinal = pagamento.status_pagamento_id ?? existente.status_pagamento_id;
-            int ordemFinal = pagamento.ordem_id ?? existente.ordem_id;
+            int ordemIdFinal = (int)(pagamento.ordem_id ?? existente.ordem_id);
             int valorFinal = pagamento.valor ?? existente.valor;
 
             string? observacaoFinal = string.IsNullOrWhiteSpace(pagamento.observacao)
@@ -267,7 +267,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
             cmd.Parameters.AddWithValue("@forma", formaPagamentoIdFinal);
             cmd.Parameters.AddWithValue("@status", statusFinal);
-            cmd.Parameters.AddWithValue("@ordem", ordemFinal);
+            cmd.Parameters.AddWithValue("@ordem", ordemIdFinal);
             cmd.Parameters.AddWithValue("@valor", valorFinal);
             cmd.Parameters.AddWithValue("@obs", observacaoFinal ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@updated", DateTime.UtcNow);

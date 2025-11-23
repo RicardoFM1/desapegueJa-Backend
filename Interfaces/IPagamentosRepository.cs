@@ -5,7 +5,7 @@ namespace BackendDesapegaJa.Interfaces
     public interface IPagamentosRepository
     {
         IEnumerable<Pagamentos> ListarTodos();
-        Pagamentos BuscarPorId(int id);
+        Pagamentos BuscarPorId(int? id);
 
         Pagamentos? BuscarPorUsuarioId(int usuarioId);
 
