@@ -138,11 +138,6 @@ for (int attempt = 0; attempt < maxRetries; attempt++)
                             {
                                 var pagamentoInterno = _service.GetPagamentoByTransacaoIdExterno(externalReference);
 
-                                if (pagamentoInterno != null)
-                                {
-                                    _service.LimparOrdemEItensDepoisDoPagamento(pagamentoInterno.usuario_id);
-                                }
-
 
                             }
                             catch (Exception ex)

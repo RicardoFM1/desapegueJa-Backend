@@ -249,36 +249,11 @@ namespace BackendDesapegaJa.Services
 
             _repo.Atualizar(pagamento.usuario_id, updateDto);
 
-            
-            if (novoStatusId == (int)StatusPagamento.pago)
-            {
-                LimparOrdemEItensDepoisDoPagamento(pagamento.usuario_id);
-            }
-        }
-
-
-        public void LimparOrdemEItensDepoisDoPagamento(long usuarioId)
-        {
-            var ordem = _repoOrdem.BuscarPorUsuarioId((int)usuarioId);
-
-            if (ordem == null)
-            {
-                Console.WriteLine("[INFO] Nenhuma ordem pendente encontrada para limpeza.");
-                return;
-            }
-
-           
-            if (ordem.usuario_id != usuarioId)
-            {
-                Console.WriteLine("[ERRO] Ordem encontrada não pertence ao usuário.");
-                return;
-            }
-
-            _repoOrdem.DeletarPorUsuarioId(ordem.usuario_id);
-
            
         }
 
+
+       
 
         public void DeletarPagamentoPorUsuarioId(int usuarioId)
         {
