@@ -33,7 +33,7 @@ namespace BackendDesapegaJa.Repositories
             return pagamentos;
         }
 
-        // PagamentosRepository.cs
+        
 
         public Pagamentos BuscarUltimoPagamentoPendente(int idStatusPendente)
         {

@@ -41,7 +41,7 @@ public class ExpiracaoPagamentosService : BackgroundService
             int statusIdPendente = statusPendente.id;
 
          
-            var pagamentosExpirados = service.ListarPagamentosExpirados(statusIdPendente); 
+            var pagamentosExpirados = service.ListarPagamentosExpirados(); 
 
             foreach (var pagamento in pagamentosExpirados)
             {

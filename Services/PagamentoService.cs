@@ -67,10 +67,10 @@ namespace BackendDesapegaJa.Services
             return status?.id ?? 0;
         }
 
-        public IEnumerable<Pagamentos> ListarPagamentosExpirados(int idStatusPendente)
+        public IEnumerable<Pagamentos> ListarPagamentosExpirados()
         {
            
-            return _repo.ListarExpirados(DateTime.UtcNow, idStatusPendente);
+            return _repo.ListarExpirados(DateTime.UtcNow, (int)StatusPagamento.pendente);
         }
 
         public async Task<Pagamentos> CriarPagamentoAsync(Pagamentos pagamento)
@@ -81,7 +81,7 @@ namespace BackendDesapegaJa.Services
 
             var usuario = _repoUser.BuscarPorId(pagamento.usuario_id);
             var formaPagamento = _repoFormaPagamento.BuscarPorId(pagamento.forma_pagamento_id);
-            var statusPagamento = _repoStatusPagamento.BuscarPorId(pagamento.status_pagamento_id);
+            
 
             if (usuario == null || usuario.status.ToLower() == "inativo")
                 throw new InvalidOperationException("Usuário inválido");
@@ -111,7 +111,7 @@ namespace BackendDesapegaJa.Services
                     pix_copia_codigo = dadosCobranca.PixCopiaCodigo,
                     pix_qr_code = dadosCobranca.PixQrCodeBase64 ?? dadosCobranca.PixCopiaCodigo,
                     expiracao = dadosCobranca.Expiracao,
-                    status_pagamento_id = 1,
+                    status_pagamento_id = (int)StatusPagamento.pendente,
                     pagamento_uuid = uuid,
                     updatedAt = DateTime.UtcNow
                 };
@@ -186,7 +186,7 @@ namespace BackendDesapegaJa.Services
             if (pagamento != null)
             {
               
-                if (pagamento.status_pagamento_id == 2) return pagamento;
+                if (pagamento.status_pagamento_id == (int)StatusPagamento.pago) return pagamento;
 
                 AtualizarStatusPorUsuario(pagamento.usuario_id, novoStatusId, valorPago, novoUuidMp);
                 return pagamento;
@@ -202,7 +202,7 @@ namespace BackendDesapegaJa.Services
         {
             var updateDto = new PagamentosUpdateDTO
             {
-                status_pagamento_id = novoStatusId,
+                status_pagamento_id = (int)novoStatusId,
                 valor_pago = valorPago,
                 pagamento_uuid = novoUuidMp 
             };
@@ -249,7 +249,7 @@ namespace BackendDesapegaJa.Services
 
             var updateDto = new PagamentosUpdateDTO
             {
-                status_pagamento_id = novoStatusId,
+                status_pagamento_id = (int)novoStatusId,
                 valor_pago = valorPago,
                 pagamento_uuid = transacaoIdReferencia
             };

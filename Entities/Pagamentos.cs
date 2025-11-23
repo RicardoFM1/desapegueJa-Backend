@@ -141,4 +141,13 @@ namespace BackendDesapegaJa.Entities
         [JsonProperty("qr_code_base64")]
         public string QrCodeBase64 { get; set; }
     }
+
+    public enum StatusPagamento
+    {
+        pendente = 1,
+        pago = 2,
+        rejeitado = 3,
+        erro = 4,
+        expirado = 5
+    }
 }
