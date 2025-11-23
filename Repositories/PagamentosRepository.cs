@@ -87,7 +87,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * FROM Pagamentos WHERE id = @id ORDER BY created_at DESC";
+            string sql = "SELECT * FROM Pagamentos WHERE id = @id ORDER BY created_at DESC LIMIT 1";
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
 
@@ -100,7 +100,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id ORDER BY created_at DESC";
+            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id ORDER BY created_at DESC LIMIT 1";
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
@@ -114,7 +114,7 @@ namespace BackendDesapegaJa.Repositories
             connection.Open();
 
           
-            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id AND status_pagamento_id = 1 ORDER BY created_at DESC";
+            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id AND status_pagamento_id = 1 ORDER BY created_at DESC LIMIT 1";
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
