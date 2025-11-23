@@ -185,7 +185,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            var existente = BuscarPorUsuarioId(pagamento.usuario_id);
+            var existente = BuscarPagamentoEmAberto(pagamento.usuario_id);
             if (existente != null)
                 throw new InvalidOperationException("Este usuário já possui um pagamento gerado.");
 
