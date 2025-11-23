@@ -161,7 +161,7 @@ namespace BackendDesapegaJa.Repositories
                 usuario_id = reader.GetInt32("usuario_id"),
                 forma_pagamento_id = reader.GetInt32("forma_pagamento_id"),
                 status_pagamento_id = reader.GetInt32("status_pagamento_id"),
-                ordem_id = reader.GetInt32("ordem_id"),
+                ordem_id = reader.IsDBNull("ordem_id") ? null : (int?)reader.GetInt32("ordem_id"),
                 valor = reader.GetInt32("valor"),
 
                 observacao = reader.IsDBNull("observacao") ? null : reader.GetString("observacao"),

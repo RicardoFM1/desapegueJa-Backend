@@ -18,7 +18,7 @@ namespace BackendDesapegaJa.Entities
         public int status_pagamento_id { get; set; }
 
         [Required(ErrorMessage = "A ordem deve ser preenchida")]
-        public int ordem_id { get; set; }
+        public int? ordem_id { get; set; }
 
         public string? observacao { get; set; }
         public int valor { get; set; }
