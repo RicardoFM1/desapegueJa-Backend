@@ -127,7 +127,28 @@ for (int attempt = 0; attempt < maxRetries; attempt++)
             valorPago
         );
         Console.WriteLine($"SUCESSO: Banco de dados atualizado na tentativa {attempt + 1} com UUID MP: {externalReference}!");
-        return Ok();
+                        if (novoStatusId == (int)StatusPagamento.pago)
+                        {
+                            Console.WriteLine("[WEBHOOK] Pagamento aprovado! Limpando ordem de compra...");
+
+                            try
+                            {
+                                var pagamentoInterno = _service.GetPagamentoByTransacaoIdExterno(externalReference);
+
+                                if (pagamentoInterno != null)
+                                {
+                                    _service.LimparOrdemEItensDepoisDoPagamento(pagamentoInterno.usuario_id);
+                                }
+
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("[ERRO AO LIMPAR ORDEM] " + ex.Message);
+                            }
+                        }
+
+                        return Ok();
     }
     catch (InvalidOperationException ex) when (ex.Message.Contains("Pagamento não encontrado"))
     {

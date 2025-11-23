@@ -115,8 +115,19 @@ namespace BackendDesapegaJa.Entities
 
         [JsonProperty("external_reference")]
         public string ExternalReference { get; set; }
+
+        [JsonProperty("payer")]
+        public MercadoPagoPayer Payer { get; set; }
     }
 
+    public class MercadoPagoPayer
+    {
+        [JsonProperty("id")]
+        public long? Id { get; set; }
+
+        [JsonProperty("email")]
+        public string Email { get; set; }
+    }
 
     public class PaymentPixResponse
     {

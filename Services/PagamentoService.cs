@@ -211,51 +211,73 @@ namespace BackendDesapegaJa.Services
             _repo.Atualizar(usuarioId, updateDto);
         }
 
-        
+
 
         public void AtualizarStatusPagamentoPorReferencia(string transacaoIdReferencia, int novoStatusId, int? valorPago)
         {
-          
+         
             var pagamento = _repo.BuscarPorUUID(transacaoIdReferencia);
 
+          
             if (pagamento == null)
             {
-                
                 int idStatusPendente = GetStatusIdByNome("pendente");
 
                 if (idStatusPendente == 0)
-                {
-                    
                     throw new InvalidOperationException("Erro: Status de pagamento 'pendente' não encontrado no DB.");
-                }
 
-               
                 var pagamentoContingencia = _repo.BuscarUltimoPagamentoPendente(idStatusPendente);
 
                 if (pagamentoContingencia != null)
                 {
-                    Console.WriteLine($"[AVISO CRÍTICO] Falha na busca por UUID '{transacaoIdReferencia}'. Usando Pagamento Pendente (UUID Original: {pagamentoContingencia.pagamento_uuid}) como contingência.");
+                    Console.WriteLine($"[AVISO CRÍTICO] UUID '{transacaoIdReferencia}' não encontrado. Usando pagamento pendente como fallback.");
                     pagamento = pagamentoContingencia;
                 }
             }
 
-            
-
             if (pagamento == null)
-            {
-                
                 throw new InvalidOperationException("Pagamento não encontrado pela referência da transação.");
-            }
 
+           
             var updateDto = new PagamentosUpdateDTO
             {
-                status_pagamento_id = (int)novoStatusId,
+                status_pagamento_id = novoStatusId,
                 valor_pago = valorPago,
                 pagamento_uuid = transacaoIdReferencia
             };
 
             _repo.Atualizar(pagamento.usuario_id, updateDto);
+
+            
+            if (novoStatusId == (int)StatusPagamento.pago)
+            {
+                LimparOrdemEItensDepoisDoPagamento(pagamento.usuario_id);
+            }
         }
+
+
+        public void LimparOrdemEItensDepoisDoPagamento(long usuarioId)
+        {
+            var ordem = _repoOrdem.BuscarPorUsuarioId((int)usuarioId);
+
+            if (ordem == null)
+            {
+                Console.WriteLine("[INFO] Nenhuma ordem pendente encontrada para limpeza.");
+                return;
+            }
+
+           
+            if (ordem.usuario_id != usuarioId)
+            {
+                Console.WriteLine("[ERRO] Ordem encontrada não pertence ao usuário.");
+                return;
+            }
+
+            _repoOrdem.DeletarPorUsuarioId(ordem.usuario_id);
+
+           
+        }
+
 
         public void DeletarPagamentoPorUsuarioId(int usuarioId)
         {
