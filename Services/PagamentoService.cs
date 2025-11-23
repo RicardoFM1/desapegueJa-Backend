@@ -244,6 +244,7 @@ namespace BackendDesapegaJa.Services
                 {
 
                     _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
+                    _repo.DeletarCarrinhoUsuarioId(pagamento.usuario_id);
                     Console.WriteLine($"Ordem de compra do usuário {pagamento.usuario_id} deletada com sucesso após pagamento.");
                 }
                 catch (Exception ex)

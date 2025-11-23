@@ -10,10 +10,12 @@ namespace BackendDesapegaJa.Repositories
     public class PagamentosRepository : IPagamentosRepository
     {
         private readonly string _connectionString;
+        private readonly ICarrinhoRepository _repoCarrinho;
 
-        public PagamentosRepository(IConfiguration config)
+        public PagamentosRepository(IConfiguration config, ICarrinhoRepository repoCarrinho)
         {
             _connectionString = config.GetConnectionString("DefaultConnection");
+            _repoCarrinho = repoCarrinho;
         }
 
         public IEnumerable<Pagamentos> ListarTodos()
@@ -283,6 +285,23 @@ namespace BackendDesapegaJa.Repositories
             return BuscarPorUUID(pagamentoUUID)!;
         }
 
+        
+
+        public void DeletarCarrinhoUsuarioId(int usuarioId)
+        {
+            var existente = _repoCarrinho.BuscarPorUsuarioId(usuarioId);
+
+            if (existente == null)
+            {
+                throw new InvalidOperationException("Nenhum carrinho encontrado para este usuário");
+            }
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            var cmd = new MySqlCommand("DELETE FROM carrinho WHERE usuario_id = @usuario_id", connection);
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
+            cmd.ExecuteNonQuery();
+        }
       
         public void DeletarPorUsuarioId(int usuarioId)
         {

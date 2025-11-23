@@ -20,6 +20,8 @@ namespace BackendDesapegaJa.Interfaces
 
         void DeletarPorUsuarioId(int usuarioId);
 
+        void DeletarCarrinhoUsuarioId(int usuarioId);
+
         Pagamentos BuscarUltimoPagamentoPendente(int idStatusPendente);
 
         Pagamentos? BuscarPorUUID(string uuid);
