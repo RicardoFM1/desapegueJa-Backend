@@ -98,7 +98,8 @@ namespace BackendDesapegaJa.Services
             string uuid = Guid.NewGuid().ToString();
             pagamento.pagamento_uuid = uuid;
 
-           
+            pagamento.status_pagamento_id = (int)StatusPagamento.pendente;
+
             await _repo.AdicionarAsync(pagamento);
 
           
