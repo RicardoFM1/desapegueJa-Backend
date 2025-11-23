@@ -18,6 +18,8 @@ namespace BackendDesapegaJa.Interfaces
 
         void DeletarPorUsuarioId(int usuarioId);
 
+        Pagamentos BuscarUltimoPagamentoPendente(int idStatusPendente);
+
         Pagamentos? BuscarPorUUID(string uuid);
 
         public interface IPagSeguroIntegration

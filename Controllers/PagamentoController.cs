@@ -104,50 +104,46 @@ namespace BackendDesapegaJa.Controllers
                 Console.WriteLine($"[DEBUG] Valor calculado (centavos): {valorPago}");
 
 
-              
+
                 const int maxRetries = 3;
-                const int delayMs = 500;
+const int delayMs = 500; 
 
-                if (string.IsNullOrEmpty(pagamentoMP.ExternalReference))
-                {
-                    Console.WriteLine("AVISO: Pagamento sem ExternalReference. Verifique se o campo external_reference foi enviado na criação do Pix.");
-                    return Ok();
-                }
+string externalReference = pagamentoMP.ExternalReference;
 
-                for (int attempt = 0; attempt < maxRetries; attempt++)
-                {
-                    try
-                    {
-                        _service.AtualizarStatusPagamentoPorReferencia(
-                            pagamentoMP.ExternalReference,
-                            novoStatusId,
-                            valorPago
-                        );
-                        Console.WriteLine($"SUCESSO: Banco de dados atualizado na tentativa {attempt + 1}!");
-                        return Ok(); 
-                    }
-                    catch (InvalidOperationException ex) when (ex.Message.Contains("Pagamento não encontrado"))
-                    {
-                      
-                        if (attempt < maxRetries - 1)
-                        {
-                            Console.WriteLine($"AVISO: Pagamento {pagamentoMP.ExternalReference} não encontrado no DB. Tentando novamente em {delayMs}ms (Tentativa {attempt + 2})...");
-                            await Task.Delay(delayMs);
-                        }
-                        else
-                        {
-                         
-                            Console.WriteLine($"ERRO CRÍTICO: Pagamento {pagamentoMP.ExternalReference} não encontrado após {maxRetries} tentativas. {ex.Message}");
-                           
-                            return StatusCode(500, new { message = "Erro interno: Pagamento não encontrado no DB após tentativas." });
-                        }
-                    }
-                    
-                }
-          
+if (string.IsNullOrEmpty(externalReference))
+{
+    Console.WriteLine("AVISO: Pagamento sem ExternalReference no objeto retornado do MP.");
+    return Ok();
+}
 
-
-                return Ok(); 
+for (int attempt = 0; attempt < maxRetries; attempt++)
+{
+    try
+    {
+        _service.AtualizarStatusPagamentoPorReferencia(
+            externalReference,
+            novoStatusId,
+            valorPago
+        );
+        Console.WriteLine($"SUCESSO: Banco de dados atualizado na tentativa {attempt + 1} com UUID MP: {externalReference}!");
+        return Ok();
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("Pagamento não encontrado"))
+    {
+        
+        if (attempt < maxRetries - 1)
+        {
+            Console.WriteLine($"AVISO: Pagamento {externalReference} não encontrado no DB. Tentando novamente em {delayMs}ms (Tentativa {attempt + 2})...");
+            await Task.Delay(delayMs);
+        }
+        else
+        {
+            Console.WriteLine($"ERRO CRÍTICO: Pagamento {externalReference} não encontrado após {maxRetries} tentativas. {ex.Message}");
+            return StatusCode(500, new { message = "Erro interno: Pagamento não encontrado no DB após tentativas." });
+        }
+    }
+}
+return Ok();
             }
             catch (Exception ex)
             {

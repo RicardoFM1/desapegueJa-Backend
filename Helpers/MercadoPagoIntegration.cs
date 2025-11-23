@@ -27,7 +27,7 @@ namespace BackendDesapegaJa.Helpers
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public async Task<PagamentoRetornoApi> CriarCobrancaPixAsync(OrdemDeCompra ordem, Usuario usuario, string uuidExterno) // <--- Novo parâmetro
+        public async Task<PagamentoRetornoApi> CriarCobrancaPixAsync(OrdemDeCompra ordem, Usuario usuario, string uuidExterno)
         {
             var payload = new
             {
@@ -45,7 +45,9 @@ namespace BackendDesapegaJa.Helpers
                     }
                 },
                 notification_url = _webhookUrl,
-                external_reference = uuidExterno 
+
+               
+                external_reference = uuidExterno
             };
 
             var idempotencyKey = Guid.NewGuid().ToString();
@@ -60,18 +62,14 @@ namespace BackendDesapegaJa.Helpers
 
             var paymentResponse = JsonConvert.DeserializeObject<PaymentPixResponse>(jsonString);
 
-           
             if (paymentResponse == null)
                 throw new InvalidOperationException("Resposta do Mercado Pago veio nula ao deserializar.");
 
-            if (paymentResponse.PointOfInteraction == null ||
-                paymentResponse.PointOfInteraction.TransactionData == null)
+            if (paymentResponse.PointOfInteraction?.TransactionData == null)
             {
-           
                 Console.WriteLine($"ERRO JSON MP: {jsonString}");
-                throw new InvalidOperationException("Mercado Pago não retornou dados do QR Code (PointOfInteraction nulo).");
+                throw new InvalidOperationException("Mercado Pago não retornou dados do QR Code.");
             }
-            
 
             var pixInfo = paymentResponse.PointOfInteraction.TransactionData;
 
@@ -83,6 +81,7 @@ namespace BackendDesapegaJa.Helpers
                 Expiracao = DateTime.UtcNow.AddMinutes(30)
             };
         }
+
 
         public async Task<MercadoPagoPagamento?> ObterPagamentoPorId(string paymentId)
         {

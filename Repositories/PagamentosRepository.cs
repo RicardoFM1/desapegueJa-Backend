@@ -1,5 +1,6 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using System;
 using System.Data;
@@ -32,13 +33,35 @@ namespace BackendDesapegaJa.Repositories
             return pagamentos;
         }
 
+        // PagamentosRepository.cs
+
+        public Pagamentos BuscarUltimoPagamentoPendente(int idStatusPendente)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            
+            string sql = @"
+        SELECT * FROM Pagamentos 
+        WHERE status_pagamento_id = @idStatusPendente 
+        ORDER BY created_at DESC
+        LIMIT 1";
+
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@idStatusPendente", idStatusPendente);
+
+            using var reader = cmd.ExecuteReader();
+
+            return reader.Read() ? MapReaderToPagamento(reader) : null;
+        }
+
         public IEnumerable<Pagamentos> ListarExpirados(DateTime dataLimite, int idStatusPendente)
         {
             var pagamentos = new List<Pagamentos>();
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            // A string SQL utiliza o parâmetro numérico para o status
+           
             string sql = @"
         SELECT p.* FROM Pagamentos p
         WHERE p.expiracao IS NOT NULL 
@@ -47,7 +70,7 @@ namespace BackendDesapegaJa.Repositories
 
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@dataLimite", dataLimite);
-            // Adiciona o novo parâmetro com o ID numérico
+       
             cmd.Parameters.AddWithValue("@idStatusPendente", idStatusPendente);
 
             using var reader = cmd.ExecuteReader();
@@ -206,6 +229,7 @@ namespace BackendDesapegaJa.Repositories
             string? boletoFinal = pagamento.boleto_url ?? existente.boleto_url;
             DateTime? expiracaoFinal = pagamento.expiracao ?? existente.expiracao;
             int? pagoFinal = pagamento.valor_pago ?? existente.valor_pago;
+            string? pagamentoUuidFinal = pagamento.pagamento_uuid ?? existente.pagamento_uuid; 
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
@@ -222,7 +246,8 @@ namespace BackendDesapegaJa.Repositories
                     pix_copia_codigo = @copia,
                     boleto_url = @boleto,
                     expiracao = @exp,
-                    valor_pago = @pago
+                    valor_pago = @pago,
+                    pagamento_uuid = @uuid
                   WHERE usuario_id = @usuario_id", connection);
 
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
@@ -237,6 +262,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@boleto", boletoFinal ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@exp", expiracaoFinal ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@pago", pagoFinal ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@uuid", pagamentoUuidFinal ?? (object)DBNull.Value); 
 
             cmd.ExecuteNonQuery();
 

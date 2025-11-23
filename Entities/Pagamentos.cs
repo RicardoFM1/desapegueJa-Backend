@@ -99,8 +99,9 @@ namespace BackendDesapegaJa.Entities
 
     public class MercadoPagoWebhookData
     {
-        public string? id { get; set; } 
+        public string? id { get; set; }
     }
+
     public class MercadoPagoPagamento
     {
         [JsonProperty("id")]

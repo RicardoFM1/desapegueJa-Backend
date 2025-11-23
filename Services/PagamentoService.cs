@@ -79,42 +79,50 @@ namespace BackendDesapegaJa.Services
             if (pagamentoExistente != null)
                 throw new InvalidOperationException("O usuário já possui um pagamento em aberto.");
 
-
             var usuario = _repoUser.BuscarPorId(pagamento.usuario_id);
             var formaPagamento = _repoFormaPagamento.BuscarPorId(pagamento.forma_pagamento_id);
             var statusPagamento = _repoStatusPagamento.BuscarPorId(pagamento.status_pagamento_id);
 
-            if (usuario == null || usuario.status.ToLower() == "inativo") throw new InvalidOperationException("Usuário inválido");
-            if (formaPagamento == null || formaPagamento.status.ToLower() == "inativo") throw new InvalidOperationException("Forma de pagamento inválida");
+            if (usuario == null || usuario.status.ToLower() == "inativo")
+                throw new InvalidOperationException("Usuário inválido");
 
-            pagamento.createdAt = DateTime.UtcNow;
+            if (formaPagamento == null || formaPagamento.status.ToLower() == "inativo")
+                throw new InvalidOperationException("Forma de pagamento inválida");
 
             var ordem = _repoOrdem.BuscarPorId(pagamento.ordem_id)
                 ?? throw new InvalidOperationException("Ordem de compra não encontrada.");
 
+            pagamento.createdAt = DateTime.UtcNow;
+
+            
+            string uuid = Guid.NewGuid().ToString();
+            pagamento.pagamento_uuid = uuid;
+
+           
+            await _repo.AdicionarAsync(pagamento);
+
+          
             if (formaPagamento.forma.ToLower().Contains("pix"))
             {
+                var dadosCobranca = await _mercadoPago.CriarCobrancaPixAsync(ordem, usuario, uuid);
 
-                string novoUUID = Guid.NewGuid().ToString();
+                var updateDto = new PagamentosUpdateDTO
+                {
+                    pix_copia_codigo = dadosCobranca.PixCopiaCodigo,
+                    pix_qr_code = dadosCobranca.PixQrCodeBase64 ?? dadosCobranca.PixCopiaCodigo,
+                    expiracao = dadosCobranca.Expiracao,
+                    status_pagamento_id = 1,
+                    pagamento_uuid = uuid,
+                    updatedAt = DateTime.UtcNow
+                };
 
-                
-                var dadosCobranca = await _mercadoPago.CriarCobrancaPixAsync(ordem, usuario, novoUUID);
-
-                pagamento.pix_copia_codigo = dadosCobranca.PixCopiaCodigo;
-
-
-                pagamento.pix_qr_code = dadosCobranca.PixQrCodeBase64 ?? dadosCobranca.PixCopiaCodigo;
-                pagamento.expiracao = dadosCobranca.Expiracao;
-
-               
-                pagamento.pagamento_uuid = novoUUID;
-                pagamento.status_pagamento_id = 1;
+                _repo.Atualizar(pagamento.usuario_id, updateDto);
             }
-
-            await _repo.AdicionarAsync(pagamento);
 
             return pagamento;
         }
+
+
 
         public Pagamentos AtualizarPagamento(int usuarioId, PagamentosUpdateDTO pagamento)
         {
@@ -169,20 +177,86 @@ namespace BackendDesapegaJa.Services
                 pagamento_uuid = pagUUIDFinal
             });
         }
+        public Pagamentos? BuscarEPersistirUUID(string novoUuidMp, int novoStatusId, int? valorPago)
+        {
+          
+            var pagamento = _repo.BuscarPorUUID(novoUuidMp);
+
+      
+            if (pagamento != null)
+            {
+              
+                if (pagamento.status_pagamento_id == 2) return pagamento;
+
+                AtualizarStatusPorUsuario(pagamento.usuario_id, novoStatusId, valorPago, novoUuidMp);
+                return pagamento;
+            }
+
+            
+
+            return null; 
+        }
+
+
+        public void AtualizarStatusPorUsuario(int usuarioId, int novoStatusId, int? valorPago, string novoUuidMp)
+        {
+            var updateDto = new PagamentosUpdateDTO
+            {
+                status_pagamento_id = novoStatusId,
+                valor_pago = valorPago,
+                pagamento_uuid = novoUuidMp 
+            };
+
+           
+            _repo.Atualizar(usuarioId, updateDto);
+        }
+
+        
+
         public void AtualizarStatusPagamentoPorReferencia(string transacaoIdReferencia, int novoStatusId, int? valorPago)
         {
+          
             var pagamento = _repo.BuscarPorUUID(transacaoIdReferencia);
-            if (pagamento == null) throw new InvalidOperationException("Pagamento não encontrado pela referência da transação.");
+
+            if (pagamento == null)
+            {
+                
+                int idStatusPendente = GetStatusIdByNome("pendente");
+
+                if (idStatusPendente == 0)
+                {
+                    
+                    throw new InvalidOperationException("Erro: Status de pagamento 'pendente' não encontrado no DB.");
+                }
+
+               
+                var pagamentoContingencia = _repo.BuscarUltimoPagamentoPendente(idStatusPendente);
+
+                if (pagamentoContingencia != null)
+                {
+                    Console.WriteLine($"[AVISO CRÍTICO] Falha na busca por UUID '{transacaoIdReferencia}'. Usando Pagamento Pendente (UUID Original: {pagamentoContingencia.pagamento_uuid}) como contingência.");
+                    pagamento = pagamentoContingencia;
+                }
+            }
+
+            
+
+            if (pagamento == null)
+            {
+                
+                throw new InvalidOperationException("Pagamento não encontrado pela referência da transação.");
+            }
 
             var updateDto = new PagamentosUpdateDTO
             {
                 status_pagamento_id = novoStatusId,
-                valor_pago = valorPago
+                valor_pago = valorPago,
+                pagamento_uuid = transacaoIdReferencia
             };
 
             _repo.Atualizar(pagamento.usuario_id, updateDto);
-            
         }
+
         public void DeletarPagamentoPorUsuarioId(int usuarioId)
         {
             var pagamento = _repo.BuscarPorUsuarioId(usuarioId);
