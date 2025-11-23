@@ -75,7 +75,7 @@ namespace BackendDesapegaJa.Services
 
         public async Task<Pagamentos> CriarPagamentoAsync(Pagamentos pagamento)
         {
-            var pagamentoExistente = _repo.BuscarPorUsuarioId(pagamento.usuario_id);
+            var pagamentoExistente = _repo.BuscarPagamentoEmAberto(pagamento.usuario_id);
             if (pagamentoExistente != null)
                 throw new InvalidOperationException("O usuário já possui um pagamento em aberto.");
 

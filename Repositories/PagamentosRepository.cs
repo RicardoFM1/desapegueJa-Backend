@@ -100,7 +100,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id AND status_pagamento_id = 1";
+            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id";
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
@@ -108,7 +108,21 @@ namespace BackendDesapegaJa.Repositories
             return reader.Read() ? MapReaderToPagamento(reader) : null;
         }
 
-        
+        public Pagamentos? BuscarPagamentoEmAberto(int usuarioId)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+          
+            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id AND status_pagamento_id = 1";
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
+
+            using var reader = cmd.ExecuteReader();
+          
+            return reader.Read() ? MapReaderToPagamento(reader) : null;
+        }
+
         public Pagamentos? BuscarPorTransacaoIdExterno(string transacaoIdExterno)
         {
             using var connection = new MySqlConnection(_connectionString);

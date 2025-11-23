@@ -16,6 +16,8 @@ namespace BackendDesapegaJa.Interfaces
         Task AdicionarAsync(Pagamentos pagamento);
         Pagamentos Atualizar(int usuarioId, PagamentosUpdateDTO pagamento);
 
+        Pagamentos? BuscarPagamentoEmAberto(int usuarioId);
+
         void DeletarPorUsuarioId(int usuarioId);
 
         Pagamentos BuscarUltimoPagamentoPendente(int idStatusPendente);
