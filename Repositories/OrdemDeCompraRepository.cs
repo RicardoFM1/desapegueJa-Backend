@@ -196,6 +196,15 @@ namespace BackendDesapegaJa.Repositories
 
             cmd.ExecuteNonQuery();
         }
+        public void DeletarOrdemEmAberto(int usuarioId)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
+           
+            var cmd = new MySqlCommand("DELETE FROM ordem_de_compra WHERE usuario_id = @usuario_id", connection);
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
+            cmd.ExecuteNonQuery();
+        }
     }
 }

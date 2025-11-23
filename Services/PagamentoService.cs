@@ -237,6 +237,20 @@ namespace BackendDesapegaJa.Services
 
           
             _repo.Atualizar(pagamento.pagamento_uuid, updateDto);
+
+            if (novoStatusId == 2) 
+            {
+                try
+                {
+
+                    _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
+                    Console.WriteLine($"Ordem de compra do usuário {pagamento.usuario_id} deletada com sucesso após pagamento.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"ERRO ao deletar ordem de compra: {ex.Message}");
+                }
+            }
         }
 
 
