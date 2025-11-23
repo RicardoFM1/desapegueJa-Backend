@@ -89,10 +89,13 @@ namespace BackendDesapegaJa.Controllers
 
                 int novoStatusId = pagamentoMP.Status switch
                 {
-                    "approved" => (int)StatusPagamento.pago,
-                    "rejected" or "cancelled" => (int)StatusPagamento.rejeitado,
-                    "expired" => (int)StatusPagamento.expirado,
-                    _ => (int)StatusPagamento.erro
+                    "approved" => (int)StatusPagamento.pago, 
+                    "rejected" or "cancelled" => (int)StatusPagamento.rejeitado, 
+                    "expired" => (int)StatusPagamento.expirado, 
+                    "pending" => (int)StatusPagamento.pendente, 
+
+                    
+                    _ => (int)StatusPagamento.erro 
                 };
 
                 if (novoStatusId == 0) return Ok();
