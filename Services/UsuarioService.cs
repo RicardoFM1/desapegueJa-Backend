@@ -200,8 +200,31 @@ namespace BackendDesapegaJa.Services
         }
 
 
+        public async Task<Usuario> BuscarOuCriarUsuarioGoogleAsync(string email, string nome, string googleId)
+        {
+           
+            var usuarioExistente = await _repo.BuscarPorEmail(email);
 
-      
+            if (usuarioExistente != null)
+            {
+               
+                return usuarioExistente;
+            }
+
+          
+            var novoUsuario = new Usuario
+            {
+                Email = email,
+                Nome = nome,
+                GoogleId = googleId, 
+                Status = "ativo",
+               
+                Senha = null 
+            };
+
+            return await _repo.Adicionar(novoUsuario);
+        }
+
         private bool CpfValido(string cpf)
         {
             cpf = new string(cpf.Where(char.IsDigit).ToArray());

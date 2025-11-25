@@ -30,6 +30,8 @@ namespace BackendDesapegaJa.Entities
 
         [Required(ErrorMessage = "O campo 'nome' deve ser preenchido.")]
         public string Nome { get; set; }
+
+        public string? GoogleId { get; set; }
     }
     public class UsuarioUpdateDTO
     {
@@ -43,5 +45,7 @@ namespace BackendDesapegaJa.Entities
        
         public string? Cpf { get; set; }
         public string ?Nome { get; set; }
+
+        public string? GoogleId { get; set; }
     }
 }

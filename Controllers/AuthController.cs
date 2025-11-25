@@ -1,5 +1,6 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -187,6 +188,65 @@ namespace BackendDesapegaJa.Controllers
             }
 
 
+        }
+        [HttpGet("login-google")]
+        public IActionResult ExternalLogin()
+        {
+            // O nome do esquema deve ser 'Google', como configurado no Program.cs
+            const string provider = "Google";
+
+            // Define o caminho de retorno após o Google autenticar
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth", new { ReturnUrl = "/" });
+
+            // Inicia o processo de autenticação (Challenge), redirecionando para o Google
+            var properties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+            {
+                RedirectUri = redirectUrl
+            };
+
+            return Challenge(properties, provider);
+        }
+
+        // Este endpoint é o caminho de retorno que o Google chamará.
+        // O caminho configurado é "/signin-google", mas precisamos de um método
+        // para processar os dados recebidos.
+        [HttpGet("login-google/callback")]
+        public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+        {
+            if (remoteError != null)
+            {
+                return RedirectToAction(nameof(Login), new { error = $"Erro do provedor: {remoteError}" });
+            }
+
+            
+            var result = await HttpContext.AuthenticateAsync("Google");
+
+            if (result?.Succeeded != true)
+            {
+        
+                return Unauthorized(new { message = "Falha na autenticação com o Google." });
+            }
+
+            
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            var nome = result.Principal.FindFirstValue(ClaimTypes.Name);
+            var googleId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+
+
+            
+            var usuario = await _service.BuscarOuCriarUsuarioGoogleAsync(
+                email, nome, googleId);
+
+            if (usuario == null)
+            {
+                return StatusCode(500, new { message = "Não foi possível criar/buscar usuário após autenticação Google." });
+            }
+
+            
+            var tokenResponse = _tokenService.GenerateToken(usuario);
+
+            
+            return Ok(tokenResponse);
         }
     }
 

@@ -17,5 +17,10 @@ namespace BackendDesapegaJa.Interfaces
 
         Usuario? BuscarPorNome(string? nome, string? status = null);
 
+        Task<Usuario?> BuscarPorEmailAsync(string email, string? status = null);
+
+       
+        Task<Usuario> AdicionarAsync(Usuario usuario);
+
     }
 }

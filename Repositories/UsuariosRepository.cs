@@ -234,8 +234,63 @@ namespace BackendDesapegaJa.Repositories
                 Cpf = reader.IsDBNull(reader.GetOrdinal("cpf")) ? null : reader.GetInt64("cpf").ToString("D11"),
                 Foto_De_Perfil = reader.IsDBNull(reader.GetOrdinal("foto_de_perfil")) ? null : reader.GetString("foto_de_perfil"),
                 data_de_nascimento = reader.IsDBNull(reader.GetOrdinal("data_de_nascimento")) ? null : reader.GetString("data_de_nascimento"),
-                Nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? null : reader.GetString("nome")
+                Nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? null : reader.GetString("nome"),
+                GoogleId = reader.IsDBNull(reader.GetOrdinal("google_id")) ? null : reader.GetString("google_id")
             };
         }
+        public async Task<Usuario?> BuscarPorEmailAsync(string email, string? status = null)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync(); 
+
+           
+            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, google_id FROM Usuarios WHERE LOWER(email)=LOWER(@email)";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@email", email.Trim());
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
+
+            using var reader = await cmd.ExecuteReaderAsync(); 
+
+            return await reader.ReadAsync() ? MapUsuario(reader) : null; 
+        }
+
+        
+
+        public async Task<Usuario> AdicionarAsync(Usuario usuario)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+            using var cmd = new MySqlCommand(@"
+                INSERT INTO Usuarios 
+                (email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, nome, google_id)
+                VALUES (@Email,@Senha,@Status,@Admin,@Telefone,@Cpf,@Foto,@Nascimento, @Nome, @GoogleId);
+                SELECT LAST_INSERT_ID();", connection);
+
+            cmd.Parameters.AddWithValue("@Email", usuario.Email);
+            cmd.Parameters.AddWithValue("@Senha", string.IsNullOrWhiteSpace(usuario.Senha) ? (object)DBNull.Value : usuario.Senha);
+            cmd.Parameters.AddWithValue("@Status", string.IsNullOrWhiteSpace(usuario.status) ? "ativo" : usuario.status);
+            cmd.Parameters.AddWithValue("@Admin", usuario.Admin ? 1 : 0);
+            cmd.Parameters.AddWithValue("@Telefone", string.IsNullOrWhiteSpace(usuario.Telefone) ? (object)DBNull.Value : usuario.Telefone);
+            cmd.Parameters.AddWithValue("@Cpf", string.IsNullOrWhiteSpace(usuario.Cpf) ? (object)DBNull.Value : long.Parse(usuario.Cpf));
+            cmd.Parameters.AddWithValue("@Foto", string.IsNullOrWhiteSpace(usuario.Foto_De_Perfil) ? (object)DBNull.Value : usuario.Foto_De_Perfil);
+            cmd.Parameters.AddWithValue("@Nascimento", string.IsNullOrWhiteSpace(usuario.data_de_nascimento) ? (object)DBNull.Value : usuario.data_de_nascimento);
+            cmd.Parameters.AddWithValue("@Nome", string.IsNullOrWhiteSpace(usuario.Nome) ? (object)DBNull.Value : usuario.Nome);
+            cmd.Parameters.AddWithValue("@GoogleId", string.IsNullOrWhiteSpace(usuario.GoogleId) ? (object)DBNull.Value : usuario.GoogleId);
+
+            usuario.Id = Convert.ToInt32(await cmd.ExecuteScalarAsync()); 
+            return usuario;
+        }
+
+        
+
+        
     }
 }

@@ -41,6 +41,17 @@ builder.Services.AddScoped(sp =>
     return new MySqlConnection(connString);
 });
 
+builder.Services.AddAuthentication()
+    .AddGoogle(googleOptions =>
+    {
+        googleOptions.ClientId = builder.Configuration["GoogleAuth:ClientId"] ?? throw new InvalidOperationException("ClientId não configurado.");
+        googleOptions.ClientSecret = builder.Configuration["GoogleAuth:ClientSecret"] ?? throw new InvalidOperationException("ClientSecret não configurado.");
+        googleOptions.CallbackPath = "/signin-google";
+    });
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+
 // JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
@@ -128,10 +139,21 @@ logger.LogInformation("AppContext.BaseDirectory = {BaseDir}", AppContext.BaseDir
 // ------------------------
 // Middleware
 // ------------------------
+// ------------------------
+// Middleware (Corrigido)
+// ------------------------
 app.UseCors("AllowLocalhost");
 app.UseHttpsRedirection();
+
+// 1. UseRouting: Deve vir antes de Authentication e Authorization
+app.UseRouting();
+
+// 2. UseAuthentication: Adiciona suporte a autenticação (QUEM é o usuário).
 app.UseAuthentication();
+
+// 3. UseAuthorization: Adiciona suporte a autorização (O QUE o usuário pode fazer).
 app.UseAuthorization();
+
 
 // Arquivos estáticos
 if (!string.IsNullOrEmpty(app.Environment.WebRootPath) && Directory.Exists(app.Environment.WebRootPath))
@@ -146,6 +168,10 @@ else
 
 // Rotas
 app.MapControllers();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
 
 // ------------------------
 // Run
