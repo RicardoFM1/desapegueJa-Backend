@@ -192,13 +192,13 @@ namespace BackendDesapegaJa.Controllers
         [HttpGet("login-google")]
         public IActionResult ExternalLogin()
         {
-            // O nome do esquema deve ser 'Google', como configurado no Program.cs
+           
             const string provider = "Google";
 
-            // Define o caminho de retorno após o Google autenticar
+          
             var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth", new { ReturnUrl = "/" });
 
-            // Inicia o processo de autenticação (Challenge), redirecionando para o Google
+           
             var properties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
             {
                 RedirectUri = redirectUrl
@@ -207,9 +207,7 @@ namespace BackendDesapegaJa.Controllers
             return Challenge(properties, provider);
         }
 
-        // Este endpoint é o caminho de retorno que o Google chamará.
-        // O caminho configurado é "/signin-google", mas precisamos de um método
-        // para processar os dados recebidos.
+     
         [HttpGet("login-google/callback")]
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
@@ -233,7 +231,6 @@ namespace BackendDesapegaJa.Controllers
             var googleId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
 
 
-            
             var usuario = await _service.BuscarOuCriarUsuarioGoogleAsync(
                 email, nome, googleId);
 
@@ -242,11 +239,19 @@ namespace BackendDesapegaJa.Controllers
                 return StatusCode(500, new { message = "Não foi possível criar/buscar usuário após autenticação Google." });
             }
 
-            
-            var tokenResponse = _tokenService.GenerateToken(usuario);
 
-            
-            return Ok(tokenResponse);
+            try
+            {
+                var tokenResponse = _service.GerarLoginResponse(usuario);
+
+              
+                return Ok(tokenResponse);
+            }
+            catch (InvalidOperationException ex)
+            {
+           
+                return StatusCode(500, new { message = "Erro ao gerar token JWT: " + ex.Message });
+            }
         }
     }
 

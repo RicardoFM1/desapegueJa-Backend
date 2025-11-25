@@ -199,6 +199,57 @@ namespace BackendDesapegaJa.Services
             return telefone.Length >= 10 && telefone.Length <= 13;
         }
 
+        public LoginResponse GerarLoginResponse(Usuario usuario)
+        {
+            if (usuario == null)
+            {
+                throw new ArgumentNullException(nameof(usuario), "Usuário não pode ser nulo para gerar LoginResponse.");
+            }
+
+            // A lógica de geração de token é a mesma do método Login
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var chave = _configuration["TokenKEY:SECRET_KEY"];
+
+            if (string.IsNullOrWhiteSpace(chave))
+            {
+                throw new InvalidOperationException("Chave JWT ausente no sistema de configuração.");
+            }
+
+            var key = Encoding.ASCII.GetBytes(chave);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+            new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+            new Claim(ClaimTypes.Email, usuario.Email),
+            new Claim("isAdmin", usuario.Admin.ToString().ToLower()),
+            new Claim(ClaimTypes.Name, usuario.Nome ?? "Usuário"),
+            new Claim("Nascimento", usuario.data_de_nascimento ?? DateTime.UtcNow.ToString("dd-MM-yyyy")),
+            new Claim("Telefone", usuario.Telefone ?? "5551992320421"),
+            new Claim("Cpf", usuario.Cpf ?? "000.000.000-00")
+        }),
+                Expires = DateTime.UtcNow.AddHours(12),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature
+                )
+            };
+
+            var tokenObj = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(tokenObj);
+
+            return new LoginResponse
+            {
+                Id = usuario.Id,
+                Email = usuario.Email,
+                Admin = usuario.Admin.ToString().ToLower(),
+                Token = tokenString,
+                Status = usuario.status
+            };
+        }
+
 
         public async Task<Usuario> BuscarOuCriarUsuarioGoogleAsync(string email, string nome, string googleId)
         {

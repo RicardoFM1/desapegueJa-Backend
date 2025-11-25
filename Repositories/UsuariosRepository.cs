@@ -20,7 +20,7 @@ namespace BackendDesapegaJa.Repositories
             var usuarios = new List<Usuario>();
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento FROM Usuarios";
+            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, google_id FROM Usuarios";
             if (!string.IsNullOrWhiteSpace(status))
             {
                 sql += " WHERE status = @status";
@@ -42,7 +42,7 @@ namespace BackendDesapegaJa.Repositories
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento FROM Usuarios WHERE LOWER(nome)=LOWER(@nome)";
+            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, google_id FROM Usuarios WHERE LOWER(nome)=LOWER(@nome)";
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -62,7 +62,7 @@ namespace BackendDesapegaJa.Repositories
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento FROM Usuarios WHERE LOWER(email)=LOWER(@email)";
+            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, google_id FROM Usuarios WHERE LOWER(email)=LOWER(@email)";
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -83,7 +83,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento FROM Usuarios WHERE id=@id";
+            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, google_id FROM Usuarios WHERE id=@id";
             if (!string.IsNullOrWhiteSpace(status))
             {
                 sql += " AND status = @status";
@@ -107,7 +107,7 @@ namespace BackendDesapegaJa.Repositories
 
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
-            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento FROM Usuarios WHERE cpf=@cpf";
+            string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, google_id FROM Usuarios WHERE cpf=@cpf";
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -129,8 +129,8 @@ namespace BackendDesapegaJa.Repositories
             connection.Open();
             using var cmd = new MySqlCommand(@"
                 INSERT INTO Usuarios 
-                (email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, nome)
-                VALUES (@Email,@Senha,@Status,@Admin,@Telefone,@Cpf,@Foto,@Nascimento, @Nome);
+                (email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, nome, google_id)
+                VALUES (@Email,@Senha,@Status,@Admin,@Telefone,@Cpf,@Foto,@Nascimento, @Nome, @googleId);
                 SELECT LAST_INSERT_ID();", connection);
 
             cmd.Parameters.AddWithValue("@Email", usuario.Email);
@@ -142,6 +142,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@Foto", string.IsNullOrWhiteSpace(usuario.Foto_De_Perfil) ? (object)DBNull.Value : usuario.Foto_De_Perfil);
             cmd.Parameters.AddWithValue("@Nascimento", string.IsNullOrWhiteSpace(usuario.data_de_nascimento) ? (object)DBNull.Value : usuario.data_de_nascimento);
             cmd.Parameters.AddWithValue("@Nome", string.IsNullOrWhiteSpace(usuario.Nome) ? (object)DBNull.Value : usuario.Nome);
+            cmd.Parameters.AddWithValue("@googleId", string.IsNullOrWhiteSpace(usuario.GoogleId) ? (object)DBNull.Value : usuario.GoogleId);
 
             usuario.Id = Convert.ToInt32(cmd.ExecuteScalar());
         }
@@ -183,6 +184,7 @@ namespace BackendDesapegaJa.Repositories
             var fotoPerfilFinal = string.IsNullOrWhiteSpace(usuario.Foto_De_Perfil) ? existente.Foto_De_Perfil : usuario.Foto_De_Perfil;
             var dataNascimentoFinal = string.IsNullOrWhiteSpace(usuario.data_de_nascimento) ? existente.data_de_nascimento : usuario.data_de_nascimento;
             var nomeFinal = string.IsNullOrWhiteSpace(usuario.Nome) ? existente.Nome : usuario.Nome;
+            var googleIdFinal = string.IsNullOrWhiteSpace(usuario.GoogleId) ? existente.GoogleId : usuario.GoogleId;
 
             string sql = @"
                 UPDATE Usuarios SET
@@ -194,7 +196,8 @@ namespace BackendDesapegaJa.Repositories
                     cpf=@Cpf,
                     foto_de_perfil=@Foto,
                     data_de_nascimento=@Nascimento,
-                    nome=@Nome
+                    nome=@Nome,
+                    google_id=@googleId
                 WHERE id=@Id";
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -213,6 +216,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@Foto", fotoPerfilFinal);
             cmd.Parameters.AddWithValue("@Nascimento", dataNascimentoFinal);
             cmd.Parameters.AddWithValue("@Nome", nomeFinal);
+            cmd.Parameters.AddWithValue("@googleId", googleIdFinal);
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -221,7 +225,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        private Usuario MapUsuario(MySqlDataReader reader)
+        private Usuario? MapUsuario(MySqlDataReader reader)
         {
             return new Usuario
             {
@@ -241,9 +245,9 @@ namespace BackendDesapegaJa.Repositories
         public async Task<Usuario?> BuscarPorEmailAsync(string email, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync(); 
+            await connection.OpenAsync();
 
-           
+          
             string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, google_id FROM Usuarios WHERE LOWER(email)=LOWER(@email)";
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -257,14 +261,15 @@ namespace BackendDesapegaJa.Repositories
                 cmd.Parameters.AddWithValue("@status", status);
             }
 
-            using var reader = await cmd.ExecuteReaderAsync(); 
+            using MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync();
 
-            return await reader.ReadAsync() ? MapUsuario(reader) : null; 
+
+            return await reader.ReadAsync() ? MapUsuario(reader) : null;
+          
         }
 
-        
 
-        public async Task<Usuario> AdicionarAsync(Usuario usuario)
+        public async Task<Usuario?> AdicionarAsync(Usuario usuario)
         {
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
