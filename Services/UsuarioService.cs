@@ -254,7 +254,7 @@ namespace BackendDesapegaJa.Services
         public async Task<Usuario> BuscarOuCriarUsuarioGoogleAsync(string email, string nome, string googleId)
         {
            
-            var usuarioExistente = await _repo.BuscarPorEmail(email);
+            var usuarioExistente = await _repo.BuscarPorEmailAsync(email);
 
             if (usuarioExistente != null)
             {
@@ -267,13 +267,11 @@ namespace BackendDesapegaJa.Services
             {
                 Email = email,
                 Nome = nome,
-                GoogleId = googleId, 
-                Status = "ativo",
-               
+                GoogleId = googleId,
                 Senha = null 
             };
 
-            return await _repo.Adicionar(novoUsuario);
+            return await _repo.AdicionarAsync(novoUsuario);
         }
 
         private bool CpfValido(string cpf)
