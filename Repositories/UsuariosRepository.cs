@@ -256,7 +256,12 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-          
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return null;
+            }
+
+
             string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, google_id FROM Usuarios WHERE LOWER(email)=LOWER(@email)";
 
             if (!string.IsNullOrWhiteSpace(status))
