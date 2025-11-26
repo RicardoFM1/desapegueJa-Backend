@@ -192,22 +192,21 @@ namespace BackendDesapegaJa.Controllers
         [HttpGet("login-google")]
         public IActionResult ExternalLogin()
         {
-           
             const string provider = "Google";
 
-          
-            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth", new { ReturnUrl = "/" });
+            
+            var redirectUrl = "/desapega/usuarios/login-google/callback";
 
-           
             var properties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
             {
+                
+                Items = { { "ReturnUrl", "http://localhost:5173" } }, 
                 RedirectUri = redirectUrl
             };
 
             return Challenge(properties, provider);
         }
 
-     
         [HttpGet("login-google/callback")]
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
@@ -216,41 +215,76 @@ namespace BackendDesapegaJa.Controllers
                 return RedirectToAction(nameof(Login), new { error = $"Erro do provedor: {remoteError}" });
             }
 
-            
+
             var result = await HttpContext.AuthenticateAsync("Google");
 
             if (result?.Succeeded != true)
             {
-        
-                return Unauthorized(new { message = "Falha na autenticação com o Google." });
+               
+                return Redirect("http://localhost:5173/login?error=auth_failed");
             }
 
-            
             var email = result.Principal.FindFirstValue(ClaimTypes.Email);
             var nome = result.Principal.FindFirstValue(ClaimTypes.Name);
             var googleId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
-
 
             var usuario = await _service.BuscarOuCriarUsuarioGoogleAsync(
                 email, nome, googleId);
 
             if (usuario == null)
             {
-                return StatusCode(500, new { message = "Não foi possível criar/buscar usuário após autenticação Google." });
+                return Redirect("http://localhost:5173/login?error=user_creation_failed");
             }
 
-
+       
             try
             {
                 var tokenResponse = _service.GerarLoginResponse(usuario);
 
-              
-                return Ok(tokenResponse);
+
+                bool needsCompletion = (usuario.Cpf == "00000000000" || string.IsNullOrEmpty(usuario.Cpf)) ||
+                            (usuario.Telefone == "0000000000000" || string.IsNullOrEmpty(usuario.Telefone)) ||
+                            (string.IsNullOrEmpty(usuario.data_de_nascimento));
+
+                var frontendUrl = $"http://localhost:5173/login?token={tokenResponse.Token}&nome={nome}&needs_completion={needsCompletion.ToString().ToLower()}";
+
+
+                
+
+               
+                return Redirect(frontendUrl);
+            }
+            catch (Exception ex)
+            {
+               
+                return Redirect($"http://localhost:5173/login?error=token_failed&message={Uri.EscapeDataString(ex.Message)}");
+            }
+        }
+        [Authorize] 
+[HttpPost("completar-cadastro")]
+        public async Task<IActionResult> CompletarCadastro([FromBody] CompletarCadastroDTO dto)
+        {
+            
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized("Token inválido ou ID de usuário ausente.");
+            }
+
+            try
+            {
+                
+                await _service.CompletarCadastroAsync(userId, dto);
+
+                return Ok(new { message = "Cadastro completado com sucesso." });
             }
             catch (InvalidOperationException ex)
             {
-           
-                return StatusCode(500, new { message = "Erro ao gerar token JWT: " + ex.Message });
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Ocorreu um erro interno ao completar o cadastro." });
             }
         }
     }

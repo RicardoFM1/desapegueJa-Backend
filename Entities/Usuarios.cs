@@ -48,4 +48,18 @@ namespace BackendDesapegaJa.Entities
 
         public string? GoogleId { get; set; }
     }
+    public class CompletarCadastroDTO
+    {
+        
+        [Required]
+        public string Cpf { get; set; }
+
+        [Required]
+        public string Telefone { get; set; }
+
+        [Required]
+        public string DataDeNascimento { get; set; }
+
+
+    }
 }

@@ -60,6 +60,12 @@ namespace BackendDesapegaJa.Repositories
 
         public Usuario? BuscarPorEmail(string email, string? status = null)
         {
+           
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return null;
+            }
+
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
             string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, google_id FROM Usuarios WHERE LOWER(email)=LOWER(@email)";
@@ -69,7 +75,10 @@ namespace BackendDesapegaJa.Repositories
                 sql += " AND status = @status";
             }
             using var cmd = new MySqlCommand(sql, connection);
+
+            
             cmd.Parameters.AddWithValue("@email", email.Trim());
+
             if (!string.IsNullOrWhiteSpace(status))
             {
                 cmd.Parameters.AddWithValue("@status", status);

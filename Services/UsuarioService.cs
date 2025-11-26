@@ -159,11 +159,10 @@ namespace BackendDesapegaJa.Services
             if (!string.IsNullOrWhiteSpace(usuarioDto.Telefone))
             {
                 if (!TelefoneValido(usuarioDto.Telefone))
-                    throw new InvalidOperationException("Telefone inválido. Deve conter 10 ou 13 dígitos.");
-                
+                    throw new InvalidOperationException("Telefone inválido. Deve conter apenas números."); 
+
             }
 
-            
 
             usuarioDto.Admin ??= existente.Admin;
 
@@ -192,11 +191,15 @@ namespace BackendDesapegaJa.Services
         {
             if (string.IsNullOrEmpty(telefone)) return false;
 
-          
+         
             telefone = new string(telefone.Where(char.IsDigit).ToArray());
 
-           
-            return telefone.Length >= 10 && telefone.Length <= 13;
+      
+            if (string.IsNullOrEmpty(telefone)) return false;
+
+
+            
+            return true; 
         }
 
         public LoginResponse GerarLoginResponse(Usuario usuario)
@@ -206,7 +209,7 @@ namespace BackendDesapegaJa.Services
                 throw new ArgumentNullException(nameof(usuario), "Usuário não pode ser nulo para gerar LoginResponse.");
             }
 
-            // A lógica de geração de token é a mesma do método Login
+         
             var tokenHandler = new JwtSecurityTokenHandler();
 
             var chave = _configuration["TokenKEY:SECRET_KEY"];
@@ -251,9 +254,9 @@ namespace BackendDesapegaJa.Services
         }
 
 
+
         public async Task<Usuario> BuscarOuCriarUsuarioGoogleAsync(string email, string nome, string googleId)
         {
-           
             var usuarioExistente = await _repo.BuscarPorEmailAsync(email);
 
             if (usuarioExistente != null)
@@ -262,16 +265,74 @@ namespace BackendDesapegaJa.Services
                 return usuarioExistente;
             }
 
+            
+            var senhaAleatoria = Guid.NewGuid().ToString("N");
+
+           
+            var senhaHash = BCrypt.Net.BCrypt.HashPassword(senhaAleatoria);
           
+
+
+           
             var novoUsuario = new Usuario
             {
                 Email = email,
                 Nome = nome,
                 GoogleId = googleId,
-                Senha = null 
+                Senha = senhaHash,         
+                Cpf = "00000000000", 
+                Telefone = "0000000000000" 
             };
 
-            return await _repo.AdicionarAsync(novoUsuario);
+           
+            if (string.IsNullOrWhiteSpace(novoUsuario.Cpf))
+            {
+               
+                novoUsuario.Cpf = "00000000000";
+            }
+
+            
+            if (string.IsNullOrWhiteSpace(novoUsuario.Telefone))
+            {
+                novoUsuario.Telefone = "0000000000000";
+            }
+
+           
+            if (string.IsNullOrWhiteSpace(novoUsuario.status))
+            {
+                novoUsuario.status = "ativo";
+            }
+
+           
+            var usuarioCriado = await _repo.AdicionarAsync(novoUsuario);
+
+            
+
+            return usuarioCriado;
+        }
+
+        public async Task CompletarCadastroAsync(int id, CompletarCadastroDTO dto)
+        {
+         
+            if (!CpfValido(dto.Cpf))
+                throw new InvalidOperationException("CPF inválido.");
+
+            if (!TelefoneValido(dto.Telefone))
+                throw new InvalidOperationException("Telefone inválido.");
+
+            
+            var update = new UsuarioUpdateDTO
+            {
+                Cpf = dto.Cpf,
+                Telefone = dto.Telefone,
+                data_de_nascimento = dto.DataDeNascimento,
+              
+            };
+
+            
+            _repo.Atualizar(id, update);
+
+           
         }
 
         private bool CpfValido(string cpf)

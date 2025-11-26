@@ -4,6 +4,7 @@ using BackendDesapegaJa.Repositories;
 using BackendDesapegaJa.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.IdentityModel.Tokens;
 using MySql.Data.MySqlClient;
 using System;
@@ -13,7 +14,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
-    WebRootPath = "wwwroot" // Defina a pasta de arquivos estáticos, se quiser personalizar
+    WebRootPath = "wwwroot" 
 });
 
 // ------------------------
@@ -41,25 +42,30 @@ builder.Services.AddScoped(sp =>
     return new MySqlConnection(connString);
 });
 
-builder.Services.AddAuthentication()
-    .AddGoogle(googleOptions =>
-    {
-        googleOptions.ClientId = builder.Configuration["GoogleAuth:ClientId"] ?? throw new InvalidOperationException("ClientId não configurado.");
-        googleOptions.ClientSecret = builder.Configuration["GoogleAuth:ClientSecret"] ?? throw new InvalidOperationException("ClientSecret não configurado.");
-        googleOptions.CallbackPath = "/signin-google";
-    });
-
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
-
-// JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
+   
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+   
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+ 
+    options.Cookie.Name = "ExternalAuthCookie";
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(5); 
+    options.Events.OnRedirectToLogin = context =>
+    {
+   
+        context.Response.StatusCode = 401;
+        return Task.CompletedTask;
+    };
 })
 .AddJwtBearer(options =>
 {
+ 
     var chave = builder.Configuration["TokenKEY:SECRET_KEY"]
         ?? throw new InvalidOperationException("Chave JWT ausente em appsettings.json (TokenKEY:SECRET_KEY).");
 
@@ -71,7 +77,22 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(chave))
     };
+})
+.AddGoogle(googleOptions =>
+{
+   
+    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"]
+        ?? throw new InvalidOperationException("ClientId não configurado.");
+
+    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]
+        ?? throw new InvalidOperationException("ClientSecret não configurado.");
+
+    googleOptions.CallbackPath = "/signin-google";
 });
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+
 builder.Services.Configure<IISServerOptions>(options =>
 {
     options.MaxRequestBodySize = 104857600; // 100 MB
