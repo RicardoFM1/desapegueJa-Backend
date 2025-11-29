@@ -8,10 +8,14 @@ namespace BackendDesapegaJa.Interfaces
 
         void Adicionar(Produto produto);
 
-        Produto? BuscarPorNome(string nome, string? status = null);
+        IEnumerable<Produto?> BuscarPorNome(string nome, string? status = null);
+
+        IEnumerable<Produto?> BuscarPorUsuarioID(int? id, string? status = null);
 
         Produto? BuscarPorId(int? id, string? status = null);
 
         Produto? Atualizar(int id, ProdutoUpdateDTO produto, string? status = null);
+
+
     }
 }

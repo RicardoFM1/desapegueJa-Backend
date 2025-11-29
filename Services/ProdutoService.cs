@@ -21,6 +21,15 @@ namespace BackendDesapegaJa.Services
             return _repo.ListarTodos(status, offset, limit);
         }
 
+        public IEnumerable<Produto> GetProdutoByUsuarioID(int? id, string? status = null)
+        {
+            var produtos = _repo.BuscarPorUsuarioID(id, status);
+            if (produtos == null)
+            {
+                throw new InvalidOperationException("Não foi possível encontrar os produtos");
+            }
+            return produtos;
+        }
 
         public Produto GetProdutoById(int id, string? status = null)
         {

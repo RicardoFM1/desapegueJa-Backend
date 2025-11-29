@@ -71,7 +71,7 @@ namespace BackendDesapegaJa.Repositories
             return (produtos, total);
         }
 
-        public Produto? BuscarPorNome(string nome, string? status = null)
+        public IEnumerable<Produto?> BuscarPorNome(string nome, string? status = null)
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
@@ -86,11 +86,11 @@ namespace BackendDesapegaJa.Repositories
             {
                 cmd.Parameters.AddWithValue("@status", status);
             }
-            
+            var produtos = new List<Produto>();
             using var reader = cmd.ExecuteReader();
             if (reader.Read())
             {
-                var produtoRes = new Produto
+                produtos.Add(new Produto
                 {
                     nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? "" : reader.GetString("nome"),
                     id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
@@ -102,9 +102,49 @@ namespace BackendDesapegaJa.Repositories
                     categoria_id = reader.IsDBNull(reader.GetOrdinal("categoria_id")) ? 0 : reader.GetInt32("categoria_id"),
                     estoque = reader.IsDBNull(reader.GetOrdinal("estoque")) ? 0 : reader.GetInt32("estoque"),
                     imagem = reader.IsDBNull(reader.GetOrdinal("imagem")) ? "" : reader.GetString("imagem")
-                };
+                });
                
-                return produtoRes;
+                return produtos;
+            }
+            return null;
+        }
+
+        public IEnumerable<Produto?> BuscarPorUsuarioID(int? id, string? status = null)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+            string sql = "SELECT * FROM produtos WHERE usuario_id = @usuario_id";
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @status";
+            }
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@nome", id);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                cmd.Parameters.AddWithValue("@status", status);
+            }
+
+            var produtos = new List<Produto>();
+
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                produtos.Add(new Produto
+                {
+                    nome = reader.IsDBNull(reader.GetOrdinal("nome")) ? "" : reader.GetString("nome"),
+                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
+                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
+                    preco = reader.IsDBNull(reader.GetOrdinal("preco")) ? 0 : reader.GetInt32("preco"),
+                    descricao = reader.IsDBNull(reader.GetOrdinal("descricao")) ? "" : reader.GetString("descricao"),
+                    data_post = reader.IsDBNull(reader.GetOrdinal("data_post")) ? "" : reader.GetString("data_post"),
+                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status"),
+                    categoria_id = reader.IsDBNull(reader.GetOrdinal("categoria_id")) ? 0 : reader.GetInt32("categoria_id"),
+                    estoque = reader.IsDBNull(reader.GetOrdinal("estoque")) ? 0 : reader.GetInt32("estoque"),
+                    imagem = reader.IsDBNull(reader.GetOrdinal("imagem")) ? "" : reader.GetString("imagem")
+                });
+
+                return produtos;
             }
             return null;
         }

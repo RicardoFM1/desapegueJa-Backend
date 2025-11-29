@@ -72,6 +72,25 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        public IActionResult GetByUsuarioId(int id, [FromQuery] string? status)
+        {
+            try
+            {
+
+                var produtos = _service.GetProdutoByUsuarioID(id, status);
+                return Ok(produtos);
+            }et 
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
 
         [Authorize] 
         [HttpPost]
