@@ -72,7 +72,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("usuario/{id}")]
         public IActionResult GetByUsuarioId(int id, [FromQuery] string? status)
         {
             try
@@ -80,7 +80,7 @@ namespace BackendDesapegaJa.Controllers
 
                 var produtos = _service.GetProdutoByUsuarioID(id, status);
                 return Ok(produtos);
-            }et 
+            }
             catch (InvalidOperationException ex)
             {
                 return StatusCode(400, new { message = ex.Message });

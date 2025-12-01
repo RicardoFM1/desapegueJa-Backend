@@ -119,7 +119,7 @@ namespace BackendDesapegaJa.Repositories
                 sql += " AND status = @status";
             }
             using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@nome", id);
+            cmd.Parameters.AddWithValue("@usuario_id", id);
             if (!string.IsNullOrWhiteSpace(status))
             {
                 cmd.Parameters.AddWithValue("@status", status);
@@ -144,9 +144,9 @@ namespace BackendDesapegaJa.Repositories
                     imagem = reader.IsDBNull(reader.GetOrdinal("imagem")) ? "" : reader.GetString("imagem")
                 });
 
-                return produtos;
             }
-            return null;
+                return produtos;
+          
         }
 
         public Produto? BuscarPorId(int? id, string? status = null)
