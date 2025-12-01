@@ -40,10 +40,10 @@ namespace BackendDesapegaJa.Services
 
         public IEnumerable<Pagamentos> GetPagamentoByUsuarioId(int usuarioId)
         {
-            var pagamento = _repo.BuscarPorUsuarioId(usuarioId);
-            if (pagamento == null)
-                throw new InvalidOperationException("Não foi possível encontrar esse pagamento");
-            return pagamento;
+            var pagamentos = _repo.BuscarPorUsuarioId(usuarioId);
+            if (pagamentos == null)
+                throw new InvalidOperationException("Não foi possível encontrar os pagamentos");
+            return pagamentos;
         }
         public Pagamentos GetPagamentoByTransacaoIdExterno(string transacaoIdExterno)
         {

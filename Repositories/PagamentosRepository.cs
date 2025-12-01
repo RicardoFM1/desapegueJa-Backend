@@ -103,7 +103,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id ORDER BY created_at DESC LIMIT 1";
+            string sql = "SELECT * FROM Pagamentos WHERE usuario_id = @usuario_id ORDER BY created_at DESC";
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
