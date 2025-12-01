@@ -38,7 +38,7 @@ namespace BackendDesapegaJa.Services
             return _repo.ListarTodos();
         }
 
-        public Pagamentos GetPagamentoByUsuarioId(int usuarioId)
+        public IEnumerable<Pagamentos> GetPagamentoByUsuarioId(int usuarioId)
         {
             var pagamento = _repo.BuscarPorUsuarioId(usuarioId);
             if (pagamento == null)

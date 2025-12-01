@@ -7,7 +7,7 @@ namespace BackendDesapegaJa.Interfaces
         IEnumerable<Pagamentos> ListarTodos();
         Pagamentos BuscarPorId(int? id);
 
-        Pagamentos? BuscarPorUsuarioId(int usuarioId);
+        IEnumerable<Pagamentos?> BuscarPorUsuarioId(int usuarioId);
 
         Pagamentos? BuscarPorTransacaoIdExterno(string transacaoIdExterno);
 

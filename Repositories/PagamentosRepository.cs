@@ -97,8 +97,9 @@ namespace BackendDesapegaJa.Repositories
             return reader.Read() ? MapReaderToPagamento(reader) : null;
         }
 
-        public Pagamentos? BuscarPorUsuarioId(int usuarioId)
+        public IEnumerable<Pagamentos?> BuscarPorUsuarioId(int usuarioId)
         {
+            var pagamentos = new List<Pagamentos>();
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
@@ -107,7 +108,11 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
             using var reader = cmd.ExecuteReader();
-            return reader.Read() ? MapReaderToPagamento(reader) : null;
+            while (reader.Read())
+            {
+                pagamentos.Add(MapReaderToPagamento(reader));
+            }
+            return pagamentos;
         }
 
         public Pagamentos? BuscarPagamentoEmAberto(int usuarioId)
