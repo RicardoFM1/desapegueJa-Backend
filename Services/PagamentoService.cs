@@ -92,6 +92,8 @@ namespace BackendDesapegaJa.Services
             var ordem = _repoOrdem.BuscarPorId(pagamento.ordem_id)
                 ?? throw new InvalidOperationException("Ordem de compra não encontrada.");
 
+            
+
             pagamento.createdAt = DateTime.UtcNow;
 
             

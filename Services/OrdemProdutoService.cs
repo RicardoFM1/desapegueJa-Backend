@@ -49,6 +49,11 @@ namespace BackendDesapegaJa.Services
             if (ordemProduto.quantidade <= 0)
                 throw new InvalidOperationException("Quantidade deve ser maior que zero.");
 
+            if (produto.estoque < ordemProduto.quantidade)
+                throw new InvalidOperationException(
+                    $"Estoque insuficiente para '{produto.nome}'. Disponível: {produto.estoque}."
+                );
+
             ordemProduto.ordem_id = ordemCompra.id;
             _repo.Adicionar(ordemProduto);
 
