@@ -6,6 +6,8 @@ namespace BackendDesapegaJa.Interfaces
     {
         IEnumerable<OrdemProduto> ListarTodos();
         OrdemProduto? BuscarPorUsuarioId(int usuarioId);
+
+        IEnumerable<OrdemProduto> BuscarProdutosPorOrdemId(int ordemId);
         void Adicionar(OrdemProduto ordemProduto);
         OrdemProduto AtualizarPorUsuarioId(int usuarioId, OrdemProdutoUpdateDTO dto);
         

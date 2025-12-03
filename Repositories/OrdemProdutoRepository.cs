@@ -68,6 +68,37 @@ namespace BackendDesapegaJa.Repositories
             return null;
         }
 
+        public IEnumerable<OrdemProduto> BuscarProdutosPorOrdemId(int ordemId)
+        {
+            var lista = new List<OrdemProduto>();
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            
+            string sql = @"
+        SELECT * FROM ordem_produto 
+        WHERE ordem_id = @ordem_id";
+
+            using var cmd = new MySqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@ordem_id", ordemId);
+
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                lista.Add(new OrdemProduto
+                {
+                    id = reader.GetInt32("id"),
+                    ordem_id = reader.GetInt32("ordem_id"),
+                    produto_id = reader.GetInt32("produto_id"),
+                    quantidade = reader.GetInt32("quantidade"),
+                    preco_unitario = reader.GetInt32("preco_unitario")
+                });
+            }
+
+            return lista;
+        }
+
         public void Adicionar(OrdemProduto ordemProduto)
         {
             using var connection = new MySqlConnection(_connectionString);

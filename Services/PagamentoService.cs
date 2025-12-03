@@ -12,7 +12,9 @@ namespace BackendDesapegaJa.Services
         private readonly IStatusDePagamentoRepository _repoStatusPagamento;
         private readonly IConfiguration _config;
         private readonly IOrdemDeCompraRepository _repoOrdem;
+        private readonly IOrdemProdutoRepository _repoOrdemProduto;
         private readonly MercadoPagoIntegration _mercadoPago;
+        private readonly IProdutoRepository _repoProduto;
 
         public PagamentoService(
             IPagamentosRepository repo,
@@ -21,7 +23,9 @@ namespace BackendDesapegaJa.Services
             IStatusDePagamentoRepository statusPagamento,
             IConfiguration config,
             IOrdemDeCompraRepository repoOrdem,
-            MercadoPagoIntegration mercadoPago
+            MercadoPagoIntegration mercadoPago,
+            IProdutoRepository repoProduto,
+            IOrdemProdutoRepository repoOrdemProduto
         )
         {
             _repo = repo;
@@ -31,6 +35,8 @@ namespace BackendDesapegaJa.Services
             _config = config;
             _repoOrdem = repoOrdem;
             _mercadoPago = mercadoPago;
+            _repoProduto = repoProduto;
+            _repoOrdemProduto = repoOrdemProduto;
         }
 
         public IEnumerable<Pagamentos> GetPagamentos()
@@ -91,6 +97,43 @@ namespace BackendDesapegaJa.Services
 
             var ordem = _repoOrdem.BuscarPorId(pagamento.ordem_id)
                 ?? throw new InvalidOperationException("Ordem de compra não encontrada.");
+
+            var ordemProduto = _repoOrdemProduto.BuscarPorUsuarioId(pagamento.usuario_id)
+                ?? throw new InvalidOperationException("Oredm de produto não encontrado.");
+
+
+
+            var itensOrdem = _repoOrdemProduto.BuscarProdutosPorOrdemId(ordem.id);
+
+            if (!itensOrdem.Any())
+                throw new InvalidOperationException("Ordem de produto não encontrado.");
+
+
+
+
+            foreach (var itemOrdem in itensOrdem)
+            {
+                var produto = _repoProduto.BuscarPorId(itemOrdem.produto_id)
+                    ?? throw new InvalidOperationException($"Produto ID {itemOrdem.produto_id} não encontrado.");
+
+                if (produto.estoque < itemOrdem.quantidade)
+                {
+                    throw new InvalidOperationException($"O produto '{produto.nome}' não possui estoque suficiente ({produto.estoque} restante) para a quantidade solicitada ({itemOrdem.quantidade}).");
+                }
+
+                int novoEstoque = (int)(produto.estoque - itemOrdem.quantidade);
+
+                var updateEstoqueDto = new ProdutoUpdateDTO
+                {
+                    estoque = novoEstoque
+                  
+                };
+
+                
+                _repoProduto.Atualizar(produto.id, updateEstoqueDto);
+
+        
+            }
 
             pagamento.createdAt = DateTime.UtcNow;
 
