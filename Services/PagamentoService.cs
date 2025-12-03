@@ -295,6 +295,18 @@ namespace BackendDesapegaJa.Services
                     Console.Error.WriteLine($"ERRO ao deletar ordem de compra: {ex.Message}");
                 }
             }
+            if (novoStatusId == 5)
+            {
+                try
+                {
+                    _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
+                    Console.WriteLine($"Ordem expirada removida do usuário {pagamento.usuario_id}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"ERRO ao remover ordem expirada: {ex.Message}");
+                }
+            }
         }
 
 
