@@ -87,7 +87,7 @@ namespace BackendDesapegaJa.Services
 
             var usuario = _repoUser.BuscarPorId(pagamento.usuario_id);
             var formaPagamento = _repoFormaPagamento.BuscarPorId(pagamento.forma_pagamento_id);
-            
+
 
             if (usuario == null || usuario.status.ToLower() == "inativo")
                 throw new InvalidOperationException("Usuário inválido");
@@ -103,7 +103,6 @@ namespace BackendDesapegaJa.Services
                 ?? throw new InvalidOperationException("Oredm de produto não encontrado.");
 
 
-
             var itensOrdem = _repoOrdemProduto.BuscarProdutosPorOrdemId(ordem.id);
 
             if (!itensOrdem.Any())
@@ -111,61 +110,79 @@ namespace BackendDesapegaJa.Services
 
 
 
-
-            foreach (var itemOrdem in itensOrdem)
+            try
             {
-                var produto = _repoProduto.BuscarPorId(itemOrdem.produto_id)
-                    ?? throw new InvalidOperationException($"Produto ID {itemOrdem.produto_id} não encontrado.");
-
-                if (produto.estoque < itemOrdem.quantidade)
+                foreach (var itemOrdem in itensOrdem)
                 {
-                    throw new InvalidOperationException($"O produto '{produto.nome}' não possui estoque suficiente ({produto.estoque} restante) para a quantidade solicitada ({itemOrdem.quantidade}).");
+                    var produto = _repoProduto.BuscarPorId(itemOrdem.produto_id)
+                        ?? throw new InvalidOperationException($"Produto ID {itemOrdem.produto_id} não encontrado.");
+
+
+                    if (produto.estoque < itemOrdem.quantidade)
+                    {
+
+                        throw new InvalidOperationException(
+                            $"O produto '{produto.nome}' não possui estoque suficiente ({produto.estoque} restante) para a quantidade solicitada ({itemOrdem.quantidade})."
+                        );
+                    }
+
+
+                    int novoEstoque = (int)(produto.estoque - itemOrdem.quantidade);
+                    var updateEstoqueDto = new ProdutoUpdateDTO { estoque = novoEstoque };
+                    _repoProduto.Atualizar(produto.id, updateEstoqueDto);
                 }
 
-                int novoEstoque = (int)(produto.estoque - itemOrdem.quantidade);
 
-                var updateEstoqueDto = new ProdutoUpdateDTO
+
+                pagamento.createdAt = DateTime.UtcNow;
+                string uuid = Guid.NewGuid().ToString();
+                pagamento.pagamento_uuid = uuid;
+
+                pagamento.status_pagamento_id = (int)StatusPagamento.pendente;
+
+                await _repo.AdicionarAsync(pagamento);
+
+
+                if (formaPagamento.forma.ToLower().Contains("pix"))
                 {
-                    estoque = novoEstoque
-                  
-                };
+                    var dadosCobranca = await _mercadoPago.CriarCobrancaPixAsync(ordem, usuario, uuid);
 
-                
-                _repoProduto.Atualizar(produto.id, updateEstoqueDto);
+                    var updateDto = new PagamentosUpdateDTO
+                    {
+                        pix_copia_codigo = dadosCobranca.PixCopiaCodigo,
+                        pix_qr_code = dadosCobranca.PixQrCodeBase64 ?? dadosCobranca.PixCopiaCodigo,
+                        expiracao = dadosCobranca.Expiracao,
+                        status_pagamento_id = (int)StatusPagamento.pendente,
+                        pagamento_uuid = uuid,
+                        updatedAt = DateTime.UtcNow
+                    };
 
-        
+                    _repo.Atualizar(pagamento.pagamento_uuid, updateDto);
+                }
+
+                return pagamento;
             }
-
-
-            pagamento.createdAt = DateTime.UtcNow;
-
-            
-            string uuid = Guid.NewGuid().ToString();
-            pagamento.pagamento_uuid = uuid;
-
-            pagamento.status_pagamento_id = (int)StatusPagamento.pendente;
-
-            await _repo.AdicionarAsync(pagamento);
-
-          
-            if (formaPagamento.forma.ToLower().Contains("pix"))
+            catch (InvalidOperationException ex) when (ex.Message.Contains("estoque suficiente"))
             {
-                var dadosCobranca = await _mercadoPago.CriarCobrancaPixAsync(ordem, usuario, uuid);
+                
 
-                var updateDto = new PagamentosUpdateDTO
+                try
                 {
-                    pix_copia_codigo = dadosCobranca.PixCopiaCodigo,
-                    pix_qr_code = dadosCobranca.PixQrCodeBase64 ?? dadosCobranca.PixCopiaCodigo,
-                    expiracao = dadosCobranca.Expiracao,
-                    status_pagamento_id = (int)StatusPagamento.pendente,
-                    pagamento_uuid = uuid,
-                    updatedAt = DateTime.UtcNow
-                };
+                   
+                
+                    _repoOrdem.DeletarOrdemEmAberto(ordem.id);
 
-                _repo.Atualizar(pagamento.pagamento_uuid, updateDto);
+                }
+                catch (Exception cleanupEx)
+                {
+
+                    Console.Error.WriteLine($"ERRO CRÍTICO ao limpar a ordem {ordem.id} após falha de estoque: {cleanupEx.Message}");
+
+                }
+
+
+                throw;
             }
-
-            return pagamento;
         }
 
 
