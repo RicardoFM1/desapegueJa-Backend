@@ -98,6 +98,7 @@ namespace BackendDesapegaJa.Services
             var ordem = _repoOrdem.BuscarPorId(pagamento.ordem_id)
                 ?? throw new InvalidOperationException("Ordem de compra não encontrada.");
 
+
             var ordemProduto = _repoOrdemProduto.BuscarPorUsuarioId(pagamento.usuario_id)
                 ?? throw new InvalidOperationException("Oredm de produto não encontrado.");
 
@@ -134,6 +135,7 @@ namespace BackendDesapegaJa.Services
 
         
             }
+
 
             pagamento.createdAt = DateTime.UtcNow;
 
