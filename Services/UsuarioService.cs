@@ -118,7 +118,7 @@ namespace BackendDesapegaJa.Services
 
         public Usuario? BuscarUsuarioPorId(int id, string? status = null)
         {
-            var usuario = _repo.BuscarPorId(id, status);
+            var usuario = _repo.BuscarPorId(id);
             if (usuario == null)
                 throw new InvalidOperationException("Não foi possível encontrar esse usuário.");
 
@@ -127,8 +127,8 @@ namespace BackendDesapegaJa.Services
 
         public Usuario AtualizarUsuario(int id, UsuarioUpdateDTO usuarioDto, string? status = null)
         {
-            var existente = _repo.BuscarPorId(id, status);
-            if (existente == null || existente.status == "inativo")
+            var existente = _repo.BuscarPorId(id);
+            if (existente == null)
                 throw new InvalidOperationException("Nenhum usuário encontrado.");
 
             var existenteEmail = _repo.BuscarPorEmail(usuarioDto.Email);

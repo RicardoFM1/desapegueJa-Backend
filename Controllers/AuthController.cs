@@ -143,37 +143,32 @@ namespace BackendDesapegaJa.Controllers
 
         [Authorize]
         [HttpPatch("{id}")]
-
         public IActionResult AtualizarUsuario(int id, [FromBody] UsuarioUpdateDTO usuario, [FromQuery] string? status)
         {
             try
             {
-                var usuarioExistente = _service.BuscarUsuarioPorId(id, status);
-                var loggedId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var isAdmin = false;
-                var admin = User.FindFirst("isAdmin")?.Value;
+              
+                var usuarioExistente = _service.BuscarUsuarioPorId(id);
 
-                if(User.FindFirst("isAdmin")?.Value.ToLower() == "true")
-                {
-                    isAdmin = true;
-                }
-                else
-                {
-                    isAdmin = false;
-                }
-                if(!int.TryParse(loggedId, out int loggedidInt))
+               
+
+                var loggedId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var isAdmin = User.FindFirst("isAdmin")?.Value.ToLower() == "true";
+
+                if (!int.TryParse(loggedId, out int loggedidInt))
                 {
                     return StatusCode(403, new { message = "Sem autorização para atualizar o usuário" });
                 }
-                if(isAdmin == false && id != loggedidInt)
+
+              
+                if (isAdmin == false && (id != loggedidInt || usuarioExistente.status.ToLower() == "inativo"))
                 {
-                    return StatusCode(403, new { message = "Sem autorização para atualizar o usuário" });
+                    return StatusCode(403, new { message = "Sem autorização para atualizar o usuário ou usuário sem permissão." });
                 }
-                if(usuarioExistente.status.ToLower() == "inativo" && isAdmin == false)
-                {
-                    return StatusCode(403, new { message = "Usuário sem permissão" });
-                }
-                    var atualizacao = _service.AtualizarUsuario(id, usuario, status);
+
+
+              
+                var atualizacao = _service.AtualizarUsuario(id, usuario, status);
                 return StatusCode(200, atualizacao);
 
             }
@@ -186,8 +181,6 @@ namespace BackendDesapegaJa.Controllers
             {
                 return StatusCode(500, new { message = "Erro interno: " + ex.Message });
             }
-
-
         }
         [HttpGet("login-google")]
         public IActionResult ExternalLogin()

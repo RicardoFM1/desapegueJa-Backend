@@ -11,7 +11,7 @@ namespace BackendDesapegaJa.Interfaces
 
         void Atualizar(int id, UsuarioUpdateDTO usuario, string? status = null);
 
-        Usuario? BuscarPorId(int? id, string? status = null);
+        Usuario? BuscarPorId(int? id);
 
         Usuario? BuscarPorCpf(string? cpf, string? status = null);
 

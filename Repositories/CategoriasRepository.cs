@@ -51,6 +51,10 @@ namespace BackendDesapegaJa.Repositories
         }
         public Categorias? BuscarPorNome(string nome)
         {
+            if (string.IsNullOrWhiteSpace(nome))
+            {
+                return null;
+            }
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
             using var cmd = new MySqlCommand("SELECT * FROM categorias WHERE LOWER(nome) = LOWER(@nome)", connection);
@@ -139,7 +143,7 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("UPDATE categorias SET nome = @nome, set status = @status, set cor = @cor WHERE id = @id", connection);
+            var cmd = new MySqlCommand("UPDATE categorias SET nome = @nome, status = @status, cor = @cor WHERE id = @id", connection);
             cmd.Parameters.AddWithValue("@id", id);
             cmd.Parameters.AddWithValue("@nome", nomeFinal);
             cmd.Parameters.AddWithValue("@cor", corFinal);

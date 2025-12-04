@@ -87,22 +87,18 @@ namespace BackendDesapegaJa.Repositories
             return reader.Read() ? MapUsuario(reader) : null;
         }
 
-        public Usuario? BuscarPorId(int? id, string? status = null)
+        public Usuario? BuscarPorId(int? id) 
         {
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
+          
             string sql = "SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, data_de_nascimento, google_id FROM Usuarios WHERE id=@id";
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                sql += " AND status = @status";
-            }
+
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                cmd.Parameters.AddWithValue("@status", status);
-            }
+
+            
             using var reader = cmd.ExecuteReader();
             return reader.Read() ? MapUsuario(reader) : null;
         }
@@ -158,8 +154,8 @@ namespace BackendDesapegaJa.Repositories
 
         public void Atualizar(int id, UsuarioUpdateDTO usuario, string? status = null)
         {
-            var existente = BuscarPorId(id, status);
-            if (existente == null || existente.status == "inativo")
+            var existente = BuscarPorId(id);
+            if (existente == null)
             {
                throw new InvalidOperationException("Nenhum usuário encontrado.");
             }
