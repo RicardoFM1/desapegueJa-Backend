@@ -242,7 +242,7 @@ namespace BackendDesapegaJa.Controllers
                 var tokenResponse = _service.GerarLoginResponse(usuario);
 
 
-                bool needsCompletion = (usuario.Cpf == "00000000000" || string.IsNullOrEmpty(usuario.Cpf)) ||
+                bool needsCompletion = (usuario.Cpf == usuario.GoogleId || string.IsNullOrEmpty(usuario.Cpf)) ||
                             (usuario.Telefone == "0000000000000" || string.IsNullOrEmpty(usuario.Telefone)) ||
                             (string.IsNullOrEmpty(usuario.data_de_nascimento));
 

@@ -280,7 +280,7 @@ namespace BackendDesapegaJa.Services
                 Nome = nome,
                 GoogleId = googleId,
                 Senha = senhaHash,         
-                Cpf = "00000000000", 
+                Cpf = googleId, 
                 Telefone = "0000000000000" 
             };
 
@@ -288,7 +288,7 @@ namespace BackendDesapegaJa.Services
             if (string.IsNullOrWhiteSpace(novoUsuario.Cpf))
             {
                
-                novoUsuario.Cpf = "00000000000";
+                novoUsuario.Cpf = googleId;
             }
 
             
