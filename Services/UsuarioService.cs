@@ -270,17 +270,17 @@ namespace BackendDesapegaJa.Services
 
            
             var senhaHash = BCrypt.Net.BCrypt.HashPassword(senhaAleatoria);
-          
+
+            string uniqueGuidPart = Guid.NewGuid().ToString("N").Substring(0, 11);
 
 
-           
             var novoUsuario = new Usuario
             {
                 Email = email,
                 Nome = nome,
                 GoogleId = googleId,
-                Senha = senhaHash,         
-                Cpf = googleId, 
+                Senha = senhaHash,
+                Cpf = $"T{uniqueGuidPart.Substring(0, 10)}",
                 Telefone = "0000000000000" 
             };
 
@@ -288,7 +288,7 @@ namespace BackendDesapegaJa.Services
             if (string.IsNullOrWhiteSpace(novoUsuario.Cpf))
             {
                
-                novoUsuario.Cpf = googleId;
+                novoUsuario.Cpf = $"T{uniqueGuidPart.Substring(0, 10)}";
             }
 
             

@@ -242,9 +242,14 @@ namespace BackendDesapegaJa.Controllers
                 var tokenResponse = _service.GerarLoginResponse(usuario);
 
 
-                bool needsCompletion = (usuario.Cpf == usuario.GoogleId || string.IsNullOrEmpty(usuario.Cpf)) ||
-                            (usuario.Telefone == "0000000000000" || string.IsNullOrEmpty(usuario.Telefone)) ||
-                            (string.IsNullOrEmpty(usuario.data_de_nascimento));
+                bool cpfIncompleto = string.IsNullOrEmpty(usuario.Cpf) || usuario.Cpf.StartsWith("T", StringComparison.OrdinalIgnoreCase);
+
+                
+                bool telefoneIncompleto = string.IsNullOrEmpty(usuario.Telefone) || usuario.Telefone == "0000000000000"; 
+
+                bool needsCompletion = cpfIncompleto ||
+                                       telefoneIncompleto ||
+                                       string.IsNullOrEmpty(usuario.data_de_nascimento);
 
                 var frontendUrl = $"http://localhost:5173/login?token={tokenResponse.Token}&nome={nome}&needs_completion={needsCompletion.ToString().ToLower()}";
 
