@@ -45,6 +45,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost]
         public IActionResult CriarStatusDePagamento([FromBody] StatusDePagamento status)
         {

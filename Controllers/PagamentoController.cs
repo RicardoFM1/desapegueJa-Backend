@@ -186,8 +186,8 @@ return Ok();
             }
         }
 
-        [HttpPost]
         [Authorize]
+        [HttpPost]
         public async Task<IActionResult> CriarPagamento([FromBody] Pagamentos pagamento)
         {
             try
@@ -209,6 +209,7 @@ return Ok();
             }
         }
 
+        [Authorize]
         [HttpPatch("usuario/{usuarioId}")]
         public IActionResult AtualizarPagamento(string pagamentoUUID, [FromBody] PagamentosUpdateDTO pagamento)
         {
@@ -228,6 +229,7 @@ return Ok();
             }
         }
 
+        [Authorize]
         [HttpDelete("usuario/{usuarioId}")]
         public IActionResult DeletarPagamento(int usuarioId)
         {

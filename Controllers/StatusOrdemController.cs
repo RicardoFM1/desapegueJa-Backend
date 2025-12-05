@@ -57,6 +57,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost]
         public IActionResult CriarStatusDeOrdemDePagamento([FromBody] StatusOrdem status)
         {

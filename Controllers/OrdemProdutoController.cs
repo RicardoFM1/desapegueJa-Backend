@@ -1,5 +1,6 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackendDesapegaJa.Controllers
@@ -35,6 +36,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("usuario/{usuarioId}")]
         public IActionResult Criar(int usuarioId, [FromBody] OrdemProduto dto)
         {
@@ -49,6 +51,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut("usuario/{usuarioId}")]
         public IActionResult Atualizar(int usuarioId, [FromBody] OrdemProdutoUpdateDTO dto)
         {

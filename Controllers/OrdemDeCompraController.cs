@@ -1,5 +1,6 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -56,7 +57,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-
+        [Authorize]
         [HttpPost]
         public IActionResult CriarOrdemDeCompra([FromBody] OrdemDeCompraCreateDTO dto)
         {
@@ -97,7 +98,7 @@ namespace BackendDesapegaJa.Controllers
         }
 
 
-
+        [Authorize]
         [HttpPatch("{id}")]
         public IActionResult AtualizarOrdemDeCompra(int id, [FromBody] OrdemDeCompraUpdateDTO ordem)
         {
@@ -131,6 +132,7 @@ namespace BackendDesapegaJa.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+        [Authorize]
         [HttpDelete("{usuarioId}")]
         public IActionResult DeletarOrdemDeCompra(int usuarioId)
         {

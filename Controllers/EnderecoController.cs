@@ -55,6 +55,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost]
         public IActionResult CriarEndereco([FromBody] Enderecos enderecos, [FromQuery] string? status)
         {

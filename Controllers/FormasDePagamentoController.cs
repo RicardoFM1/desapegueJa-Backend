@@ -59,6 +59,7 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost]
         public IActionResult CriarFormaDePagamento([FromBody] FormasDePagamento forma)
         {
