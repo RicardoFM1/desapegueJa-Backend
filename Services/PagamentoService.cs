@@ -15,6 +15,7 @@ namespace BackendDesapegaJa.Services
         private readonly IOrdemProdutoRepository _repoOrdemProduto;
         private readonly MercadoPagoIntegration _mercadoPago;
         private readonly IProdutoRepository _repoProduto;
+        private readonly IEnderecoRepository _repoEndereco;
 
         public PagamentoService(
             IPagamentosRepository repo,
@@ -25,7 +26,8 @@ namespace BackendDesapegaJa.Services
             IOrdemDeCompraRepository repoOrdem,
             MercadoPagoIntegration mercadoPago,
             IProdutoRepository repoProduto,
-            IOrdemProdutoRepository repoOrdemProduto
+            IOrdemProdutoRepository repoOrdemProduto,
+            IEnderecoRepository repoEndereco
         )
         {
             _repo = repo;
@@ -37,6 +39,7 @@ namespace BackendDesapegaJa.Services
             _mercadoPago = mercadoPago;
             _repoProduto = repoProduto;
             _repoOrdemProduto = repoOrdemProduto;
+            _repoEndereco = repoEndereco;
         }
 
         public IEnumerable<Pagamentos> GetPagamentos()
@@ -88,6 +91,13 @@ namespace BackendDesapegaJa.Services
             var usuario = _repoUser.BuscarPorId(pagamento.usuario_id);
             var formaPagamento = _repoFormaPagamento.BuscarPorId(pagamento.forma_pagamento_id);
 
+            var enderecoUsuario = _repoEndereco.BuscarPorUsuarioId(pagamento.usuario_id);
+
+            if (enderecoUsuario == null)
+            {
+               
+                throw new InvalidOperationException("Endereço do usuário não encontrado. Necessário para geração de boleto.");
+            }
 
             if (usuario == null || usuario.status.ToLower() == "inativo")
                 throw new InvalidOperationException("Usuário inválido");
@@ -136,7 +146,7 @@ namespace BackendDesapegaJa.Services
             }
             if (formaPagamento.forma.ToLower().Contains("boleto"))
             {
-                var dados = await _mercadoPago.CriarCobrancaBoletoAsync(ordem, usuario, uuid);
+                var dados = await _mercadoPago.CriarCobrancaBoletoAsync(ordem, usuario, enderecoUsuario, uuid);
 
                 var updateDto = new PagamentosUpdateDTO
                 {

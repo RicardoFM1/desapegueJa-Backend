@@ -86,6 +86,7 @@ namespace BackendDesapegaJa.Helpers
         public async Task<PagamentoRetornoApi> CriarCobrancaBoletoAsync(
     OrdemDeCompra ordem,
     Usuario usuario,
+    Enderecos endereco,
     string uuidExterno)
         {
             var nomeCompleto = usuario.Nome.Trim();
@@ -107,6 +108,15 @@ namespace BackendDesapegaJa.Helpers
                     {
                         type = "CPF",
                         number = usuario.Cpf.Replace(".", "").Replace("-", "")
+                    },
+                    address = new
+                    {
+                        zip_code = endereco.Cep,
+                        street_name = endereco.rua,
+                        street_number = endereco.numero,
+                        neighborhood = endereco.bairro,
+                        city = endereco.cidade,
+                        federal_unit = endereco.estado 
                     }
                 },
                 notification_url = _webhookUrl,
