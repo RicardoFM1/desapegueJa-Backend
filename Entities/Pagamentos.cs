@@ -23,6 +23,11 @@ namespace BackendDesapegaJa.Entities
         public string? observacao { get; set; }
         public int valor { get; set; }
 
+        public string? card_token { get; set; }
+
+        public int? parcelas { get; set; }
+
+        public string? payment_method_id { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
 
@@ -59,6 +64,11 @@ namespace BackendDesapegaJa.Entities
         public DateTime? expiracao { get; set; }
         public int? valor_pago { get; set; }
 
+        public string? card_token { get; set; }
+
+        public string? payment_method_id { get; set; }
+
+        public int? parcelas { get; set; }
         public string? pagamento_uuid { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
@@ -74,6 +84,9 @@ namespace BackendDesapegaJa.Entities
         public string? PixQrCodeBase64 { get; set; }
         public string? PixCopiaCola { get; set; }
         public string? BoletoUrl { get; set; }
+
+        public string? card_token { get; set; }
+        public int? parcelas { get; set; }
         public DateTime? Expiracao { get; set; }
         public int? AmountPaid { get; set; }
     }
@@ -83,6 +96,8 @@ namespace BackendDesapegaJa.Entities
         public string TransacaoIdExterno { get; set; }
         public string PixCopiaCodigo { get; set; }
         public string PixQrCodeBase64 { get; set; }
+
+        public int ValorPago { get; set; }
 
         public string BoletoURL { get; set; }
         public DateTime Expiracao { get; set; }

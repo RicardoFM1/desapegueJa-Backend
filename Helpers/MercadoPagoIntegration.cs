@@ -145,6 +145,50 @@ namespace BackendDesapegaJa.Helpers
             };
         }
 
+        public async Task<PagamentoRetornoApi> CriarPagamentoCartaoAsync(
+    OrdemDeCompra ordem,
+    Usuario usuario,
+    string uuidExterno,
+    string token,
+    int parcelas,
+    string paymentMethodId)
+        {
+            var payload = new
+            {
+                transaction_amount = (decimal)ordem.valor_total / 100m,
+                token = token,
+                installments = parcelas,
+                payment_method_id = paymentMethodId,
+                description = $"ORDEM-{ordem.id}",
+                payer = new
+                {
+                    email = usuario.Email
+                },
+                notification_url = _webhookUrl,
+                external_reference = uuidExterno
+            };
+
+            var idempotencyKey = Guid.NewGuid().ToString();
+            _httpClient.DefaultRequestHeaders.Remove("X-Idempotency-Key");
+            _httpClient.DefaultRequestHeaders.Add("X-Idempotency-Key", idempotencyKey);
+
+            var response = await _httpClient.PostAsJsonAsync("v1/payments", payload);
+            var jsonString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"Erro Mercado Pago: {response.StatusCode} - {jsonString}");
+
+            var resp = JsonConvert.DeserializeObject<dynamic>(jsonString);
+
+            return new PagamentoRetornoApi
+            {
+                TransacaoIdExterno = resp.id.ToString(),
+                ValorPago = (int)(resp.transaction_amount * 100)
+                
+            };
+        }
+
+
         public async Task<MercadoPagoPagamento?> ObterPagamentoPorId(string paymentId)
         {
             var response = await _httpClient.GetAsync($"v1/payments/{paymentId}");

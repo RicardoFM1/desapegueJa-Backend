@@ -1,6 +1,8 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Helpers;
 using BackendDesapegaJa.Interfaces;
+using System.Globalization;
+using System.Text;
 
 namespace BackendDesapegaJa.Services
 {
@@ -82,6 +84,29 @@ namespace BackendDesapegaJa.Services
             return _repo.ListarExpirados(DateTime.UtcNow, (int)StatusPagamento.pendente);
         }
 
+        public static string RemoverAcentos(string texto)
+        {
+            if (string.IsNullOrWhiteSpace(texto))
+                return texto;
+
+          
+            
+            var normalizedString = texto.Normalize(NormalizationForm.FormD);
+            var stringBuilder = new StringBuilder();
+
+            foreach (var c in normalizedString)
+            {
+               
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+           
+            return stringBuilder.ToString().Normalize(NormalizationForm.FormC).ToLower();
+        }
+
         public async Task<Pagamentos> CriarPagamentoAsync(Pagamentos pagamento)
         {
             var pagamentoExistente = _repo.BuscarPagamentoEmAberto(pagamento.usuario_id);
@@ -160,6 +185,27 @@ namespace BackendDesapegaJa.Services
                 _repo.Atualizar(pagamento.pagamento_uuid, updateDto);
             }
 
+            if (RemoverAcentos(formaPagamento.forma).Contains("cartao"))
+            {
+                if (string.IsNullOrWhiteSpace(pagamento.card_token))
+                    throw new InvalidOperationException("Token do cartão não enviado.");
+
+                var dados = await _mercadoPago.CriarPagamentoCartaoAsync(
+                    ordem,
+                    usuario,
+                    uuid,
+                    pagamento.card_token!,
+                    parcelas: pagamento.parcelas ?? 1,
+                    paymentMethodId: pagamento.payment_method_id!
+                );
+
+                _repo.Atualizar(pagamento.pagamento_uuid, new PagamentosUpdateDTO
+                {
+                    status_pagamento_id = (int)StatusPagamento.pendente,
+                    pagamento_uuid = uuid,
+                    updatedAt = DateTime.UtcNow
+                });
+            }
 
             return pagamento;
         }
