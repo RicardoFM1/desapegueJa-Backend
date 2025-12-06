@@ -9,5 +9,7 @@ public interface IOrdemDeCompraRepository
     OrdemDeCompra Atualizar(int id, OrdemDeCompraUpdateDTO ordem);
     void DeletarPorUsuarioId(int usuarioId);
 
+    public void DeletarOrdemEmAbertoPorOrdemId(int ordemId);
+
     void DeletarOrdemEmAberto(int usuarioId);
 }

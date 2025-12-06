@@ -120,28 +120,37 @@ namespace BackendDesapegaJa.Services
 
             if (enderecoUsuario == null)
             {
-               
+                _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
                 throw new InvalidOperationException("Endereço do usuário não encontrado. Necessário para geração de boleto.");
             }
 
             if (usuario == null || usuario.status.ToLower() == "inativo")
+            {
+                _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
                 throw new InvalidOperationException("Usuário inválido");
+            }
 
             if (formaPagamento == null || formaPagamento.status.ToLower() == "inativo")
+            {
+                _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
                 throw new InvalidOperationException("Forma de pagamento inválida");
+            }
 
             var ordem = _repoOrdem.BuscarPorId(pagamento.ordem_id)
                 ?? throw new InvalidOperationException("Ordem de compra não encontrada.");
 
 
             var ordemProduto = _repoOrdemProduto.BuscarPorUsuarioId(pagamento.usuario_id)
-                ?? throw new InvalidOperationException("Oredm de produto não encontrado.");
+                ?? throw new InvalidOperationException("Ordem de produto não encontrado.");
 
 
             var itensOrdem = _repoOrdemProduto.BuscarProdutosPorOrdemId(ordem.id);
 
             if (!itensOrdem.Any())
+            {
+                _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
                 throw new InvalidOperationException("Ordem de produto não encontrado.");
+            }
 
 
             pagamento.createdAt = DateTime.UtcNow;
@@ -188,7 +197,10 @@ namespace BackendDesapegaJa.Services
             if (RemoverAcentos(formaPagamento.forma).Contains("cartao"))
             {
                 if (string.IsNullOrWhiteSpace(pagamento.card_token))
+                {
+                    _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
                     throw new InvalidOperationException("Token do cartão não enviado.");
+                }
 
                 var dados = await _mercadoPago.CriarPagamentoCartaoAsync(
                     ordem,
