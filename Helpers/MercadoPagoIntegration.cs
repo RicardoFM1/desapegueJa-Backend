@@ -1,4 +1,5 @@
 ﻿using BackendDesapegaJa.Entities;
+using BackendDesapegaJa.Interfaces;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -11,8 +12,9 @@ namespace BackendDesapegaJa.Helpers
         private readonly string _accessToken;
         private readonly string _webhookUrl;
         private readonly IOrdemDeCompraRepository _repoOrdem;
+        private readonly IPagamentosRepository _repoPagamentos;
 
-        public MercadoPagoIntegration(IConfiguration config, HttpClient httpClient, IOrdemDeCompraRepository repoOrdem)
+        public MercadoPagoIntegration(IConfiguration config, HttpClient httpClient, IOrdemDeCompraRepository repoOrdem, IPagamentosRepository repoPagamentos)
         {
             _httpClient = httpClient;
             _accessToken = config["MercadoPago:AccessToken"]
@@ -28,6 +30,7 @@ namespace BackendDesapegaJa.Helpers
                 new MediaTypeWithQualityHeaderValue("application/json"));
 
             _repoOrdem = repoOrdem;
+            _repoPagamentos = repoPagamentos;
         }
 
         public async Task<PagamentoRetornoApi> CriarCobrancaPixAsync(OrdemDeCompra ordem, Usuario usuario, string uuidExterno)
@@ -62,6 +65,7 @@ namespace BackendDesapegaJa.Helpers
 
             if (!response.IsSuccessStatusCode)
             {
+                _repoPagamentos.DeletarPorUsuarioId(ordem.usuario_id);
                 _repoOrdem.DeletarOrdemEmAbertoPorOrdemId(ordem.id);
                 throw new Exception($"Erro Mercado Pago: {response.StatusCode} - {jsonString}");
             }
@@ -71,6 +75,7 @@ namespace BackendDesapegaJa.Helpers
 
             if (paymentResponse == null)
             {
+                _repoPagamentos.DeletarPorUsuarioId(ordem.usuario_id);
                 _repoOrdem.DeletarOrdemEmAbertoPorOrdemId(ordem.id);
                 throw new InvalidOperationException("Resposta do Mercado Pago veio nula ao deserializar.");
             }
@@ -79,6 +84,7 @@ namespace BackendDesapegaJa.Helpers
             if (paymentResponse.PointOfInteraction?.TransactionData == null)
             {
                 Console.WriteLine($"ERRO JSON MP: {jsonString}");
+                _repoPagamentos.DeletarPorUsuarioId(ordem.usuario_id);
                 _repoOrdem.DeletarOrdemEmAbertoPorOrdemId(ordem.id);
                 throw new InvalidOperationException("Mercado Pago não retornou dados do QR Code.");
             }
@@ -144,6 +150,7 @@ namespace BackendDesapegaJa.Helpers
 
             if (!response.IsSuccessStatusCode)
             {
+                _repoPagamentos.DeletarPorUsuarioId(ordem.usuario_id);
                 _repoOrdem.DeletarOrdemEmAbertoPorOrdemId(ordem.id);
                 throw new Exception($"Erro Mercado Pago: {response.StatusCode} - {jsonString}");
             }
@@ -192,6 +199,7 @@ namespace BackendDesapegaJa.Helpers
 
             if (!response.IsSuccessStatusCode)
             {
+                _repoPagamentos.DeletarPorUsuarioId(ordem.usuario_id);
                 _repoOrdem.DeletarOrdemEmAbertoPorOrdemId(ordem.id);
                 throw new Exception($"Erro Mercado Pago: {response.StatusCode} - {jsonString}");
             }
