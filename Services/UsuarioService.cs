@@ -33,13 +33,6 @@ namespace BackendDesapegaJa.Services
             if (existenteEmail != null && existenteEmail.status?.ToLower() == "ativo")
                 throw new InvalidOperationException("Usuário com este email já existe.");
 
-            var existenteNome = _repo.BuscarPorNome(usuario.Nome);
-
-            if(existenteNome != null && existenteNome.status?.ToLower() == "ativo")
-            {
-                throw new InvalidOperationException("Usuário com este nome já existe.");
-            }
-
             var existenteCpf = _repo.BuscarPorCpf(usuario.Cpf);
             if (existenteCpf != null && existenteCpf.status?.ToLower() == "ativo")
                 throw new InvalidOperationException("Usuário com este CPF já existe.");

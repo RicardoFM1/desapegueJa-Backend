@@ -134,6 +134,22 @@ namespace BackendDesapegaJa.Services
 
                 _repo.Atualizar(pagamento.pagamento_uuid, updateDto);
             }
+            if (formaPagamento.forma.ToLower().Contains("boleto"))
+            {
+                var dados = await _mercadoPago.CriarCobrancaBoletoAsync(ordem, usuario, uuid);
+
+                var updateDto = new PagamentosUpdateDTO
+                {
+                    boleto_url = dados.BoletoURL,
+                    expiracao = dados.Expiracao,
+                    status_pagamento_id = (int)StatusPagamento.pendente,
+                    pagamento_uuid = uuid,
+                    updatedAt = DateTime.UtcNow
+                };
+
+                _repo.Atualizar(pagamento.pagamento_uuid, updateDto);
+            }
+
 
             return pagamento;
         }

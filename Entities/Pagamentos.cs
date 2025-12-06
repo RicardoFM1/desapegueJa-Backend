@@ -83,6 +83,8 @@ namespace BackendDesapegaJa.Entities
         public string TransacaoIdExterno { get; set; }
         public string PixCopiaCodigo { get; set; }
         public string PixQrCodeBase64 { get; set; }
+
+        public string BoletoURL { get; set; }
         public DateTime Expiracao { get; set; }
     }
 
