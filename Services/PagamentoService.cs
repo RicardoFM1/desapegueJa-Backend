@@ -120,34 +120,50 @@ namespace BackendDesapegaJa.Services
 
             if (enderecoUsuario == null)
             {
+                _repo.DeletarPorUsuarioId(pagamento.usuario_id);
                 _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
                 throw new InvalidOperationException("Endereço do usuário não encontrado. Necessário para geração de boleto.");
             }
 
             if (usuario == null || usuario.status.ToLower() == "inativo")
             {
+                _repo.DeletarPorUsuarioId(pagamento.usuario_id);
                 _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
                 throw new InvalidOperationException("Usuário inválido");
             }
 
             if (formaPagamento == null || formaPagamento.status.ToLower() == "inativo")
             {
+                _repo.DeletarPorUsuarioId(pagamento.usuario_id);
                 _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
                 throw new InvalidOperationException("Forma de pagamento inválida");
             }
 
-            var ordem = _repoOrdem.BuscarPorId(pagamento.ordem_id)
-                ?? throw new InvalidOperationException("Ordem de compra não encontrada.");
+            var ordem = _repoOrdem.BuscarPorId(pagamento.ordem_id);
+
+                if(ordem == null)
+            {
+                _repo.DeletarPorUsuarioId(pagamento.usuario_id);
+                _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
+                throw new InvalidOperationException("Ordem de compra não encontrada.");
+            }
 
 
-            var ordemProduto = _repoOrdemProduto.BuscarPorUsuarioId(pagamento.usuario_id)
-                ?? throw new InvalidOperationException("Ordem de produto não encontrado.");
+            var ordemProduto = _repoOrdemProduto.BuscarPorUsuarioId(pagamento.usuario_id);
+
+            if(ordemProduto == null)
+                {
+                _repo.DeletarPorUsuarioId(pagamento.usuario_id);
+                _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
+                throw new InvalidOperationException("Ordem de produto não encontrado.");
+            }
 
 
             var itensOrdem = _repoOrdemProduto.BuscarProdutosPorOrdemId(ordem.id);
 
             if (!itensOrdem.Any())
             {
+                _repo.DeletarPorUsuarioId(pagamento.usuario_id);
                 _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
                 throw new InvalidOperationException("Ordem de produto não encontrado.");
             }
@@ -198,6 +214,7 @@ namespace BackendDesapegaJa.Services
             {
                 if (string.IsNullOrWhiteSpace(pagamento.card_token))
                 {
+                    _repo.DeletarPorUsuarioId(pagamento.usuario_id);
                     _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
                     throw new InvalidOperationException("Token do cartão não enviado.");
                 }
