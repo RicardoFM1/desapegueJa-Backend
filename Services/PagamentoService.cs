@@ -116,7 +116,7 @@ namespace BackendDesapegaJa.Services
             var usuario = _repoUser.BuscarPorId(pagamento.usuario_id);
             var formaPagamento = _repoFormaPagamento.BuscarPorId(pagamento.forma_pagamento_id);
 
-            var enderecoUsuario = _repoEndereco.BuscarPorUsuarioId(pagamento.usuario_id);
+            var enderecoUsuario = _repoEndereco.BuscarPorUsuarioIdAtivo(pagamento.usuario_id);
 
             if (enderecoUsuario == null)
                 {

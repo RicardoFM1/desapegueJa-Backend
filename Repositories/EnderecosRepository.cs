@@ -136,6 +136,45 @@ namespace BackendDesapegaJa.Repositories
             return enderecos;
 
         }
+        public Enderecos? BuscarPorUsuarioIdAtivo(int? id, string? status = null)
+        {
+            if (_connection.State != System.Data.ConnectionState.Open)
+                _connection.Open();
+
+            Enderecos enderecos = null;
+
+            string sql = "SELECT * FROM enderecos WHERE usuario_id = @id AND status = 'ativo' ";
+
+            
+            using var cmd = new MySqlCommand(sql, _connection);
+            cmd.Parameters.AddWithValue("@id", id);
+            
+            var reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+            {
+                enderecos = new Enderecos
+                {
+                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
+                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
+                    Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
+                    bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
+                    cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
+                    estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
+                    rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
+                    numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
+                    complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
+                    tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
+                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
+                };
+
+
+            }
+            reader.Close();
+            _connection.Close();
+            return enderecos;
+
+        }
         public IEnumerable<Enderecos?> BuscarPorUsuarioId(int? id, string? status = null)
         {
             if (_connection.State != System.Data.ConnectionState.Open)

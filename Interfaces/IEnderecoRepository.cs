@@ -15,5 +15,7 @@ namespace BackendDesapegaJa.Interfaces
         Enderecos? BuscarPorId(int? id, string? status = null);
 
         IEnumerable<Enderecos?> BuscarPorUsuarioId(int? id, string? status = null);
+
+        public Enderecos? BuscarPorUsuarioIdAtivo(int? id, string? status = null);
     }
 }
