@@ -22,8 +22,8 @@ namespace BackendDesapegaJa.Controllers
             try
             {
 
-            var enderecos = _service.ObterEnderecos(status);
-            return Ok(enderecos);
+                var enderecos = _service.ObterEnderecos(status);
+                return Ok(enderecos);
             }
             catch (InvalidOperationException ex)
             {
@@ -42,8 +42,8 @@ namespace BackendDesapegaJa.Controllers
             try
             {
 
-            var endereco = _service.GetEnderecosByUsuarioId(id, status);
-            return Ok(endereco);
+                var endereco = _service.GetEnderecosByUsuarioId(id, status);
+                return Ok(endereco);
             }
             catch (InvalidOperationException ex)
             {
@@ -138,38 +138,44 @@ namespace BackendDesapegaJa.Controllers
         {
             try
             {
+               
                 var enderecoExistente = _service.GetEnderecoById(id, status);
+
+                
                 var loggedUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var isAdmin = false;
 
-                if (User.FindFirst("isAdmin")?.Value.ToLower() == "true")
-                {
-                    isAdmin = true;
-                }
-                else
-                {
-                    isAdmin = false;
-                }
+                var isAdmin = User.FindFirst("isAdmin")?.Value.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
+
+            
                 if (!int.TryParse(loggedUserIdStr, out int loggedUserIdInt))
-                    return StatusCode(403, new { message = "Sem autorização para atualizar esse endereço" });
-
-                if (isAdmin == false && enderecoExistente.usuario_id != loggedUserIdInt)
-                    return StatusCode(403, new { message = "Sem autorização para atualizar esse endereço" });
-
-                if (enderecoExistente.status == "inativo" && isAdmin == false)
                 {
-                    return StatusCode(403, new { message = "Sem autorização para atualizar esse endereço" });
+                    
+                    return Forbid(); 
                 }
+
+               
+                if (!isAdmin && enderecoExistente.usuario_id != loggedUserIdInt)
+                {
+                    return Forbid();
+                }
+
+            
+               
+
+              
                 var enderecosAtualizado = _service.AtualizarEnderecosPorId(id, enderecos, status);
-                return StatusCode(200, enderecos);
+
+                return Ok(enderecosAtualizado); 
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
+               
+                return BadRequest(new { message = ex.Message }); 
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro interno" + ex.Message });
+               
+                return StatusCode(500, new { message = "Erro interno do servidor." });
             }
         }
     }
