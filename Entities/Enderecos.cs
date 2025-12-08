@@ -22,6 +22,8 @@ namespace BackendDesapegaJa.Entities
 
         public string? rua { get; set; }
 
+        public string? tipo_de_endereco { get; set; }
+
         public string? tipo_de_logradouro { get; set; }
 
         public string? complemento { get; set; }
@@ -41,6 +43,8 @@ namespace BackendDesapegaJa.Entities
         public string? estado { get; set; }
 
         public string? rua { get; set; }
+
+        public string? tipo_de_endereco { get; set; }
 
         public string? tipo_de_logradouro { get; set; }
 

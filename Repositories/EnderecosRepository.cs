@@ -49,6 +49,7 @@ namespace BackendDesapegaJa.Repositories
                     rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
                     numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
                     complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
+                    tipo_de_endereco = reader.IsDBNull(reader.GetOrdinal("tipo_de_endereco")) ? null : reader.GetString("tipo_de_endereco"),
                     tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
                     status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
                 };
@@ -97,7 +98,8 @@ namespace BackendDesapegaJa.Repositories
                         rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
                         numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
                         complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
-                        tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
+                         tipo_de_endereco = reader.IsDBNull(reader.GetOrdinal("tipo_de_endereco")) ? null : reader.GetString("tipo_de_endereco"),
+                         tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
                         status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
                     };
 
@@ -175,8 +177,8 @@ namespace BackendDesapegaJa.Repositories
                 _connection.Open();
             }
 
-            var cmd = new MySqlCommand("INSERT INTO enderecos (usuario_id, cep, numero, bairro, cidade, estado, rua, tipo_de_logradouro, complemento, status) " +
-                "VALUES(@usuario_id, @cep, @numero, @bairro, @cidade, @estado, @rua, @tipo_de_logradouro, @complemento, @status); SELECT LAST_INSERT_ID();", _connection);
+            var cmd = new MySqlCommand("INSERT INTO enderecos (usuario_id, cep, numero, bairro, cidade, estado, rua, tipo_de_endereco, tipo_de_logradouro, complemento, status) " +
+                "VALUES(@usuario_id, @cep, @numero, @bairro, @cidade, @estado, @rua, @tipo_de_endereco, @tipo_de_logradouro, @complemento, @status); SELECT LAST_INSERT_ID();", _connection);
             cmd.Parameters.AddWithValue("@usuario_id", enderecos.usuario_id);
             cmd.Parameters.AddWithValue("@cep", enderecos.Cep);
             cmd.Parameters.AddWithValue("@numero", enderecos.numero);
@@ -184,6 +186,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@estado", enderecos.estado);
             cmd.Parameters.AddWithValue("@rua", enderecos.rua);
             cmd.Parameters.AddWithValue("@cidade", enderecos.cidade);
+            cmd.Parameters.AddWithValue("@tipo_de_endereco", enderecos.tipo_de_endereco);
             cmd.Parameters.AddWithValue("@tipo_de_logradouro", enderecos.tipo_de_logradouro);
             cmd.Parameters.AddWithValue("@complemento", enderecos.complemento);
             cmd.Parameters.AddWithValue("@status", string.IsNullOrWhiteSpace(enderecos.status) ? "ativo" : enderecos.status);
@@ -228,6 +231,7 @@ namespace BackendDesapegaJa.Repositories
                     rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
                     numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
                     complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
+                    tipo_de_endereco = reader.IsDBNull(reader.GetOrdinal("tipo_de_endereco")) ? null : reader.GetString("tipo_de_endereco"),
                     tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
                     status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
                 };
@@ -267,6 +271,7 @@ namespace BackendDesapegaJa.Repositories
                     rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
                     numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
                     complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
+                    tipo_de_endereco = reader.IsDBNull(reader.GetOrdinal("tipo_de_endereco")) ? null : reader.GetString("tipo_de_endereco"),
                     tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
                     status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
                 };
@@ -312,6 +317,7 @@ namespace BackendDesapegaJa.Repositories
                     rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
                     numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
                     complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
+                    tipo_de_endereco = reader.IsDBNull(reader.GetOrdinal("tipo_de_endereco")) ? null : reader.GetString("tipo_de_endereco"),
                     tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
                     status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
                 });
@@ -405,6 +411,7 @@ namespace BackendDesapegaJa.Repositories
             var bairroFinal = string.IsNullOrWhiteSpace(enderecos.bairro) ? enderecoExistente.bairro : enderecos.bairro;
             var cepFinal = string.IsNullOrWhiteSpace(enderecos.Cep) ? enderecoExistente.Cep : enderecos.Cep;
             var ruaFinal = string.IsNullOrWhiteSpace(enderecos.rua) ? enderecoExistente.rua : enderecos.rua;
+            var tipoEnderecoFinal = string.IsNullOrWhiteSpace(enderecos.tipo_de_endereco) ? enderecoExistente.tipo_de_endereco : enderecos.tipo_de_endereco;
             var logradouroFinal = string.IsNullOrWhiteSpace(enderecos.tipo_de_logradouro) ? enderecoExistente.tipo_de_logradouro : enderecos.tipo_de_logradouro;
             var complementoFinal = string.IsNullOrWhiteSpace(enderecos.complemento) ? enderecoExistente.complemento : enderecos.complemento;
             var numeroFinal = string.IsNullOrWhiteSpace(enderecos.numero) ? enderecoExistente.numero : enderecos.numero;
@@ -415,7 +422,7 @@ namespace BackendDesapegaJa.Repositories
             }
 
             var cmd = new MySqlCommand("UPDATE enderecos SET cep = @cep, " +
-                "numero = @numero, bairro = @bairro, cidade = @cidade, estado = @estado, rua = @rua, tipo_de_logradouro = @tipo_de_logradouro, complemento = @complemento, status = @status WHERE id = @id", _connection);
+                "numero = @numero, bairro = @bairro, cidade = @cidade, estado = @estado, rua = @rua, tipo_de_endereco = @tipo_de_endereco, tipo_de_logradouro = @tipo_de_logradouro, complemento = @complemento, status = @status WHERE id = @id", _connection);
             cmd.Parameters.AddWithValue("@id", id);
             cmd.Parameters.AddWithValue("@cep", cepFinal);
             cmd.Parameters.AddWithValue("@numero", numeroFinal);
@@ -423,6 +430,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@estado", estadoFinal);
             cmd.Parameters.AddWithValue("@rua", ruaFinal);
             cmd.Parameters.AddWithValue("@cidade", cidadeFinal);
+            cmd.Parameters.AddWithValue("@tipo_de_endereco", tipoEnderecoFinal);
             cmd.Parameters.AddWithValue("@tipo_de_logradouro", logradouroFinal);
             cmd.Parameters.AddWithValue("@complemento", complementoFinal);
             cmd.Parameters.AddWithValue("@status", statusFinal);
