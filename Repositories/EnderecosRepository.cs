@@ -196,7 +196,7 @@ namespace BackendDesapegaJa.Repositories
             }
             var reader = cmd.ExecuteReader();
            
-            if (reader.Read())
+            while (reader.Read())
             {
                 enderecos.Add(new Enderecos
                 {

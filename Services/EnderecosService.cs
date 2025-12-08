@@ -21,11 +21,16 @@ namespace BackendDesapegaJa.Services
 
         public IEnumerable<Enderecos?> GetEnderecosByUsuarioId(int id, string? status = null)
         {
-            var enderecos =  _repo.BuscarPorUsuarioId(id, status);
-            if(enderecos == null)
+           
+            var enderecos = _repo.BuscarPorUsuarioId(id, status);
+
+           
+            if (enderecos == null || !enderecos.Any())
             {
-                throw new InvalidOperationException("Não foi possível encontrar esse endereço");
+               
+                throw new InvalidOperationException($"Não foi possível encontrar endereços para o usuário com ID {id}.");
             }
+
             return enderecos;
         }
         public Enderecos GetEnderecoById(int id, string? status = null)
