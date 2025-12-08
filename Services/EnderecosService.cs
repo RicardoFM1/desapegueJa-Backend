@@ -51,14 +51,7 @@ namespace BackendDesapegaJa.Services
         public Enderecos CriarEndereco(Enderecos enderecos, string? status = null)
         {
 
-            if (!string.IsNullOrWhiteSpace(enderecos.Cep))
-            {
-
-                var cepNumeros = new string(enderecos.Cep.Where(char.IsDigit).ToArray());
-                if (!CepValido(cepNumeros))
-                    throw new InvalidOperationException("CEP inválido. Deve conter exatamente 8 números.");
-                enderecos.Cep = cepNumeros;
-            }
+            
             _repo.Adicionar(enderecos, status);
             return enderecos;
         }

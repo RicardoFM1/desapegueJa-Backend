@@ -72,11 +72,12 @@ namespace BackendDesapegaJa.Controllers
                 {
                     isAdmin = false;
                 }
-                if (loggedUserIdStr == null || isAdmin == false)
-                {
-                    return StatusCode(403, new { message = "Sem autorização para criar essa ordem de compra" });
-                }
-                
+                if (!int.TryParse(loggedUserIdStr, out int loggedUserIdInt))
+                    return StatusCode(403, new { message = "Sem autorização para atualizar esse endereço" });
+
+                if (isAdmin == false && enderecos.usuario_id != loggedUserIdInt)
+                    return StatusCode(403, new { message = "Sem autorização para atualizar esse endereço" });
+
                 var novoEndereco = _service.CriarEndereco(enderecos, status);
                 return StatusCode(201, novoEndereco);
 
