@@ -298,7 +298,7 @@ namespace BackendDesapegaJa.Repositories
             var logradouroFinal = string.IsNullOrWhiteSpace(enderecos.tipo_de_logradouro) ? enderecoExistente.tipo_de_logradouro : enderecos.tipo_de_logradouro;
             var complementoFinal = string.IsNullOrWhiteSpace(enderecos.complemento) ? enderecoExistente.complemento : enderecos.complemento;
             var numeroFinal = string.IsNullOrWhiteSpace(enderecos.numero) ? enderecoExistente.numero : enderecos.numero;
-            var statusFinal = string.IsNullOrWhiteSpace(enderecoExistente.status) ? enderecoExistente.status : enderecos.status;
+            var statusFinal = string.IsNullOrWhiteSpace(enderecos.status) ? enderecoExistente.status : enderecos.status;
 
             if (_connection.State != System.Data.ConnectionState.Open)
             {
