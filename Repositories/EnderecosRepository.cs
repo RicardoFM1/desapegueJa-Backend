@@ -1,6 +1,7 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
 using MySql.Data.MySqlClient;
+using Mysqlx.Expr;
 using System.Data;
 
 namespace BackendDesapegaJa.Repositories
@@ -58,20 +59,122 @@ namespace BackendDesapegaJa.Repositories
             _connection.Close();
             return enderecos;
         }
+        public Enderecos ListarAtivo(int? usuarioId, string? status = null)
+        {
+            Enderecos endereco = null;
+
+
+            if (_connection.State != System.Data.ConnectionState.Open)
+            {
+                _connection.Open();
+            }
+
+            string sql = "SELECT * FROM enderecos WHERE usuario_id = @usuario_id";
+
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    sql += " AND status = @status";
+                }
+
+                var cmd = new MySqlCommand(sql, _connection);
+                cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    cmd.Parameters.AddWithValue("@status", status);
+                }
+                using var reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                     endereco = new Enderecos
+                    {
+                        id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
+                        usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
+                        Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
+                        bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
+                        cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
+                        estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
+                        rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
+                        numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
+                        complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
+                        tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
+                        status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
+                    };
+
+
+                }
+
+                _connection.Close();
+                return endereco;
+            }
+
+        private void DesativarOutrosEnderecosAtivos(int usuarioId, int? enderecoIdExcluir = null)
+        {
+          
+            try
+            {
+                if (_connection.State != System.Data.ConnectionState.Open)
+                {
+                    _connection.Open();
+                }
+
+                string sql = "UPDATE enderecos SET status = 'inativo' WHERE usuario_id = @usuario_id AND status = 'ativo'";
+
+               
+                if (enderecoIdExcluir.HasValue && enderecoIdExcluir.Value > 0)
+                {
+                    sql += " AND id != @endereco_id_excluir";
+                }
+
+                var cmd = new MySqlCommand(sql, _connection);
+                cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
+                if (enderecoIdExcluir.HasValue)
+                {
+                    cmd.Parameters.AddWithValue("@endereco_id_excluir", enderecoIdExcluir.Value);
+                }
+
+                cmd.ExecuteNonQuery();
+            }
+            finally
+            {
+                if (_connection.State == System.Data.ConnectionState.Open)
+                {
+                    _connection.Close();
+                }
+            }
+        }
         public void Adicionar(Enderecos enderecos, string? status = null)
         {
             var usuarioExistente = _repoUser.BuscarPorId(enderecos.usuario_id);
+            
+           
+
 
             if (usuarioExistente == null)
             {
-                throw new InvalidOperationException("Usuario referenciado não encontrado");
+                throw new InvalidOperationException("Usuário referenciado não encontrado");
             }
             if (!string.Equals(usuarioExistente.status, "ativo", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException("Não é possível adicionar um endereço a um usuário que não está ativo");
             }
 
-            _connection.Open();
+            var statusFinal = string.IsNullOrWhiteSpace(enderecos.status) ? "ativo" : enderecos.status;
+
+
+
+            
+            if (statusFinal.Equals("ativo", StringComparison.OrdinalIgnoreCase))
+            {
+                
+                DesativarOutrosEnderecosAtivos(enderecos.usuario_id, enderecos.id);
+            }
+
+            if (_connection.State != System.Data.ConnectionState.Open)
+            {
+                _connection.Open();
+            }
+
             var cmd = new MySqlCommand("INSERT INTO enderecos (usuario_id, cep, numero, bairro, cidade, estado, rua, tipo_de_logradouro, complemento, status) " +
                 "VALUES(@usuario_id, @cep, @numero, @bairro, @cidade, @estado, @rua, @tipo_de_logradouro, @complemento, @status); SELECT LAST_INSERT_ID();", _connection);
             cmd.Parameters.AddWithValue("@usuario_id", enderecos.usuario_id);
@@ -269,8 +372,16 @@ namespace BackendDesapegaJa.Repositories
         {
 
             var enderecoExistente = BuscarPorId(id);
+            var statusFinal = string.IsNullOrWhiteSpace(enderecos.status) ? enderecoExistente.status : enderecos.status;
 
            
+            if (statusFinal.Equals("ativo", StringComparison.OrdinalIgnoreCase))
+            {
+                
+                DesativarOutrosEnderecosAtivos(enderecoExistente.usuario_id, id);
+            }
+
+
             if (enderecoExistente == null)
             {
                 
@@ -287,7 +398,6 @@ namespace BackendDesapegaJa.Repositories
                 throw new InvalidOperationException("Usuário referenciado pelo endereço não encontrado");
             }
 
-           
             
 
             var cidadeFinal = string.IsNullOrWhiteSpace(enderecos.cidade) ? enderecoExistente.cidade : enderecos.cidade;
@@ -298,7 +408,6 @@ namespace BackendDesapegaJa.Repositories
             var logradouroFinal = string.IsNullOrWhiteSpace(enderecos.tipo_de_logradouro) ? enderecoExistente.tipo_de_logradouro : enderecos.tipo_de_logradouro;
             var complementoFinal = string.IsNullOrWhiteSpace(enderecos.complemento) ? enderecoExistente.complemento : enderecos.complemento;
             var numeroFinal = string.IsNullOrWhiteSpace(enderecos.numero) ? enderecoExistente.numero : enderecos.numero;
-            var statusFinal = string.IsNullOrWhiteSpace(enderecos.status) ? enderecoExistente.status : enderecos.status;
 
             if (_connection.State != System.Data.ConnectionState.Open)
             {
