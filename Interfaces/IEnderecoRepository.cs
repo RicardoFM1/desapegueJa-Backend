@@ -8,12 +8,12 @@ namespace BackendDesapegaJa.Interfaces
 
         void Adicionar(Enderecos enderecos, string? status = null);
 
-        void Atualizar(int id, EnderecosUpdateDTO enderecos, string? status = null);
+        //void Atualizar(int id, EnderecosUpdateDTO enderecos, string? status = null);
 
         void AtualizarPorId(int id, EnderecosUpdateDTO enderecos, string? status = null);
 
         Enderecos? BuscarPorId(int? id, string? status = null);
 
-        Enderecos? BuscarPorUsuarioId(int? id, string? status = null);
+        IEnumerable<Enderecos?> BuscarPorUsuarioId(int? id, string? status = null);
     }
 }
