@@ -96,7 +96,7 @@ namespace BackendDesapegaJa.Helpers
                 TransacaoIdExterno = paymentResponse.Id.ToString(),
                 PixCopiaCodigo = pixInfo.QrCode,
                 PixQrCodeBase64 = pixInfo.QrCodeBase64,
-                Expiracao = DateTime.UtcNow.AddMinutes(30)
+                Expiracao = DateTime.UtcNow.AddMinutes(5)
             };
         }
 
