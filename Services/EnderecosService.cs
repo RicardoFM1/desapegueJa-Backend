@@ -33,6 +33,21 @@ namespace BackendDesapegaJa.Services
 
             return enderecos;
         }
+
+        public IEnumerable<Enderecos> GetEnderecosByUsuarioId(int id, string? status = null)
+        {
+
+            var enderecos = _repo.BuscarPorUsuarioId(id, status);
+
+
+            if (enderecos == null)
+            {
+
+                throw new InvalidOperationException($"Não foi possível encontrar endereços para o usuário com ID {id}.");
+            }
+
+            return enderecos;
+        }
         public Enderecos GetEnderecoById(int id, string? status = null)
         {
             var enderecos = _repo.BuscarPorId(id, status);

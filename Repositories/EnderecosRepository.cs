@@ -404,7 +404,7 @@ namespace BackendDesapegaJa.Repositories
                 throw new InvalidOperationException("Usuário referenciado pelo endereço não encontrado");
             }
 
-            
+
 
             var cidadeFinal = string.IsNullOrWhiteSpace(enderecos.cidade) ? enderecoExistente.cidade : enderecos.cidade;
             var estadoFinal = string.IsNullOrWhiteSpace(enderecos.estado) ? enderecoExistente.estado : enderecos.estado;

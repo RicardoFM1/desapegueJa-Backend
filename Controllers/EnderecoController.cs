@@ -35,9 +35,9 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("usuario/ativo/{id}")]
 
-        public IActionResult GetByUsuarioId(int id, [FromQuery] string? status)
+        public IActionResult GetByUsuarioIdAtivo(int id, [FromQuery] string? status)
         {
             try
             {
@@ -54,6 +54,27 @@ namespace BackendDesapegaJa.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpGet("usuario/{id}")]
+
+        public IActionResult GetByUsuarioId(int id, [FromQuery] string? status)
+        {
+            try
+            {
+
+                var endereco = _service.GetEnderecosByUsuarioId(id, status);
+                return Ok(endereco);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
 
         [Authorize]
         [HttpPost]
