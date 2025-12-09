@@ -218,7 +218,7 @@ namespace BackendDesapegaJa.Repositories
             }
             var reader = cmd.ExecuteReader();
             Enderecos? enderecos = null;
-            if (reader.Read())
+            while (reader.Read())
             {
                 enderecos = new Enderecos
                 {

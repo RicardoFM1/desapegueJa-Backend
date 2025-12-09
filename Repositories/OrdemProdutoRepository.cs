@@ -121,7 +121,7 @@ namespace BackendDesapegaJa.Repositories
         {
             var existente = BuscarPorUsuarioId(usuarioId);
             if (existente == null)
-                throw new InvalidOperationException("OrdemProduto do usuário não existe.");
+                throw new InvalidOperationException("Ordem Produto do usuário não existe.");
 
             int produtoFinal = dto.produto_id ?? existente.produto_id;
             int quantidadeFinal = dto.quantidade ?? existente.quantidade;
