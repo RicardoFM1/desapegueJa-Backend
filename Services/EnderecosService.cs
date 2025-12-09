@@ -19,13 +19,13 @@ namespace BackendDesapegaJa.Services
             return _repo.ListarTodos(status);
         }
 
-        public IEnumerable<Enderecos?> GetEnderecosByUsuarioId(int id, string? status = null)
+        public Enderecos GetEnderecosByUsuarioIdAtivo(int id, string? status = null)
         {
            
-            var enderecos = _repo.BuscarPorUsuarioId(id, status);
+            var enderecos = _repo.BuscarPorUsuarioIdAtivo(id, status);
 
            
-            if (enderecos == null || !enderecos.Any())
+            if (enderecos == null)
             {
                
                 throw new InvalidOperationException($"Não foi possível encontrar endereços para o usuário com ID {id}.");

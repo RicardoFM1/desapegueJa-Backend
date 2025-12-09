@@ -37,12 +37,12 @@ namespace BackendDesapegaJa.Controllers
 
         [HttpGet("{id}")]
 
-        public IActionResult GetById(int id, [FromQuery] string? status)
+        public IActionResult GetByUsuarioId(int id, [FromQuery] string? status)
         {
             try
             {
 
-                var endereco = _service.GetEnderecosByUsuarioId(id, status);
+                var endereco = _service.GetEnderecosByUsuarioIdAtivo(id, status);
                 return Ok(endereco);
             }
             catch (InvalidOperationException ex)
