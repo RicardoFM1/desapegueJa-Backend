@@ -317,6 +317,8 @@ namespace BackendDesapegaJa.Repositories
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
+            DeletarCarrinhoUsuarioId(usuarioId);
+
             var cmd = new MySqlCommand("DELETE FROM Pagamentos WHERE usuario_id = @usuario_id", connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
             cmd.ExecuteNonQuery();
