@@ -327,10 +327,16 @@ namespace BackendDesapegaJa.Services
             if (!CepValido(dto.Cep))
                 throw new InvalidOperationException("Cep inválido");
 
-            if (string.IsNullOrWhiteSpace(dto.Numero))
-                throw new InvalidOperationException("O número do endereço é obrigatório.");
+            if (string.IsNullOrWhiteSpace(dto.Rua))
+                throw new InvalidOperationException("A rua é obrigatória.");
+            if (string.IsNullOrWhiteSpace(dto.Bairro))
+                throw new InvalidOperationException("O bairro é obrigatório.");
+            if (string.IsNullOrWhiteSpace(dto.Cidade))
+                throw new InvalidOperationException("A cidade é obrigatória.");
+            if (string.IsNullOrWhiteSpace(dto.Estado))
+                throw new InvalidOperationException("O estado é obrigatório.");
 
-           
+
             var update = new UsuarioUpdateDTO
             {
                 Cpf = dto.Cpf,

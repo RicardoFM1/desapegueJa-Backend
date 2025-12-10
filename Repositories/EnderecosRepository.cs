@@ -137,12 +137,10 @@ namespace BackendDesapegaJa.Repositories
 
                 cmd.ExecuteNonQuery();
             }
-            finally
+            catch (Exception ex)
             {
-                if (_connection.State == System.Data.ConnectionState.Open)
-                {
-                    _connection.Close();
-                }
+               
+                throw new Exception("Erro ao desativar outros endereços ativos.", ex);
             }
         }
         public void Adicionar(Enderecos enderecos, string? status = null)
