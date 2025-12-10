@@ -327,29 +327,41 @@ namespace BackendDesapegaJa.Services
             if (!CepValido(dto.Cep))
                 throw new InvalidOperationException("Cep inválido");
 
+            if (string.IsNullOrWhiteSpace(dto.Numero))
+                throw new InvalidOperationException("O número do endereço é obrigatório.");
+
+           
             var update = new UsuarioUpdateDTO
             {
                 Cpf = dto.Cpf,
                 Telefone = dto.Telefone,
                 data_de_nascimento = dto.DataDeNascimento,
-               
             };
             _repo.Atualizar(id, update);
 
-                var novoEndereco = new Enderecos
-                {
-                    usuario_id = id,
-                    Cep = dto.Cep,
-                    numero = dto.Numero,
-                    rua = dto.Rua,
-                    bairro = dto.Bairro,
-                    cidade = dto.Cidade,
-                    estado = dto.Estado
-                };
+         
 
-                _repoEndereco.Adicionar(novoEndereco);
+       
+            var cepLimpo = new string(dto.Cep.Where(char.IsDigit).ToArray());
+
+            var novoEndereco = new Enderecos
+            {
+               
+                usuario_id = id,
+                Cep = cepLimpo,
+                numero = dto.Numero,
+                rua = dto.Rua,
+                bairro = dto.Bairro,
+                cidade = dto.Cidade,
+                estado = dto.Estado,
+                tipo_de_endereco = "residencial", 
+                tipo_de_logradouro = "Não Informado", 
+                complemento = null, 
+                status = "ativo"
+            };
+
             
-            
+            _repoEndereco.Adicionar(novoEndereco);
         }
 
         private bool CpfValido(string cpf)
