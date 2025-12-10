@@ -15,11 +15,13 @@ namespace BackendDesapegaJa.Services
     {
         private readonly IUsuarioRepository _repo;
         private readonly IConfiguration _configuration;
+        private readonly IEnderecoRepository _repoEndereco;
 
-        public UsuarioService(IUsuarioRepository repo, IConfiguration configuration) 
+        public UsuarioService(IUsuarioRepository repo, IConfiguration configuration, IEnderecoRepository repoEndereco) 
         {
             _repo = repo;
             _configuration = configuration;
+            _repoEndereco = repoEndereco;
         }
 
         public IEnumerable<Usuario> ObterUsuarios(string? status = null)
@@ -304,28 +306,50 @@ namespace BackendDesapegaJa.Services
             return usuarioCriado;
         }
 
+        private bool CepValido(string cep)
+        {
+            if (string.IsNullOrWhiteSpace(cep)) return false;
+
+            var numeros = new string(cep.Where(char.IsDigit).ToArray());
+            return numeros.Length == 8;
+        }
+
         public async Task CompletarCadastroAsync(int id, CompletarCadastroDTO dto)
         {
-         
+          
+
             if (!CpfValido(dto.Cpf))
                 throw new InvalidOperationException("CPF inválido.");
 
             if (!TelefoneValido(dto.Telefone))
                 throw new InvalidOperationException("Telefone inválido.");
 
-            
+            if (!CepValido(dto.Cep))
+                throw new InvalidOperationException("Cep inválido");
+
             var update = new UsuarioUpdateDTO
             {
                 Cpf = dto.Cpf,
                 Telefone = dto.Telefone,
                 data_de_nascimento = dto.DataDeNascimento,
-              
+               
             };
-
-            
             _repo.Atualizar(id, update);
 
-           
+                var novoEndereco = new Enderecos
+                {
+                    usuario_id = id,
+                    Cep = dto.Cep,
+                    numero = dto.Numero,
+                    rua = dto.Rua,
+                    bairro = dto.Bairro,
+                    cidade = dto.Cidade,
+                    estado = dto.Estado
+                };
+
+                _repoEndereco.Adicionar(novoEndereco);
+            
+            
         }
 
         private bool CpfValido(string cpf)

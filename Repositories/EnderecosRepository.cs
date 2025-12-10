@@ -329,50 +329,7 @@ namespace BackendDesapegaJa.Repositories
             return enderecos;
 
         }
-        //public void Atualizar(int id, EnderecosUpdateDTO enderecos, string? status = null)
-        //{
-        //    var usuarioExistente = _repoUser.BuscarPorId(id);
-        //    var enderecoExistente = BuscarPorUsuarioId(id);
-        //    if (usuarioExistente == null)
-        //    {
-        //        throw new InvalidOperationException("Nenhum usuario encontrado");
-        //    }
-
-        //    if(!string.Equals(usuarioExistente.status, "ativo", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        throw new InvalidOperationException("Não é possível atualizar um endereço de um usuario inativo");
-        //    }
-            
-        //    var cidadeFinal = string.IsNullOrWhiteSpace(enderecos.cidade) ? enderecoExistente.cidade : enderecos.cidade;
-        //    var estadoFinal = string.IsNullOrWhiteSpace(enderecos.estado) ? enderecoExistente.estado : enderecos.estado;
-        //    var bairroFinal = string.IsNullOrWhiteSpace(enderecos.bairro) ? enderecoExistente.bairro : enderecos.bairro;
-        //    var cepFinal = string.IsNullOrWhiteSpace(enderecos.Cep) ? enderecoExistente.Cep : enderecos.Cep;
-        //    var ruaFinal = string.IsNullOrWhiteSpace(enderecos.rua) ? enderecoExistente.rua : enderecos.rua;
-        //    var logradouroFinal = string.IsNullOrWhiteSpace(enderecos.tipo_de_logradouro) ? enderecoExistente.tipo_de_logradouro : enderecos.tipo_de_logradouro;
-        //    var complementoFinal = string.IsNullOrWhiteSpace(enderecos.complemento) ? enderecoExistente.complemento : enderecos.complemento;
-        //    var numeroFinal = string.IsNullOrWhiteSpace(enderecos.numero) ? enderecoExistente.numero : enderecos.numero;
-        //    var statusFinal = string.IsNullOrWhiteSpace(enderecos.status) ? enderecoExistente.status : enderecos.status;
-
-        //    if (_connection.State != System.Data.ConnectionState.Open)
-        //    {
-        //        _connection.Open();
-        //    }
-
-        //    var cmd = new MySqlCommand("UPDATE enderecos SET cep = @cep, " +
-        //        "numero = @numero, bairro = @bairro, cidade = @cidade, estado = @estado, rua = @rua, tipo_de_logradouro = @tipo_de_logradouro, complemento = @complemento, status = @status WHERE usuario_id = @id", _connection);
-        //    cmd.Parameters.AddWithValue("@id", id);
-        //    cmd.Parameters.AddWithValue("@cep", cepFinal);
-        //    cmd.Parameters.AddWithValue("@numero", numeroFinal);
-        //    cmd.Parameters.AddWithValue("@bairro", bairroFinal);
-        //    cmd.Parameters.AddWithValue("@estado", estadoFinal);
-        //    cmd.Parameters.AddWithValue("@rua", ruaFinal);
-        //    cmd.Parameters.AddWithValue("@cidade", cidadeFinal);
-        //    cmd.Parameters.AddWithValue("@tipo_de_logradouro", logradouroFinal);
-        //    cmd.Parameters.AddWithValue("@complemento", complementoFinal);
-        //    cmd.Parameters.AddWithValue("@status", statusFinal);
-        //    cmd.ExecuteNonQuery();
-        //    _connection.Close();
-        //}
+        
 
         public void AtualizarPorId(int id, EnderecosUpdateDTO enderecos, string? status = null)
         {
