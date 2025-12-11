@@ -33,6 +33,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32(reader.GetOrdinal("usuario_id")),
                     status_ordem_id = reader.GetInt32(reader.GetOrdinal("status_ordem_id")),
                     valor_total = reader.GetInt32(reader.GetOrdinal("valor_total")),
+                    
                     metodo_entrega = reader.IsDBNull(reader.GetOrdinal("metodo_entrega"))
                         ? "combinar"
                         : reader.GetString(reader.GetOrdinal("metodo_entrega")),
@@ -63,6 +64,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32(reader.GetOrdinal("usuario_id")),
                     status_ordem_id = reader.GetInt32(reader.GetOrdinal("status_ordem_id")),
                     valor_total = reader.GetInt32(reader.GetOrdinal("valor_total")),
+                   
                     metodo_entrega = reader.IsDBNull(reader.GetOrdinal("metodo_entrega"))
                         ? "combinar"
                         : reader.GetString(reader.GetOrdinal("metodo_entrega")),
@@ -95,6 +97,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32(reader.GetOrdinal("usuario_id")),
                     status_ordem_id = reader.GetInt32(reader.GetOrdinal("status_ordem_id")),
                     valor_total = reader.GetInt32(reader.GetOrdinal("valor_total")),
+              
                     metodo_entrega = reader.IsDBNull(reader.GetOrdinal("metodo_entrega"))
                         ? "combinar"
                         : reader.GetString(reader.GetOrdinal("metodo_entrega")),
@@ -127,6 +130,7 @@ namespace BackendDesapegaJa.Repositories
                     usuario_id = reader.GetInt32(reader.GetOrdinal("usuario_id")),
                     status_ordem_id = reader.GetInt32(reader.GetOrdinal("status_ordem_id")),
                     valor_total = reader.GetInt32(reader.GetOrdinal("valor_total")),
+                    
                     metodo_entrega = reader.IsDBNull(reader.GetOrdinal("metodo_entrega"))
                         ? "combinar"
                         : reader.GetString(reader.GetOrdinal("metodo_entrega")),
@@ -144,7 +148,7 @@ namespace BackendDesapegaJa.Repositories
 
             string sql = @"
                 INSERT INTO ordem_de_compra 
-                (usuario_id, status_ordem_id, valor_total, metodo_entrega)
+                (usuario_id, status_ordem_id, valor_total, metodo_entrega,)
                 VALUES (@usuario_id, @status_ordem_id, @valor_total, @metodo_entrega)
                 RETURNING id;
             ";
@@ -153,6 +157,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@usuario_id", ordem.usuario_id);
             cmd.Parameters.AddWithValue("@status_ordem_id", ordem.status_ordem_id);
             cmd.Parameters.AddWithValue("@valor_total", ordem.valor_total);
+            
             cmd.Parameters.AddWithValue("@metodo_entrega",
                 string.IsNullOrWhiteSpace(ordem.metodo_entrega) ? "combinar" : ordem.metodo_entrega);
 

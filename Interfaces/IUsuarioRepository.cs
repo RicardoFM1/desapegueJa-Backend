@@ -22,5 +22,7 @@ namespace BackendDesapegaJa.Interfaces
        
         Task<Usuario> AdicionarAsync(Usuario usuario);
 
+        Task<Dictionary<int, string>> BuscarCepsPorIdsAsync(IEnumerable<int> usuariosIds);
+
     }
 }

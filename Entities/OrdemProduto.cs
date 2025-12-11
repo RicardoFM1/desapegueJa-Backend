@@ -17,6 +17,8 @@ namespace BackendDesapegaJa.Entities
 
         [Required(ErrorMessage = "O preço unitário deve ser informado.")]
         public int preco_unitario { get; set; }
+
+        public int usuario_vendedor_id { get; set; }
     }
 
     public class OrdemProdutoCreateDTO
@@ -32,6 +34,8 @@ namespace BackendDesapegaJa.Entities
 
         [Required(ErrorMessage = "O preço unitário deve ser informado.")]
         public int preco_unitario { get; set; }
+
+        public int usuario_vendedor_id { get; set; }
     }
 
     public class OrdemProdutoUpdateDTO

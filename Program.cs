@@ -140,6 +140,8 @@ builder.Services.AddScoped<PagamentoService>();
 
 builder.Services.AddScoped<ICarrinhoRepository, CarrinhoRepository>();
 builder.Services.AddScoped<CarrinhoService>();
+
+builder.Services.AddScoped<FreteService>();
 builder.Services.AddHttpClient<MercadoPagoIntegration>();
 builder.Services.AddHostedService<ExpiracaoPagamentosService>();
 // ------------------------

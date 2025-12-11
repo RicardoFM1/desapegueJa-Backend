@@ -108,8 +108,8 @@ namespace BackendDesapegaJa.Repositories
             connection.Open();
 
             string sql = @"
-                INSERT INTO ordem_produto (ordem_id, produto_id, quantidade, preco_unitario)
-                VALUES (@ordem_id, @produto_id, @quantidade, @preco_unitario)
+                INSERT INTO ordem_produto (ordem_id, produto_id, quantidade, preco_unitario, usuario_vendedor_id)
+                VALUES (@ordem_id, @produto_id, @quantidade, @preco_unitario, @usuario_vendedor_id)
                 RETURNING id;";
 
             using var cmd = new NpgsqlCommand(sql, connection);
@@ -118,6 +118,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@produto_id", ordemProduto.produto_id);
             cmd.Parameters.AddWithValue("@quantidade", ordemProduto.quantidade);
             cmd.Parameters.AddWithValue("@preco_unitario", ordemProduto.preco_unitario);
+            cmd.Parameters.AddWithValue("@usuario_vendedor_id", ordemProduto.usuario_vendedor_id);
 
             ordemProduto.id = Convert.ToInt32(cmd.ExecuteScalar());
         }

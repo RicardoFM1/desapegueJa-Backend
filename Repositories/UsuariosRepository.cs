@@ -1,5 +1,6 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 namespace BackendDesapegaJa.Repositories
@@ -141,6 +142,42 @@ namespace BackendDesapegaJa.Repositories
             return reader.Read() ? MapUsuario(reader) : null;
         }
 
+        public async Task<Dictionary<int, string>> BuscarCepsPorIdsAsync(IEnumerable<int> usuariosIds)
+        {
+            var ceps = new Dictionary<int, string>();
+
+            if (usuariosIds == null || !usuariosIds.Any())
+            {
+                return ceps;
+            }
+ 
+            string ids = string.Join(", ", usuariosIds);
+
+            
+            string sql = $@"
+            SELECT id, cep
+            FROM Usuarios
+            WHERE id IN ({ids});"; 
+
+            using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using var cmd = new NpgsqlCommand(sql, connection);
+            
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                int id = reader.GetInt32(reader.GetOrdinal("id"));
+                string cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? string.Empty : reader.GetString(reader.GetOrdinal("cep"));
+
+                ceps.Add(id, cep);
+            }
+
+            return ceps;
+        }
+
         public void Adicionar(Usuario usuario)
         {
             using var connection = new NpgsqlConnection(_connectionString);
@@ -244,9 +281,7 @@ namespace BackendDesapegaJa.Repositories
             };
         }
 
-        // ====================
-        // MÉTODOS ASYNC
-        // ====================
+    
 
         public async Task<Usuario?> BuscarPorEmailAsync(string email, string? status = null)
         {

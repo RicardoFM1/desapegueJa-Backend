@@ -10,13 +10,15 @@ namespace BackendDesapegaJa.Services
         private readonly IStatusOrdemRepository _repoStatusOrdem;
         private readonly IProdutoRepository _repoProduto;
         private readonly IOrdemProdutoRepository _repoOrdemProduto;
+        private readonly FreteService _freteService;
 
         public OrdemDeCompraService(
             IOrdemDeCompraRepository repo,
             IUsuarioRepository user,
             IStatusOrdemRepository status,
             IProdutoRepository produto,
-            IOrdemProdutoRepository ordemProdutoRepo
+            IOrdemProdutoRepository ordemProdutoRepo,
+            FreteService freteService
         )
         {
             _repo = repo;
@@ -24,6 +26,7 @@ namespace BackendDesapegaJa.Services
             _repoStatusOrdem = status;
             _repoProduto = produto;
             _repoOrdemProduto = ordemProdutoRepo;
+            _freteService = freteService;
         }
 
         public IEnumerable<OrdemDeCompra> GetOrdensDeCompras()
@@ -60,13 +63,17 @@ namespace BackendDesapegaJa.Services
 
             foreach (var item in itens)
             {
+               
                 var produto = _repoProduto.BuscarPorId(item.produto_id);
 
                 if (produto == null || produto.status.ToLower() == "inativo")
                     throw new InvalidOperationException($"Produto ID {item.produto_id} não encontrado/inativo.");
 
+               
                 item.preco_unitario = produto.preco;
                 total += produto.preco * item.quantidade;
+
+                
             }
 
             if (!string.IsNullOrWhiteSpace(ordem.metodo_entrega) &&
@@ -83,6 +90,7 @@ namespace BackendDesapegaJa.Services
             foreach (var item in itens)
             {
                 item.ordem_id = ordem.id;
+               
                 _repoOrdemProduto.Adicionar(item);
             }
 
