@@ -1,6 +1,6 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
-using MySql.Data.MySqlClient;
+using Npgsql;
 
 namespace BackendDesapegaJa.Repositories
 {
@@ -16,22 +16,22 @@ namespace BackendDesapegaJa.Repositories
         public IEnumerable<OrdemProduto> ListarTodos()
         {
             var lista = new List<OrdemProduto>();
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
             string sql = "SELECT * FROM ordem_produto";
-            using var cmd = new MySqlCommand(sql, connection);
+            using var cmd = new NpgsqlCommand(sql, connection);
             using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
             {
                 lista.Add(new OrdemProduto
                 {
-                    id = reader.GetInt32("id"),
-                    ordem_id = reader.GetInt32("ordem_id"),
-                    produto_id = reader.GetInt32("produto_id"),
-                    quantidade = reader.GetInt32("quantidade"),
-                    preco_unitario = reader.GetInt32("preco_unitario")
+                    id = reader.GetInt32(reader.GetOrdinal("id")),
+                    ordem_id = reader.GetInt32(reader.GetOrdinal("ordem_id")),
+                    produto_id = reader.GetInt32(reader.GetOrdinal("produto_id")),
+                    quantidade = reader.GetInt32(reader.GetOrdinal("quantidade")),
+                    preco_unitario = reader.GetInt32(reader.GetOrdinal("preco_unitario"))
                 });
             }
 
@@ -40,7 +40,7 @@ namespace BackendDesapegaJa.Repositories
 
         public OrdemProduto? BuscarPorUsuarioId(int usuarioId)
         {
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
             string sql = @"
@@ -49,19 +49,21 @@ namespace BackendDesapegaJa.Repositories
                 INNER JOIN ordem_de_compra oc ON op.ordem_id = oc.id
                 WHERE oc.usuario_id = @usuario_id
                 LIMIT 1";
-            using var cmd = new MySqlCommand(sql, connection);
+
+            using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
             using var reader = cmd.ExecuteReader();
+
             if (reader.Read())
             {
                 return new OrdemProduto
                 {
-                    id = reader.GetInt32("id"),
-                    ordem_id = reader.GetInt32("ordem_id"),
-                    produto_id = reader.GetInt32("produto_id"),
-                    quantidade = reader.GetInt32("quantidade"),
-                    preco_unitario = reader.GetInt32("preco_unitario")
+                    id = reader.GetInt32(reader.GetOrdinal("id")),
+                    ordem_id = reader.GetInt32(reader.GetOrdinal("ordem_id")),
+                    produto_id = reader.GetInt32(reader.GetOrdinal("produto_id")),
+                    quantidade = reader.GetInt32(reader.GetOrdinal("quantidade")),
+                    preco_unitario = reader.GetInt32(reader.GetOrdinal("preco_unitario"))
                 };
             }
 
@@ -71,15 +73,16 @@ namespace BackendDesapegaJa.Repositories
         public IEnumerable<OrdemProduto> BuscarProdutosPorOrdemId(int ordemId)
         {
             var lista = new List<OrdemProduto>();
-            using var connection = new MySqlConnection(_connectionString);
+
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
-            
             string sql = @"
-        SELECT * FROM ordem_produto 
-        WHERE ordem_id = @ordem_id";
+                SELECT * 
+                FROM ordem_produto
+                WHERE ordem_id = @ordem_id";
 
-            using var cmd = new MySqlCommand(sql, connection);
+            using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@ordem_id", ordemId);
 
             using var reader = cmd.ExecuteReader();
@@ -88,11 +91,11 @@ namespace BackendDesapegaJa.Repositories
             {
                 lista.Add(new OrdemProduto
                 {
-                    id = reader.GetInt32("id"),
-                    ordem_id = reader.GetInt32("ordem_id"),
-                    produto_id = reader.GetInt32("produto_id"),
-                    quantidade = reader.GetInt32("quantidade"),
-                    preco_unitario = reader.GetInt32("preco_unitario")
+                    id = reader.GetInt32(reader.GetOrdinal("id")),
+                    ordem_id = reader.GetInt32(reader.GetOrdinal("ordem_id")),
+                    produto_id = reader.GetInt32(reader.GetOrdinal("produto_id")),
+                    quantidade = reader.GetInt32(reader.GetOrdinal("quantidade")),
+                    preco_unitario = reader.GetInt32(reader.GetOrdinal("preco_unitario"))
                 });
             }
 
@@ -101,14 +104,16 @@ namespace BackendDesapegaJa.Repositories
 
         public void Adicionar(OrdemProduto ordemProduto)
         {
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
-            string sql = @"INSERT INTO ordem_produto (ordem_id, produto_id, quantidade, preco_unitario) 
-                           VALUES (@ordem_id, @produto_id, @quantidade, @preco_unitario);
-                           SELECT LAST_INSERT_ID();";
+            string sql = @"
+                INSERT INTO ordem_produto (ordem_id, produto_id, quantidade, preco_unitario)
+                VALUES (@ordem_id, @produto_id, @quantidade, @preco_unitario)
+                RETURNING id;";
 
-            using var cmd = new MySqlCommand(sql, connection);
+            using var cmd = new NpgsqlCommand(sql, connection);
+
             cmd.Parameters.AddWithValue("@ordem_id", ordemProduto.ordem_id);
             cmd.Parameters.AddWithValue("@produto_id", ordemProduto.produto_id);
             cmd.Parameters.AddWithValue("@quantidade", ordemProduto.quantidade);
@@ -127,14 +132,17 @@ namespace BackendDesapegaJa.Repositories
             int quantidadeFinal = dto.quantidade ?? existente.quantidade;
             int precoFinal = dto.preco_unitario ?? existente.preco_unitario;
 
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
-            string sql = @"UPDATE ordem_produto
-                           SET produto_id=@produto_id, quantidade=@quantidade, preco_unitario=@preco_unitario
-                           WHERE id=@id";
+            string sql = @"
+                UPDATE ordem_produto
+                SET produto_id = @produto_id,
+                    quantidade = @quantidade,
+                    preco_unitario = @preco_unitario
+                WHERE id = @id";
 
-            using var cmd = new MySqlCommand(sql, connection);
+            using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", existente.id);
             cmd.Parameters.AddWithValue("@produto_id", produtoFinal);
             cmd.Parameters.AddWithValue("@quantidade", quantidadeFinal);
@@ -151,7 +159,5 @@ namespace BackendDesapegaJa.Repositories
                 preco_unitario = precoFinal
             };
         }
-
-       
     }
 }

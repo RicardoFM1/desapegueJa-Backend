@@ -1,7 +1,6 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
-using MySql.Data.MySqlClient;
-using Mysqlx.Expr;
+using Npgsql;
 using System.Data;
 
 namespace BackendDesapegaJa.Repositories
@@ -16,375 +15,259 @@ namespace BackendDesapegaJa.Repositories
             _connectionString = config.GetConnectionString("DefaultConnection");
             _repoUser = repoUser;
         }
+
         public IEnumerable<Enderecos> ListarTodos(string? status = null)
         {
             var enderecos = new List<Enderecos>();
 
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
             string sql = "SELECT * FROM enderecos";
 
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 sql += " WHERE status = @status";
-            }
 
-            var cmd = new MySqlCommand(sql, connection);
+            using var cmd = new NpgsqlCommand(sql, connection);
+
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 cmd.Parameters.AddWithValue("@status", status);
-            }
+
             using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
             {
-                var endereco = new Enderecos
-                {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
-                    bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
-                    cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
-                    estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
-                    rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
-                    numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
-                    complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
-                    tipo_de_endereco = reader.IsDBNull(reader.GetOrdinal("tipo_de_endereco")) ? null : reader.GetString("tipo_de_endereco"),
-                    tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
-                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
-                };
-
-                enderecos.Add(endereco);
+                enderecos.Add(Mapper(reader));
             }
 
-           
             return enderecos;
         }
+
+       
         public Enderecos ListarAtivo(int? usuarioId, string? status = null)
         {
             Enderecos endereco = null;
 
-
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
             string sql = "SELECT * FROM enderecos WHERE usuario_id = @usuario_id";
 
-                if (!string.IsNullOrWhiteSpace(status))
-                {
-                    sql += " AND status = @status";
-                }
+            if (!string.IsNullOrWhiteSpace(status))
+                sql += " AND status = @status";
 
-                var cmd = new MySqlCommand(sql, connection);
-                cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
-                if (!string.IsNullOrWhiteSpace(status))
-                {
-                    cmd.Parameters.AddWithValue("@status", status);
-                }
-                using var reader = cmd.ExecuteReader();
+            using var cmd = new NpgsqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
-                if (reader.Read())
-                {
-                     endereco = new Enderecos
-                    {
-                        id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                        usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                        Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
-                        bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
-                        cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
-                        estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
-                        rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
-                        numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
-                        complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
-                         tipo_de_endereco = reader.IsDBNull(reader.GetOrdinal("tipo_de_endereco")) ? null : reader.GetString("tipo_de_endereco"),
-                         tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
-                        status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
-                    };
+            if (!string.IsNullOrWhiteSpace(status))
+                cmd.Parameters.AddWithValue("@status", status);
 
+            using var reader = cmd.ExecuteReader();
 
-                }
+            if (reader.Read())
+                endereco = Mapper(reader);
 
-           
-                return endereco;
-            }
+            return endereco;
+        }
 
+        
         private void DesativarOutrosEnderecosAtivos(int usuarioId, int? enderecoIdExcluir = null)
         {
-          
-            try
-            {
-                using var connection = new MySqlConnection(_connectionString);
-                connection.Open();
+            using var connection = new NpgsqlConnection(_connectionString);
+            connection.Open();
 
-                string sql = "UPDATE enderecos SET status = 'inativo' WHERE usuario_id = @usuario_id AND status = 'ativo'";
+            string sql = "UPDATE enderecos SET status = 'inativo' WHERE usuario_id = @usuario_id AND status = 'ativo'";
 
-               
-                if (enderecoIdExcluir.HasValue && enderecoIdExcluir.Value > 0)
-                {
-                    sql += " AND id != @endereco_id_excluir";
-                }
+            if (enderecoIdExcluir.HasValue)
+                sql += " AND id != @endereco_id_excluir";
 
-                var cmd = new MySqlCommand(sql, connection);
-                cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
-                if (enderecoIdExcluir.HasValue)
-                {
-                    cmd.Parameters.AddWithValue("@endereco_id_excluir", enderecoIdExcluir.Value);
-                }
+            using var cmd = new NpgsqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
-                cmd.ExecuteNonQuery();
-            }
-            catch (Exception ex)
-            {
-               
-                throw new Exception("Erro ao desativar outros endereços ativos.", ex);
-            }
+            if (enderecoIdExcluir.HasValue)
+                cmd.Parameters.AddWithValue("@endereco_id_excluir", enderecoIdExcluir.Value);
+
+            cmd.ExecuteNonQuery();
         }
+
         public void Adicionar(Enderecos enderecos, string? status = null)
         {
-            var usuarioExistente = _repoUser.BuscarPorId(enderecos.usuario_id);
-            
-           
+            var usuario = _repoUser.BuscarPorId(enderecos.usuario_id);
 
-
-            if (usuarioExistente == null)
-            {
+            if (usuario == null)
                 throw new InvalidOperationException("Usuário referenciado não encontrado");
-            }
-            if (!string.Equals(usuarioExistente.status, "ativo", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException("Não é possível adicionar um endereço a um usuário que não está ativo");
-            }
+
+            if (!string.Equals(usuario.status, "ativo", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Não é possível adicionar um endereço a um usuário inativo");
 
             var statusFinal = string.IsNullOrWhiteSpace(enderecos.status) ? "ativo" : enderecos.status;
 
+            if (statusFinal == "ativo")
+                DesativarOutrosEnderecosAtivos(enderecos.usuario_id);
 
-
-            
-            if (statusFinal.Equals("ativo", StringComparison.OrdinalIgnoreCase))
-            {
-                
-                DesativarOutrosEnderecosAtivos(enderecos.usuario_id, enderecos.id);
-            }
-
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("INSERT INTO enderecos (usuario_id, cep, numero, bairro, cidade, estado, rua, tipo_de_endereco, tipo_de_logradouro, complemento, status) " +
-                "VALUES(@usuario_id, @cep, @numero, @bairro, @cidade, @estado, @rua, @tipo_de_endereco, @tipo_de_logradouro, @complemento, @status); SELECT LAST_INSERT_ID();", connection);
+            string sql = @"
+                INSERT INTO enderecos 
+                (usuario_id, cep, numero, bairro, cidade, estado, rua, tipo_de_endereco, tipo_de_logradouro, complemento, status)
+                VALUES
+                (@usuario_id, @cep, @numero, @bairro, @cidade, @estado, @rua, @tipo_de_endereco, @tipo_de_logradouro, @complemento, @status)
+                RETURNING id;
+            ";
+
+            using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", enderecos.usuario_id);
-            cmd.Parameters.AddWithValue("@cep", enderecos.Cep);
-            cmd.Parameters.AddWithValue("@numero", enderecos.numero);
-            cmd.Parameters.AddWithValue("@bairro", enderecos.bairro);
-            cmd.Parameters.AddWithValue("@estado", enderecos.estado);
-            cmd.Parameters.AddWithValue("@rua", enderecos.rua);
-            cmd.Parameters.AddWithValue("@cidade", enderecos.cidade);
-            cmd.Parameters.AddWithValue("@tipo_de_endereco", enderecos.tipo_de_endereco);
-            cmd.Parameters.AddWithValue("@tipo_de_logradouro", enderecos.tipo_de_logradouro);
-            cmd.Parameters.AddWithValue("@complemento", enderecos.complemento);
-            cmd.Parameters.AddWithValue("@status", string.IsNullOrWhiteSpace(enderecos.status) ? "ativo" : enderecos.status);
+            cmd.Parameters.AddWithValue("@cep", (object?)enderecos.Cep ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@numero", (object?)enderecos.numero ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@bairro", (object?)enderecos.bairro ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@cidade", (object?)enderecos.cidade ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@estado", (object?)enderecos.estado ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@rua", (object?)enderecos.rua ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@tipo_de_endereco", (object?)enderecos.tipo_de_endereco ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@tipo_de_logradouro", (object?)enderecos.tipo_de_logradouro ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@complemento", (object?)enderecos.complemento ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@status", statusFinal);
 
-            int novoId = Convert.ToInt32(cmd.ExecuteScalar());
-            enderecos.id = novoId;
-
-
-           
-
+            enderecos.id = Convert.ToInt32(cmd.ExecuteScalar());
         }
 
         public Enderecos? BuscarPorId(int? id, string? status = null)
         {
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
             string sql = "SELECT * FROM enderecos WHERE id = @id";
 
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 sql += " AND status = @status";
-            }
-            using var cmd = new MySqlCommand(sql, connection);
+
+            using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
+
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 cmd.Parameters.AddWithValue("@status", status);
-            }
-            var reader = cmd.ExecuteReader();
-            Enderecos? enderecos = null;
-            while (reader.Read())
-            {
-                enderecos = new Enderecos
-                {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
-                    bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
-                    cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
-                    estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
-                    rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
-                    numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
-                    complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
-                    tipo_de_endereco = reader.IsDBNull(reader.GetOrdinal("tipo_de_endereco")) ? null : reader.GetString("tipo_de_endereco"),
-                    tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
-                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
-                };
 
-
-            }
-            reader.Close();
-            
-            return enderecos;
-
-        }
-        public Enderecos? BuscarPorUsuarioIdAtivo(int? id, string? status = null)
-        {
-            using var connection = new MySqlConnection(_connectionString);
-            connection.Open();
-
-            Enderecos enderecos = null;
-
-            string sql = "SELECT * FROM enderecos WHERE usuario_id = @id AND status = 'ativo' ";
-
-            
-            using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@id", id);
-            
-            var reader = cmd.ExecuteReader();
+            using var reader = cmd.ExecuteReader();
 
             if (reader.Read())
-            {
-                enderecos = new Enderecos
-                {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
-                    bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
-                    cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
-                    estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
-                    rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
-                    numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
-                    complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
-                    tipo_de_endereco = reader.IsDBNull(reader.GetOrdinal("tipo_de_endereco")) ? null : reader.GetString("tipo_de_endereco"),
-                    tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
-                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
-                };
+                return Mapper(reader);
 
-
-            }
-            reader.Close();
-           
-            return enderecos;
-
+            return null;
         }
-        public IEnumerable<Enderecos?> BuscarPorUsuarioId(int? id, string? status = null)
+
+        public Enderecos? BuscarPorUsuarioIdAtivo(int? id, string? status = null)
         {
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
-            var enderecos = new List<Enderecos>();
+            string sql = "SELECT * FROM enderecos WHERE usuario_id = @id AND status = 'ativo'";
+
+            using var cmd = new NpgsqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            using var reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+                return Mapper(reader);
+
+            return null;
+        }
+
+        public IEnumerable<Enderecos?> BuscarPorUsuarioId(int? id, string? status = null)
+        {
+            var lista = new List<Enderecos>();
+
+            using var connection = new NpgsqlConnection(_connectionString);
+            connection.Open();
 
             string sql = "SELECT * FROM enderecos WHERE usuario_id = @id";
 
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 sql += " AND status = @status";
-            }
-            using var cmd = new MySqlCommand(sql, connection);
+
+            using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
+
             if (!string.IsNullOrWhiteSpace(status))
-            {
                 cmd.Parameters.AddWithValue("@status", status);
-            }
-            var reader = cmd.ExecuteReader();
-           
+
+            using var reader = cmd.ExecuteReader();
+
             while (reader.Read())
-            {
-                enderecos.Add(new Enderecos
-                {
-                    id = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32("id"),
-                    usuario_id = reader.IsDBNull(reader.GetOrdinal("usuario_id")) ? 0 : reader.GetInt32("usuario_id"),
-                    Cep = reader.IsDBNull(reader.GetOrdinal("cep")) ? null : reader.GetString("cep"),
-                    bairro = reader.IsDBNull(reader.GetOrdinal("bairro")) ? null : reader.GetString("bairro"),
-                    cidade = reader.IsDBNull(reader.GetOrdinal("cidade")) ? null : reader.GetString("cidade"),
-                    estado = reader.IsDBNull(reader.GetOrdinal("estado")) ? null : reader.GetString("estado"),
-                    rua = reader.IsDBNull(reader.GetOrdinal("rua")) ? null : reader.GetString("rua"),
-                    numero = reader.IsDBNull(reader.GetOrdinal("numero")) ? null : reader.GetString("numero"),
-                    complemento = reader.IsDBNull(reader.GetOrdinal("complemento")) ? null : reader.GetString("complemento"),
-                    tipo_de_endereco = reader.IsDBNull(reader.GetOrdinal("tipo_de_endereco")) ? null : reader.GetString("tipo_de_endereco"),
-                    tipo_de_logradouro = reader.IsDBNull(reader.GetOrdinal("tipo_de_logradouro")) ? null : reader.GetString("tipo_de_logradouro"),
-                    status = reader.IsDBNull(reader.GetOrdinal("status")) ? "" : reader.GetString("status")
-                });
+                lista.Add(Mapper(reader));
 
-
-            }
-            reader.Close();
-          
-            return enderecos;
-
+            return lista;
         }
-        
+        private object DbOr(object? value)
+        {
+            return value ?? DBNull.Value;
+        }
 
         public void AtualizarPorId(int id, EnderecosUpdateDTO enderecos, string? status = null)
         {
+            var atual = BuscarPorId(id);
+            if (atual == null)
+                throw new InvalidOperationException("Nenhum endereço encontrado com esse ID.");
 
-            var enderecoExistente = BuscarPorId(id);
-            var statusFinal = string.IsNullOrWhiteSpace(enderecos.status) ? enderecoExistente.status : enderecos.status;
+            var statusFinal = string.IsNullOrWhiteSpace(enderecos.status) ? atual.status : enderecos.status;
 
-           
-            if (statusFinal.Equals("ativo", StringComparison.OrdinalIgnoreCase))
-            {
-                
-                DesativarOutrosEnderecosAtivos(enderecoExistente.usuario_id, id);
-            }
+            if (statusFinal == "ativo")
+                DesativarOutrosEnderecosAtivos(atual.usuario_id, id);
 
+            string sql =
+                @"UPDATE enderecos SET 
+                    cep = @cep,
+                    numero = @numero,
+                    bairro = @bairro,
+                    cidade = @cidade,
+                    estado = @estado,
+                    rua = @rua,
+                    tipo_de_endereco = @tipo_de_endereco,
+                    tipo_de_logradouro = @tipo_de_logradouro,
+                    complemento = @complemento,
+                    status = @status
+                  WHERE id = @id";
 
-            if (enderecoExistente == null)
-            {
-                
-                throw new InvalidOperationException("Nenhum endereço encontrado com o ID fornecido.");
-            }
-
-          
-            var usuarioExistente = _repoUser.BuscarPorId(enderecoExistente.usuario_id);
-
-            
-            if (usuarioExistente == null)
-            {
-               
-                throw new InvalidOperationException("Usuário referenciado pelo endereço não encontrado");
-            }
-
-
-
-            var cidadeFinal = string.IsNullOrWhiteSpace(enderecos.cidade) ? enderecoExistente.cidade : enderecos.cidade;
-            var estadoFinal = string.IsNullOrWhiteSpace(enderecos.estado) ? enderecoExistente.estado : enderecos.estado;
-            var bairroFinal = string.IsNullOrWhiteSpace(enderecos.bairro) ? enderecoExistente.bairro : enderecos.bairro;
-            var cepFinal = string.IsNullOrWhiteSpace(enderecos.Cep) ? enderecoExistente.Cep : enderecos.Cep;
-            var ruaFinal = string.IsNullOrWhiteSpace(enderecos.rua) ? enderecoExistente.rua : enderecos.rua;
-            var tipoEnderecoFinal = string.IsNullOrWhiteSpace(enderecos.tipo_de_endereco) ? enderecoExistente.tipo_de_endereco : enderecos.tipo_de_endereco;
-            var logradouroFinal = string.IsNullOrWhiteSpace(enderecos.tipo_de_logradouro) ? enderecoExistente.tipo_de_logradouro : enderecos.tipo_de_logradouro;
-            var complementoFinal = string.IsNullOrWhiteSpace(enderecos.complemento) ? enderecoExistente.complemento : enderecos.complemento;
-            var numeroFinal = string.IsNullOrWhiteSpace(enderecos.numero) ? enderecoExistente.numero : enderecos.numero;
-
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("UPDATE enderecos SET cep = @cep, " +
-                "numero = @numero, bairro = @bairro, cidade = @cidade, estado = @estado, rua = @rua, tipo_de_endereco = @tipo_de_endereco, tipo_de_logradouro = @tipo_de_logradouro, complemento = @complemento, status = @status WHERE id = @id", connection);
+            using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
-            cmd.Parameters.AddWithValue("@cep", cepFinal);
-            cmd.Parameters.AddWithValue("@numero", numeroFinal);
-            cmd.Parameters.AddWithValue("@bairro", bairroFinal);
-            cmd.Parameters.AddWithValue("@estado", estadoFinal);
-            cmd.Parameters.AddWithValue("@rua", ruaFinal);
-            cmd.Parameters.AddWithValue("@cidade", cidadeFinal);
-            cmd.Parameters.AddWithValue("@tipo_de_endereco", tipoEnderecoFinal);
-            cmd.Parameters.AddWithValue("@tipo_de_logradouro", logradouroFinal);
-            cmd.Parameters.AddWithValue("@complemento", complementoFinal);
-            cmd.Parameters.AddWithValue("@status", statusFinal);
+
+            cmd.Parameters.AddWithValue("@cep", DbOr(enderecos.Cep ?? atual.Cep));
+            cmd.Parameters.AddWithValue("@numero", DbOr(enderecos.numero ?? atual.numero));
+            cmd.Parameters.AddWithValue("@bairro", DbOr(enderecos.bairro ?? atual.bairro));
+            cmd.Parameters.AddWithValue("@cidade", DbOr(enderecos.cidade ?? atual.cidade));
+            cmd.Parameters.AddWithValue("@estado", DbOr(enderecos.estado ?? atual.estado));
+            cmd.Parameters.AddWithValue("@rua", DbOr(enderecos.rua ?? atual.rua));
+            cmd.Parameters.AddWithValue("@tipo_de_endereco", DbOr(enderecos.tipo_de_endereco ?? atual.tipo_de_endereco));
+            cmd.Parameters.AddWithValue("@tipo_de_logradouro", DbOr(enderecos.tipo_de_logradouro ?? atual.tipo_de_logradouro));
+            cmd.Parameters.AddWithValue("@complemento", DbOr(enderecos.complemento ?? atual.complemento));
+            cmd.Parameters.AddWithValue("@status", DbOr(statusFinal));
+
+
             cmd.ExecuteNonQuery();
-            
         }
 
+       
+        private Enderecos Mapper(NpgsqlDataReader reader)
+        {
+            return new Enderecos
+            {
+                id = reader.GetInt32(reader.GetOrdinal("id")),
+                usuario_id = reader.GetInt32(reader.GetOrdinal("usuario_id")),
+                Cep = reader["cep"] as string,
+                bairro = reader["bairro"] as string,
+                cidade = reader["cidade"] as string,
+                estado = reader["estado"] as string,
+                rua = reader["rua"] as string,
+                numero = reader["numero"] as string,
+                complemento = reader["complemento"] as string,
+                tipo_de_endereco = reader["tipo_de_endereco"] as string,
+                tipo_de_logradouro = reader["tipo_de_logradouro"] as string,
+                status = reader["status"] as string
+            };
+        }
     }
 }

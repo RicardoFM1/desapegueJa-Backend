@@ -1,6 +1,8 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
-using MySql.Data.MySqlClient;
+using Npgsql;
+using System.Collections.Generic;
+using System.Data;
 
 namespace BackendDesapegaJa.Repositories
 {
@@ -16,9 +18,9 @@ namespace BackendDesapegaJa.Repositories
         public IEnumerable<Carrinho> ListarTodos()
         {
             var carrinhos = new List<Carrinho>();
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
-            var cmd = new MySqlCommand("SELECT * FROM carrinho", connection);
+            var cmd = new NpgsqlCommand("SELECT * FROM carrinho", connection);
             var reader = cmd.ExecuteReader();
 
             while (reader.Read())
@@ -37,11 +39,11 @@ namespace BackendDesapegaJa.Repositories
 
         public Carrinho? BuscarPorUsuarioEProduto(int usuarioId, int produtoId)
         {
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
             Carrinho? carrinho = null;
 
-            using var cmd = new MySqlCommand("SELECT * FROM carrinho WHERE usuario_id = @usuario_id AND produto_id = @produto_id", connection);
+            using var cmd = new NpgsqlCommand("SELECT * FROM carrinho WHERE usuario_id = @usuario_id AND produto_id = @produto_id", connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
             cmd.Parameters.AddWithValue("@produto_id", produtoId);
 
@@ -63,10 +65,10 @@ namespace BackendDesapegaJa.Repositories
         public IEnumerable<Carrinho> BuscarPorUsuarioId(int? id)
         {
             var carrinho = new List<Carrinho>();
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("SELECT * FROM carrinho WHERE usuario_id = @usuario_id", connection);
+            var cmd = new NpgsqlCommand("SELECT * FROM carrinho WHERE usuario_id = @usuario_id", connection);
             cmd.Parameters.AddWithValue("@usuario_id", id);
             var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -87,9 +89,9 @@ namespace BackendDesapegaJa.Repositories
         public void Adicionar(Carrinho carrinho)
         {
 
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
-            var cmd = new MySqlCommand("INSERT INTO carrinho (usuario_id, produto_id, quantidade) VALUES(@usuario_id, @produto_id, @quantidade); SELECT LAST_INSERT_ID();", connection);
+            var cmd = new NpgsqlCommand("INSERT INTO carrinho (usuario_id, produto_id, quantidade) VALUES (@usuario_id, @produto_id, @quantidade) RETURNING id;", connection);
             cmd.Parameters.AddWithValue("@usuario_id", carrinho.usuario_id);
             cmd.Parameters.AddWithValue("@produto_id", carrinho.produto_id);
             cmd.Parameters.AddWithValue("@quantidade", carrinho.quantidade);
@@ -113,14 +115,19 @@ namespace BackendDesapegaJa.Repositories
             var produtoIdFinal = carrinho.produto_id.HasValue ? carrinho.produto_id.Value : CarrinhoExistente.produto_id;
 
 
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
-            var cmd = new MySqlCommand("UPDATE carrinho SET produto_id = @produto_id, quantidade = @quantidade WHERE usuario_id = @usuario_id AND produto_id = @produto_id", connection);
+            var cmd = new NpgsqlCommand(
+    "UPDATE carrinho + SET produto_id = @novo_produto_id, quantidade = @quantidade WHERE usuario_id = @usuario_id AND produto_id = @produto_id_antigo",
+    connection
+);
 
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
+            cmd.Parameters.AddWithValue("@produto_id_antigo", produtoId);
+            cmd.Parameters.AddWithValue("@novo_produto_id", produtoIdFinal);
             cmd.Parameters.AddWithValue("@quantidade", quantidadeFinal);
-            cmd.Parameters.AddWithValue("@produto_id", produtoIdFinal);
+
             cmd.ExecuteNonQuery();
 
         }
@@ -133,10 +140,10 @@ namespace BackendDesapegaJa.Repositories
             }
            
 
-            using var connection = new MySqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
 
-            using var cmd = new MySqlCommand("DELETE FROM carrinho WHERE usuario_id = @usuario_id AND produto_id = @produto_id", connection);
+            using var cmd = new NpgsqlCommand("DELETE FROM carrinho WHERE usuario_id = @usuario_id AND produto_id = @produto_id", connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
             cmd.Parameters.AddWithValue("@produto_id", produtoId);
             cmd.ExecuteNonQuery();
