@@ -148,7 +148,7 @@ namespace BackendDesapegaJa.Repositories
 
             string sql = @"
                 INSERT INTO ordem_de_compra 
-                (usuario_id, status_ordem_id, valor_total, metodo_entrega,)
+                (usuario_id, status_ordem_id, valor_total, metodo_entrega)
                 VALUES (@usuario_id, @status_ordem_id, @valor_total, @metodo_entrega)
                 RETURNING id;
             ";
