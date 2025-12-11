@@ -119,7 +119,7 @@ namespace BackendDesapegaJa.Repositories
             connection.Open();
 
             var cmd = new NpgsqlCommand(
-    "UPDATE carrinho + SET produto_id = @novo_produto_id, quantidade = @quantidade WHERE usuario_id = @usuario_id AND produto_id = @produto_id_antigo",
+    "UPDATE carrinho SET produto_id = @novo_produto_id, quantidade = @quantidade WHERE usuario_id = @usuario_id AND produto_id = @produto_id_antigo",
     connection
 );
 

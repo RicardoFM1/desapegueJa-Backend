@@ -118,12 +118,19 @@ namespace BackendDesapegaJa.Services
 
             var enderecoUsuario = _repoEndereco.BuscarPorUsuarioIdAtivo(pagamento.usuario_id);
 
-            if (enderecoUsuario == null)
-                {
-                _repo.DeletarPorUsuarioId(pagamento.usuario_id); 
+            var dadosFormaPagamento = _repoFormaPagamento.BuscarPorId(pagamento.forma_pagamento_id);
+
+           
+            if (enderecoUsuario == null &&
+                dadosFormaPagamento != null &&
+                dadosFormaPagamento.forma.ToLower().Contains("boleto")) 
+            {
+               
+                _repo.DeletarPorUsuarioId(pagamento.usuario_id);
                 _repoOrdem.DeletarOrdemEmAberto(pagamento.usuario_id);
+
                 throw new InvalidOperationException("Endereço do usuário não encontrado. Necessário para geração de boleto.");
-                }
+            }
 
             if (usuario == null || usuario.status.ToLower() == "inativo")
             {
