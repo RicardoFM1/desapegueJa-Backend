@@ -125,7 +125,7 @@ namespace BackendDesapegaJa.Repositories
                     sql += " AND id != @endereco_id_excluir";
                 }
 
-                var cmd = new MySqlCommand(sql, _connectionString);
+                var cmd = new MySqlCommand(sql, connection);
                 cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
                 if (enderecoIdExcluir.HasValue)
                 {
@@ -171,7 +171,7 @@ namespace BackendDesapegaJa.Repositories
             connection.Open();
 
             var cmd = new MySqlCommand("INSERT INTO enderecos (usuario_id, cep, numero, bairro, cidade, estado, rua, tipo_de_endereco, tipo_de_logradouro, complemento, status) " +
-                "VALUES(@usuario_id, @cep, @numero, @bairro, @cidade, @estado, @rua, @tipo_de_endereco, @tipo_de_logradouro, @complemento, @status); SELECT LAST_INSERT_ID();", _connection);
+                "VALUES(@usuario_id, @cep, @numero, @bairro, @cidade, @estado, @rua, @tipo_de_endereco, @tipo_de_logradouro, @complemento, @status); SELECT LAST_INSERT_ID();", connection);
             cmd.Parameters.AddWithValue("@usuario_id", enderecos.usuario_id);
             cmd.Parameters.AddWithValue("@cep", enderecos.Cep);
             cmd.Parameters.AddWithValue("@numero", enderecos.numero);
@@ -232,7 +232,7 @@ namespace BackendDesapegaJa.Repositories
 
             }
             reader.Close();
-            _connection.Close();
+            
             return enderecos;
 
         }
@@ -272,7 +272,7 @@ namespace BackendDesapegaJa.Repositories
 
             }
             reader.Close();
-            _connection.Close();
+           
             return enderecos;
 
         }
@@ -318,7 +318,7 @@ namespace BackendDesapegaJa.Repositories
 
             }
             reader.Close();
-            _connection.Close();
+          
             return enderecos;
 
         }
@@ -383,7 +383,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@complemento", complementoFinal);
             cmd.Parameters.AddWithValue("@status", statusFinal);
             cmd.ExecuteNonQuery();
-            _connection.Close();
+            
         }
 
     }
