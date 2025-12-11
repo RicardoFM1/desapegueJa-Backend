@@ -8,19 +8,20 @@ namespace BackendDesapegaJa.Repositories
 {
     public class EnderecosRepository : IEnderecoRepository
     {
-        private readonly MySqlConnection _connection;
+        private readonly string _connectionString;
         private readonly IUsuarioRepository _repoUser;
 
-        public EnderecosRepository(MySqlConnection connection, IUsuarioRepository repoUser)
+        public EnderecosRepository(IConfiguration config, IUsuarioRepository repoUser)
         {
-            _connection = connection;
+            _connectionString = config.GetConnectionString("DefaultConnection");
             _repoUser = repoUser;
         }
         public IEnumerable<Enderecos> ListarTodos(string? status = null)
         {
             var enderecos = new List<Enderecos>();
 
-            _connection.Open();
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
             string sql = "SELECT * FROM enderecos";
 
@@ -29,7 +30,7 @@ namespace BackendDesapegaJa.Repositories
                 sql += " WHERE status = @status";
             }
 
-            var cmd = new MySqlCommand(sql, _connection);
+            var cmd = new MySqlCommand(sql, connection);
             if (!string.IsNullOrWhiteSpace(status))
             {
                 cmd.Parameters.AddWithValue("@status", status);
@@ -57,7 +58,7 @@ namespace BackendDesapegaJa.Repositories
                 enderecos.Add(endereco);
             }
 
-            _connection.Close();
+           
             return enderecos;
         }
         public Enderecos ListarAtivo(int? usuarioId, string? status = null)
@@ -65,10 +66,8 @@ namespace BackendDesapegaJa.Repositories
             Enderecos endereco = null;
 
 
-            if (_connection.State != System.Data.ConnectionState.Open)
-            {
-                _connection.Open();
-            }
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
             string sql = "SELECT * FROM enderecos WHERE usuario_id = @usuario_id";
 
@@ -77,7 +76,7 @@ namespace BackendDesapegaJa.Repositories
                     sql += " AND status = @status";
                 }
 
-                var cmd = new MySqlCommand(sql, _connection);
+                var cmd = new MySqlCommand(sql, connection);
                 cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
                 if (!string.IsNullOrWhiteSpace(status))
                 {
@@ -106,7 +105,7 @@ namespace BackendDesapegaJa.Repositories
 
                 }
 
-                _connection.Close();
+           
                 return endereco;
             }
 
@@ -115,10 +114,8 @@ namespace BackendDesapegaJa.Repositories
           
             try
             {
-                if (_connection.State != System.Data.ConnectionState.Open)
-                {
-                    _connection.Open();
-                }
+                using var connection = new MySqlConnection(_connectionString);
+                connection.Open();
 
                 string sql = "UPDATE enderecos SET status = 'inativo' WHERE usuario_id = @usuario_id AND status = 'ativo'";
 
@@ -128,7 +125,7 @@ namespace BackendDesapegaJa.Repositories
                     sql += " AND id != @endereco_id_excluir";
                 }
 
-                var cmd = new MySqlCommand(sql, _connection);
+                var cmd = new MySqlCommand(sql, _connectionString);
                 cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
                 if (enderecoIdExcluir.HasValue)
                 {
@@ -170,10 +167,8 @@ namespace BackendDesapegaJa.Repositories
                 DesativarOutrosEnderecosAtivos(enderecos.usuario_id, enderecos.id);
             }
 
-            if (_connection.State != System.Data.ConnectionState.Open)
-            {
-                _connection.Open();
-            }
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
             var cmd = new MySqlCommand("INSERT INTO enderecos (usuario_id, cep, numero, bairro, cidade, estado, rua, tipo_de_endereco, tipo_de_logradouro, complemento, status) " +
                 "VALUES(@usuario_id, @cep, @numero, @bairro, @cidade, @estado, @rua, @tipo_de_endereco, @tipo_de_logradouro, @complemento, @status); SELECT LAST_INSERT_ID();", _connection);
@@ -193,14 +188,14 @@ namespace BackendDesapegaJa.Repositories
             enderecos.id = novoId;
 
 
-            _connection.Close();
+           
 
         }
 
         public Enderecos? BuscarPorId(int? id, string? status = null)
         {
-            if (_connection.State != System.Data.ConnectionState.Open)
-                _connection.Open();
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
             string sql = "SELECT * FROM enderecos WHERE id = @id";
 
@@ -208,7 +203,7 @@ namespace BackendDesapegaJa.Repositories
             {
                 sql += " AND status = @status";
             }
-            using var cmd = new MySqlCommand(sql, _connection);
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -243,15 +238,15 @@ namespace BackendDesapegaJa.Repositories
         }
         public Enderecos? BuscarPorUsuarioIdAtivo(int? id, string? status = null)
         {
-            if (_connection.State != System.Data.ConnectionState.Open)
-                _connection.Open();
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
             Enderecos enderecos = null;
 
             string sql = "SELECT * FROM enderecos WHERE usuario_id = @id AND status = 'ativo' ";
 
             
-            using var cmd = new MySqlCommand(sql, _connection);
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
             
             var reader = cmd.ExecuteReader();
@@ -283,8 +278,8 @@ namespace BackendDesapegaJa.Repositories
         }
         public IEnumerable<Enderecos?> BuscarPorUsuarioId(int? id, string? status = null)
         {
-            if (_connection.State != System.Data.ConnectionState.Open)
-                _connection.Open();
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
             var enderecos = new List<Enderecos>();
 
@@ -294,7 +289,7 @@ namespace BackendDesapegaJa.Repositories
             {
                 sql += " AND status = @status";
             }
-            using var cmd = new MySqlCommand(sql, _connection);
+            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -371,13 +366,11 @@ namespace BackendDesapegaJa.Repositories
             var complementoFinal = string.IsNullOrWhiteSpace(enderecos.complemento) ? enderecoExistente.complemento : enderecos.complemento;
             var numeroFinal = string.IsNullOrWhiteSpace(enderecos.numero) ? enderecoExistente.numero : enderecos.numero;
 
-            if (_connection.State != System.Data.ConnectionState.Open)
-            {
-                _connection.Open();
-            }
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
             var cmd = new MySqlCommand("UPDATE enderecos SET cep = @cep, " +
-                "numero = @numero, bairro = @bairro, cidade = @cidade, estado = @estado, rua = @rua, tipo_de_endereco = @tipo_de_endereco, tipo_de_logradouro = @tipo_de_logradouro, complemento = @complemento, status = @status WHERE id = @id", _connection);
+                "numero = @numero, bairro = @bairro, cidade = @cidade, estado = @estado, rua = @rua, tipo_de_endereco = @tipo_de_endereco, tipo_de_logradouro = @tipo_de_logradouro, complemento = @complemento, status = @status WHERE id = @id", connection);
             cmd.Parameters.AddWithValue("@id", id);
             cmd.Parameters.AddWithValue("@cep", cepFinal);
             cmd.Parameters.AddWithValue("@numero", numeroFinal);
