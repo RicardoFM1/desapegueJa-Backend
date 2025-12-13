@@ -28,9 +28,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .SetIsOriginAllowed(origin =>
+                origin.StartsWith("http://localhost") ||
+                origin.EndsWith(".onrender.com"));
     });
 });
 
@@ -147,6 +150,11 @@ builder.Services.AddHostedService<ExpiracaoPagamentosService>();
 // ------------------------
 // Build app
 // ------------------------
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+
 var app = builder.Build();
 
 // ------------------------
