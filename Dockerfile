@@ -14,9 +14,9 @@ WORKDIR /src
 # Copia tudo da raiz (inclui o .csproj)
 COPY . .
 
-# ⚠️ Nome EXATO do csproj (case-sensitive)
-RUN dotnet restore BackendDesapegaja.csproj
-RUN dotnet publish BackendDesapegaja.csproj -c Release -o /app/publish
+# ⚠️ NOME EXATO do csproj
+RUN dotnet restore BackendDesapegaJa.csproj
+RUN dotnet publish BackendDesapegaJa.csproj -c Release -o /app/publish
 
 # =========================
 # Final
@@ -25,5 +25,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# ⚠️ Nome EXATO do DLL
-ENTRYPOINT ["dotnet", "BackendDesapegaja.dll"]
+# ⚠️ NOME EXATO do DLL
+ENTRYPOINT ["dotnet", "BackendDesapegaJa.dll"]
