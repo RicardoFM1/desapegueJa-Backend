@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.IdentityModel.Tokens;
-using MySql.Data.MySqlClient;
+using Npgsql;
 using System;
 using System.IO;
 using System.Text;
@@ -42,7 +42,7 @@ builder.Services.AddScoped(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
     string connString = config.GetConnectionString("DefaultConnection");
-    return new MySqlConnection(connString);
+    return new NpgsqlConnection(connString);
 });
 
 builder.Services.AddAuthentication(options =>
