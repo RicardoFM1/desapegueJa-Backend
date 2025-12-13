@@ -3,7 +3,6 @@ using BackendDesapegaJa.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Mysqlx;
 using System.Security.Claims;
 
 namespace BackendDesapegaJa.Controllers

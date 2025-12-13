@@ -37,11 +37,11 @@ builder.Services.AddCors(options =>
     });
 });
 
-// MySQL via DI
-builder.Services.AddScoped(sp =>
+// Postgres via DI
+builder.Services.AddScoped<NpgsqlConnection>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-    string connString = config.GetConnectionString("DefaultConnection");
+    var connString = config.GetConnectionString("DefaultConnection");
     return new NpgsqlConnection(connString);
 });
 

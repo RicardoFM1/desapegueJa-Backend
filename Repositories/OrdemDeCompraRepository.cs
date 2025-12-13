@@ -82,7 +82,8 @@ namespace BackendDesapegaJa.Repositories
 
             string sql = @"SELECT * FROM ordem_de_compra 
                            WHERE usuario_id = @usuario_id
-                           LIMIT 1";
+                           
+1";
 
             using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
