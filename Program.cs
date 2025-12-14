@@ -2,9 +2,10 @@ using BackendDesapegaJa.Helpers;
 using BackendDesapegaJa.Interfaces;
 using BackendDesapegaJa.Repositories;
 using BackendDesapegaJa.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using System;
@@ -190,9 +191,14 @@ else
 {
     logger.LogWarning("WebRoot not found or empty. Static files disabled. Expected path: {WebRoot}", app.Environment.WebRootPath);
 }
-
+// Adicionar antes de app.UseRouting() ou app.UseAuthentication()
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 // 1. UseRouting: Deve vir antes de Authentication e Authorization
 app.UseRouting();
+
 
 app.UseCors("AllowLocalhost");
 // 2. UseAuthentication: Adiciona suporte a autenticação (QUEM é o usuário).
