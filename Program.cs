@@ -173,20 +173,7 @@ logger.LogInformation("AppContext.BaseDirectory = {BaseDir}", AppContext.BaseDir
 // ------------------------
 // Middleware (Corrigido)
 // ------------------------
-app.UseCors("AllowLocalhost");
 app.UseHttpsRedirection();
-
-// 1. UseRouting: Deve vir antes de Authentication e Authorization
-app.UseRouting();
-
-// 2. UseAuthentication: Adiciona suporte a autenticação (QUEM é o usuário).
-app.UseAuthentication();
-
-// 3. UseAuthorization: Adiciona suporte a autorização (O QUE o usuário pode fazer).
-app.UseAuthorization();
-
-
-// Arquivos estáticos
 if (!string.IsNullOrEmpty(app.Environment.WebRootPath) && Directory.Exists(app.Environment.WebRootPath))
 {
     logger.LogInformation("Serving static files from: {WebRoot}", app.Environment.WebRootPath);
@@ -196,6 +183,19 @@ else
 {
     logger.LogWarning("WebRoot not found or empty. Static files disabled. Expected path: {WebRoot}", app.Environment.WebRootPath);
 }
+
+// 1. UseRouting: Deve vir antes de Authentication e Authorization
+app.UseRouting();
+
+app.UseCors("AllowLocalhost");
+// 2. UseAuthentication: Adiciona suporte a autenticação (QUEM é o usuário).
+app.UseAuthentication();
+
+// 3. UseAuthorization: Adiciona suporte a autorização (O QUE o usuário pode fazer).
+app.UseAuthorization();
+
+
+
 
 // Rotas
 app.MapControllers();
