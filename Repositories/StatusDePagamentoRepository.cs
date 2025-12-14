@@ -6,18 +6,18 @@ namespace BackendDesapegaJa.Repositories
 {
     public class StatusDePagamentoRepository : IStatusDePagamentoRepository
     {
-        private readonly string _connectionString;
+        private readonly NpgsqlConnection _connection;
 
-        public StatusDePagamentoRepository(IConfiguration config)
+        public StatusDePagamentoRepository(NpgsqlConnection connection)
         {
-            _connectionString = config.GetConnectionString("DefaultConnection");
+            _connection = connection;
         }
 
         public IEnumerable<StatusDePagamento> ListarTodos(string? status = null)
         {
             var statuslist = new List<StatusDePagamento>();
 
-            using var connection = new NpgsqlConnection(_connectionString);
+            using var connection = _connection;
             connection.Open();
 
             string sql = "SELECT * FROM status_de_pagamento";
@@ -50,7 +50,7 @@ namespace BackendDesapegaJa.Repositories
 
         public StatusDePagamento BuscarPorDescricao(string descricao, string? status = null)
         {
-            using var connection = new NpgsqlConnection(_connectionString);
+            using var connection = _connection;
             connection.Open();
 
             string sql = "SELECT * FROM status_de_pagamento WHERE descricao = @descricao";
@@ -86,7 +86,7 @@ namespace BackendDesapegaJa.Repositories
 
         public StatusDePagamento BuscarPorId(int? id, string? status = null)
         {
-            using var connection = new NpgsqlConnection(_connectionString);
+            using var connection = _connection;
             connection.Open();
 
             string sql = "SELECT * FROM status_de_pagamento WHERE id = @id";
@@ -128,7 +128,7 @@ namespace BackendDesapegaJa.Repositories
                 throw new InvalidOperationException("A descrição do status de pagamento já existe");
             }
 
-            using var connection = new NpgsqlConnection(_connectionString);
+            using var connection = _connection;
             connection.Open();
 
             var cmd = new NpgsqlCommand(
@@ -159,7 +159,7 @@ namespace BackendDesapegaJa.Repositories
                 ? statusExistente.status
                 : statuspagamento.status;
 
-            using var connection = new NpgsqlConnection(_connectionString);
+            using var connection = _connection;
             connection.Open();
 
             var cmd = new NpgsqlCommand(
