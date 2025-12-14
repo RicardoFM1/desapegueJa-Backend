@@ -42,7 +42,14 @@ builder.Services.AddScoped<NpgsqlConnection>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
     var connString = config.GetConnectionString("DefaultConnection");
-    return new NpgsqlConnection(connString);
+
+    // Tentativa de forçar a conexão IPv4
+    var connBuilder = new Npgsql.NpgsqlConnectionStringBuilder(connString);
+    
+
+    return new NpgsqlConnection(connString); 
+
+    
 });
 
 builder.Services.AddAuthentication(options =>
