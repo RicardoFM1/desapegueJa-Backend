@@ -150,10 +150,10 @@ namespace BackendDesapegaJa.Repositories
 
             string ids = string.Join(", ", usuariosIds);
 
-            string sql = $@"
-                SELECT id, cep
-                FROM usuarios
-                WHERE id IN ({ids});";
+            string sql = @"
+    SELECT id, cep
+    FROM usuarios
+    WHERE id = ANY(@ids);";
 
             await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -173,7 +173,7 @@ namespace BackendDesapegaJa.Repositories
 
             return ceps;
         }
-
+       
         public async Task<Usuario> AdicionarAsync(Usuario usuario)
         {
             await using var connection = new NpgsqlConnection(_connectionString);

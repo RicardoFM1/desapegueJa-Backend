@@ -49,7 +49,7 @@ namespace BackendDesapegaJa.Services
             if (string.IsNullOrWhiteSpace(usuario.Telefone) || !TelefoneValido(usuario.Telefone))
                 throw new InvalidOperationException("Telefone inválido.");
 
-            usuario.Senha = BCrypt.Net.BCrypt.HashPassword(usuario.Senha, 10);
+            usuario.Senha = BCrypt.Net.BCrypt.HashPassword(usuario.Senha, 8);
 
             return await _repo.AdicionarAsync(usuario);
         }
