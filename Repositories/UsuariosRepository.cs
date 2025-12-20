@@ -148,17 +148,17 @@ namespace BackendDesapegaJa.Repositories
             if (usuariosIds == null || !usuariosIds.Any())
                 return ceps;
 
-            string ids = string.Join(", ", usuariosIds);
-
             string sql = @"
-    SELECT id, cep
-    FROM usuarios
-    WHERE id = ANY(@ids);";
+        SELECT id, cep
+        FROM usuarios
+        WHERE id = ANY(@ids);";
 
             await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
 
             await using var cmd = new NpgsqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@ids", usuariosIds.ToArray()); 
+
             await using var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -168,12 +168,13 @@ namespace BackendDesapegaJa.Repositories
                     ? string.Empty
                     : reader.GetString(reader.GetOrdinal("cep"));
 
-                ceps.Add(id, cep);
+                ceps[id] = cep;
             }
 
             return ceps;
         }
-       
+
+
         public async Task<Usuario> AdicionarAsync(Usuario usuario)
         {
             await using var connection = new NpgsqlConnection(_connectionString);
