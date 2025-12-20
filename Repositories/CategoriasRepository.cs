@@ -1,7 +1,6 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
 using Npgsql;
-using System.Data;
 
 namespace BackendDesapegaJa.Repositories
 {
@@ -14,24 +13,23 @@ namespace BackendDesapegaJa.Repositories
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
 
-        public IEnumerable<Categorias> ListarTodos(string? status = null)
+        public async Task<IEnumerable<Categorias>> ListarTodosAsync(string? status = null)
         {
             var categorias = new List<Categorias>();
 
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
             string sql = "SELECT * FROM categorias";
             if (!string.IsNullOrWhiteSpace(status))
                 sql += " WHERE status = @status";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
-
+            await using var cmd = new NpgsqlCommand(sql, connection);
             if (!string.IsNullOrWhiteSpace(status))
                 cmd.Parameters.AddWithValue("@status", status);
 
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
                 categorias.Add(new Categorias
                 {
@@ -45,69 +43,62 @@ namespace BackendDesapegaJa.Repositories
             return categorias;
         }
 
-        public Categorias? BuscarPorNome(string nome)
+        public async Task<Categorias?> BuscarPorNomeAsync(string nome)
         {
             if (string.IsNullOrWhiteSpace(nome))
                 return null;
 
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
-            using var cmd = new NpgsqlCommand(
+            await using var cmd = new NpgsqlCommand(
                 "SELECT * FROM categorias WHERE LOWER(nome) = LOWER(@nome)", connection);
 
             cmd.Parameters.AddWithValue("@nome", nome.Trim());
 
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
-            {
-                return new Categorias
+            await using var reader = await cmd.ExecuteReaderAsync();
+            return await reader.ReadAsync()
+                ? new Categorias
                 {
                     Id = reader.GetInt32(reader.GetOrdinal("id")),
                     Nome = reader.GetString(reader.GetOrdinal("nome")),
                     Cor = reader.GetString(reader.GetOrdinal("cor")),
                     status = reader.GetString(reader.GetOrdinal("status"))
-                };
-            }
-
-            return null;
+                }
+                : null;
         }
 
-        public Categorias BuscarPorId(int? id, string? status = null)
+        public async Task<Categorias?> BuscarPorIdAsync(int id, string? status = null)
         {
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
             string sql = "SELECT * FROM categorias WHERE id = @id";
             if (!string.IsNullOrWhiteSpace(status))
                 sql += " AND status = @status";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
+            await using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
 
             if (!string.IsNullOrWhiteSpace(status))
                 cmd.Parameters.AddWithValue("@status", status);
 
-            using var reader = cmd.ExecuteReader();
-
-            if (reader.Read())
-            {
-                return new Categorias
+            await using var reader = await cmd.ExecuteReaderAsync();
+            return await reader.ReadAsync()
+                ? new Categorias
                 {
                     Id = reader.GetInt32(reader.GetOrdinal("id")),
                     Nome = reader.GetString(reader.GetOrdinal("nome")),
                     Cor = reader.GetString(reader.GetOrdinal("cor")),
                     status = reader.GetString(reader.GetOrdinal("status"))
-                };
-            }
-
-            return null;
+                }
+                : null;
         }
 
-        public void Adicionar(Categorias categorias)
+        public async Task AdicionarAsync(Categorias categorias)
         {
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
             string sql = @"
                 INSERT INTO categorias (nome, status, cor)
@@ -115,32 +106,23 @@ namespace BackendDesapegaJa.Repositories
                 RETURNING id;
             ";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
+            await using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@nome", categorias.Nome);
             cmd.Parameters.AddWithValue("@status",
                 string.IsNullOrWhiteSpace(categorias.status) ? "ativo" : categorias.status);
             cmd.Parameters.AddWithValue("@cor", categorias.Cor);
 
-            categorias.Id = Convert.ToInt32(cmd.ExecuteScalar());
+            categorias.Id = Convert.ToInt32(await cmd.ExecuteScalarAsync());
         }
 
-        public void Atualizar(int id, CategoriasUpdateDTO categorias)
+        public async Task AtualizarAsync(int id, CategoriasUpdateDTO categorias)
         {
-            var existente = BuscarPorId(id);
+            var existente = await BuscarPorIdAsync(id);
             if (existente == null)
                 throw new InvalidOperationException("Nenhuma categoria encontrada");
 
-            var nomeFinal = string.IsNullOrWhiteSpace(categorias.Nome)
-                ? existente.Nome : categorias.Nome;
-
-            var corFinal = string.IsNullOrWhiteSpace(categorias.Cor)
-                ? existente.Cor : categorias.Cor;
-
-            var statusFinal = string.IsNullOrWhiteSpace(categorias.status)
-                ? existente.status : categorias.status;
-
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
             string sql = @"
                 UPDATE categorias
@@ -148,14 +130,13 @@ namespace BackendDesapegaJa.Repositories
                 WHERE id = @id;
             ";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
-
+            await using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
-            cmd.Parameters.AddWithValue("@nome", nomeFinal);
-            cmd.Parameters.AddWithValue("@status", statusFinal);
-            cmd.Parameters.AddWithValue("@cor", corFinal);
+            cmd.Parameters.AddWithValue("@nome", categorias.Nome ?? existente.Nome);
+            cmd.Parameters.AddWithValue("@status", categorias.status ?? existente.status);
+            cmd.Parameters.AddWithValue("@cor", categorias.Cor ?? existente.Cor);
 
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
     }
 }

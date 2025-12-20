@@ -127,7 +127,7 @@ public class ProdutosRepository : IProdutoRepository
         if (await _repoUser.BuscarPorIdAsync(produto.usuario_id) == null)
             throw new InvalidOperationException("Usuário não encontrado");
 
-        if (_repoCategoria.BuscarPorId(produto.categoria_id) == null)
+        if (_repoCategoria.BuscarPorIdAsync(produto.categoria_id) == null)
             throw new InvalidOperationException("Categoria não encontrada");
 
         if (produto.estoque <= 0)

@@ -4,14 +4,10 @@ namespace BackendDesapegaJa.Interfaces
 {
     public interface ICategoriasRepository
     {
-        IEnumerable<Categorias> ListarTodos(string? status = null);
-
-        void Adicionar(Categorias categoria);
-
-        Categorias BuscarPorNome(string nome);
-
-        Categorias BuscarPorId(int? id, string? status = null);
-
-        void Atualizar(int id, CategoriasUpdateDTO categorias);
+        Task<IEnumerable<Categorias>> ListarTodosAsync(string? status = null);
+        Task<Categorias?> BuscarPorNomeAsync(string nome);
+        Task<Categorias?> BuscarPorIdAsync(int id, string? status = null);
+        Task AdicionarAsync(Categorias categoria);
+        Task AtualizarAsync(int id, CategoriasUpdateDTO categorias);
     }
 }

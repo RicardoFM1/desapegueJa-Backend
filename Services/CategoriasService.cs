@@ -1,59 +1,37 @@
 ﻿using BackendDesapegaJa.Entities;
 using BackendDesapegaJa.Interfaces;
 
-namespace BackendDesapegaJa.Services
+public class CategoriasService
 {
-    public class CategoriasService 
+    private readonly ICategoriasRepository _repo;
+
+    public CategoriasService(ICategoriasRepository repo)
     {
-        public readonly ICategoriasRepository _repo;
+        _repo = repo;
+    }
 
-        public CategoriasService(ICategoriasRepository repo)
-        {
-            _repo = repo;
-        }
+    public async Task<IEnumerable<Categorias>> ObterCategoriasAsync(string? status = null)
+        => await _repo.ListarTodosAsync(status);
 
-        public IEnumerable<Categorias> ObterCategorias(string? status = null)
-        {
-            return _repo.ListarTodos(status);
-        }
+    public async Task<Categorias> BuscarCategoriaPorIdAsync(int id, string? status)
+    {
+        var categoria = await _repo.BuscarPorIdAsync(id, status);
+        return categoria ?? throw new InvalidOperationException("Categoria não encontrada");
+    }
 
-        public Categorias BuscarCategoriaPorId(int id, string? status)
-        {
-            var categoria = _repo.BuscarPorId(id, status);
-            if(categoria == null)
-            {
-                throw new InvalidOperationException("Não foi possível encontrar essa categoria");
-            }
-            return categoria;
-        }
+    public async Task<Categorias> CriarCategoriaAsync(Categorias categorias)
+    {
+        var existente = await _repo.BuscarPorNomeAsync(categorias.Nome);
+        if (existente != null && existente.status == "ativo")
+            throw new InvalidOperationException("O nome da categoria já existe");
 
-        public Categorias CriarCategoria(Categorias categorias)
-        {
-            var nomeExistente = _repo.BuscarPorNome(categorias.Nome);
-            if (nomeExistente != null && nomeExistente.status.ToLower() == "ativo")
-            {
-                throw new InvalidOperationException("O nome da categoria já existe");
-            }
-            
-            _repo.Adicionar(categorias);
-            return categorias;
-        }
-        public Categorias AtualizarCategoria(int id, CategoriasUpdateDTO categorias)
-        {
-            var nomeExistente = _repo.BuscarPorNome(categorias.Nome);
-            if (nomeExistente != null && nomeExistente.Id != id && nomeExistente.status.ToLower() == "ativo")
-            {
-                throw new InvalidOperationException("O nome da categoria já existe");
-            }
-            var categoriaExistente = _repo.BuscarPorId(id);
-            if(categoriaExistente == null)
-            {
-                throw new InvalidOperationException("Nenhuma categoria encontrada");
-            }
+        await _repo.AdicionarAsync(categorias);
+        return categorias;
+    }
 
-            categoriaExistente.Id = id;
-            _repo.Atualizar(id, categorias);
-            return categoriaExistente;
-        }
+    public async Task<Categorias> AtualizarCategoriaAsync(int id, CategoriasUpdateDTO categorias)
+    {
+        await _repo.AtualizarAsync(id, categorias);
+        return await BuscarCategoriaPorIdAsync(id, null);
     }
 }

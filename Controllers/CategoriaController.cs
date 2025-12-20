@@ -2,7 +2,6 @@
 using BackendDesapegaJa.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.WebSockets;
 using System.Security.Claims;
 
 namespace BackendDesapegaJa.Controllers
@@ -11,24 +10,25 @@ namespace BackendDesapegaJa.Controllers
     [Route("desapega/categorias")]
     public class CategoriaController : ControllerBase
     {
-        public readonly CategoriasService _service;
+        private readonly CategoriasService _service;
 
         public CategoriaController(CategoriasService service)
         {
             _service = service;
         }
+
+        // GET /desapega/categorias
         [HttpGet]
-        public IActionResult Get([FromQuery] string? status)
+        public async Task<IActionResult> Get([FromQuery] string? status)
         {
             try
             {
-
-            var categorias = _service.ObterCategorias(status);
-            return Ok(categorias);
+                var categorias = await _service.ObterCategoriasAsync(status);
+                return Ok(categorias);
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -36,18 +36,18 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+        // GET /desapega/categorias/{id}
         [HttpGet("{id}")]
-        public IActionResult GetById(int id, [FromQuery] string? status)
+        public async Task<IActionResult> GetById(int id, [FromQuery] string? status)
         {
             try
             {
-
-            var categoria = _service.BuscarCategoriaPorId(id, status);
-            return Ok(categoria);
+                var categoria = await _service.BuscarCategoriaPorIdAsync(id, status);
+                return Ok(categoria);
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -55,73 +55,55 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+        // POST /desapega/categorias
         [Authorize]
         [HttpPost]
-        public IActionResult CriarCategoria([FromBody] Categorias categorias)
+        public async Task<IActionResult> CriarCategoria([FromBody] Categorias categorias)
         {
             try
             {
-                var loggedUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var isAdmin = false;
+                var isAdmin = User.FindFirst("isAdmin")?.Value?.ToLower() == "true";
+                if (!isAdmin)
+                    return StatusCode(403, new { message = "Sem autorização para criar categoria" });
 
-                if (User.FindFirst("isAdmin")?.Value.ToLower() == "true")
-                {
-                    isAdmin = true;
-                }
-                else
-                {
-                    isAdmin = false;
-                }
-                if (loggedUserIdStr == null || isAdmin == false)
-                {
-                    return StatusCode(403, new { message = "Sem autorização para criar essa ordem de compra" });
-                }
-                
-                var novaCategoria = _service.CriarCategoria(categorias);
+                var novaCategoria = await _service.CriarCategoriaAsync(categorias);
                 return StatusCode(201, novaCategoria);
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Erro interno: " + ex.Message });
             }
         }
+
+        // PATCH /desapega/categorias/{id}
         [Authorize]
         [HttpPatch("{id}")]
-        public IActionResult AtualizarCategoria(int id, [FromBody] CategoriasUpdateDTO categorias)
+        public async Task<IActionResult> AtualizarCategoria(
+            int id,
+            [FromBody] CategoriasUpdateDTO categorias)
         {
             try
             {
-                var loggedUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var isAdmin = false;
+                var isAdmin = User.FindFirst("isAdmin")?.Value?.ToLower() == "true";
+                if (!isAdmin)
+                    return StatusCode(403, new { message = "Sem autorização para atualizar categoria" });
 
-                if (User.FindFirst("isAdmin")?.Value.ToLower() == "true")
-                {
-                    isAdmin = true;
-                }
-                else
-                {
-                    isAdmin = false;
-                }
-                if (!int.TryParse(loggedUserIdStr, out int loggedUserIdInt))
-                    return StatusCode(403, new { message = "Sem autorização para atualizar essa categoria" });
+                var categoriaAtualizada =
+                    await _service.AtualizarCategoriaAsync(id, categorias);
 
-                if (isAdmin == false)
-                    return StatusCode(403, new { message = "Sem autorização para atualizar essa categoria" });
-
-                var categoria = _service.AtualizarCategoria(id, categorias);
-                return StatusCode(200, categoria);
+                return Ok(categoriaAtualizada);
             }
-            catch(InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro interno" + ex.Message });
+                return StatusCode(500, new { message = "Erro interno: " + ex.Message });
             }
         }
     }
