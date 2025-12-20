@@ -24,7 +24,7 @@ namespace BackendDesapegaJa.Repositories
             string sql = @"
                 SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, 
                        data_de_nascimento, google_id 
-                FROM Usuarios";
+                FROM usuarios";
 
             if (!string.IsNullOrWhiteSpace(status))
                 sql += " WHERE status = @status";
@@ -50,7 +50,7 @@ namespace BackendDesapegaJa.Repositories
             string sql = @"
                 SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, 
                        data_de_nascimento, google_id 
-                FROM Usuarios 
+                FROM usuarios 
                 WHERE LOWER(nome)=LOWER(@nome)";
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -78,7 +78,7 @@ namespace BackendDesapegaJa.Repositories
             string sql = @"
                 SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, 
                        data_de_nascimento, google_id 
-                FROM Usuarios 
+                FROM usuarios 
                 WHERE LOWER(email)=LOWER(@email)";
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -103,7 +103,7 @@ namespace BackendDesapegaJa.Repositories
             string sql = @"
                 SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, 
                        data_de_nascimento, google_id 
-                FROM Usuarios 
+                FROM usuarios 
                 WHERE id=@id";
 
             using var cmd = new NpgsqlCommand(sql, connection);
@@ -125,7 +125,7 @@ namespace BackendDesapegaJa.Repositories
             string sql = @"
                 SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, 
                        data_de_nascimento, google_id 
-                FROM Usuarios 
+                FROM usuarios 
                 WHERE cpf=@cpf";
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -156,7 +156,7 @@ namespace BackendDesapegaJa.Repositories
             
             string sql = $@"
             SELECT id, cep
-            FROM Usuarios
+            FROM usuarios
             WHERE id IN ({ids});"; 
 
             using var connection = new NpgsqlConnection(_connectionString);
@@ -184,7 +184,7 @@ namespace BackendDesapegaJa.Repositories
             connection.Open();
 
             using var cmd = new NpgsqlCommand(@"
-                INSERT INTO Usuarios 
+                INSERT INTO usuarios 
                     (email, senha, status, admin, telefone, cpf, foto_de_perfil, 
                      data_de_nascimento, nome, google_id)
                 VALUES 
@@ -227,7 +227,7 @@ namespace BackendDesapegaJa.Repositories
             var googleIdFinal = usuario.GoogleId ?? existente.GoogleId;
 
             string sql = @"
-                UPDATE Usuarios SET
+                UPDATE usuarios SET
                     email=@Email,
                     senha=@Senha,
                     status=@Status,
@@ -294,7 +294,7 @@ namespace BackendDesapegaJa.Repositories
             string sql = @"
                 SELECT id, nome, email, senha, status, admin, telefone, cpf, foto_de_perfil, 
                        data_de_nascimento, google_id 
-                FROM Usuarios 
+                FROM usuarios 
                 WHERE LOWER(email)=LOWER(@email)";
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -317,7 +317,7 @@ namespace BackendDesapegaJa.Repositories
             await connection.OpenAsync();
 
             using var cmd = new NpgsqlCommand(@"
-                INSERT INTO Usuarios 
+                INSERT INTO usuarios 
                     (email, senha, status, admin, telefone, cpf, foto_de_perfil,
                      data_de_nascimento, nome, google_id)
                 VALUES 
