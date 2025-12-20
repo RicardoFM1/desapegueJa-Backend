@@ -49,7 +49,11 @@ namespace BackendDesapegaJa.Services
                 throw new InvalidOperationException("Telefone inválido. Deve conter apenas números e ter 10 ou 13 dígitos.");
 
 
-            usuario.Senha = BCrypt.Net.BCrypt.HashPassword(usuario.Senha);
+            usuario.Senha = BCrypt.Net.BCrypt.HashPassword(
+    usuario.Senha,
+    workFactor: 10 
+);
+
             _repo.Adicionar(usuario);
 
             return usuario;
