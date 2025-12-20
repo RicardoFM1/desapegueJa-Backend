@@ -16,24 +16,24 @@ namespace BackendDesapegaJa.Repositories
             _repoUser = repoUser;
         }
 
-        public IEnumerable<Enderecos> ListarTodos(string? status = null)
+        public async Task<IEnumerable<Enderecos>> ListarTodosAsync(string? status = null)
         {
             var enderecos = new List<Enderecos>();
 
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
             string sql = "SELECT * FROM enderecos";
 
             if (!string.IsNullOrWhiteSpace(status))
                 sql += " WHERE status = @status";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
+            await using var cmd = new NpgsqlCommand(sql, connection);
 
             if (!string.IsNullOrWhiteSpace(status))
                 cmd.Parameters.AddWithValue("@status", status);
 
-            using var reader = cmd.ExecuteReader();
+            await using var reader = await cmd.ExecuteReaderAsync();
 
             while (reader.Read())
             {
@@ -44,25 +44,25 @@ namespace BackendDesapegaJa.Repositories
         }
 
        
-        public Enderecos ListarAtivo(int? usuarioId, string? status = null)
+        public async Task<Enderecos> ListarAtivoASync(int? usuarioId, string? status = null)
         {
             Enderecos endereco = null;
 
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
             string sql = "SELECT * FROM enderecos WHERE usuario_id = @usuario_id";
 
             if (!string.IsNullOrWhiteSpace(status))
                 sql += " AND status = @status";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
+            await using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
             if (!string.IsNullOrWhiteSpace(status))
                 cmd.Parameters.AddWithValue("@status", status);
 
-            using var reader = cmd.ExecuteReader();
+            await using var reader = await cmd.ExecuteReaderAsync();
 
             if (reader.Read())
                 endereco = Mapper(reader);
@@ -71,28 +71,28 @@ namespace BackendDesapegaJa.Repositories
         }
 
         
-        private void DesativarOutrosEnderecosAtivos(int usuarioId, int? enderecoIdExcluir = null)
+        private async Task DesativarOutrosEnderecosAtivosAsync(int usuarioId, int? enderecoIdExcluir = null)
         {
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
             string sql = "UPDATE enderecos SET status = 'inativo' WHERE usuario_id = @usuario_id AND status = 'ativo'";
 
             if (enderecoIdExcluir.HasValue)
                 sql += " AND id != @endereco_id_excluir";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
+            await using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@usuario_id", usuarioId);
 
             if (enderecoIdExcluir.HasValue)
                 cmd.Parameters.AddWithValue("@endereco_id_excluir", enderecoIdExcluir.Value);
 
-            cmd.ExecuteNonQuery();
-        }
+            await cmd.ExecuteNonQueryAsync();
+        }   
 
-        public void Adicionar(Enderecos enderecos, string? status = null)
+        public async Task AdicionarAsync(Enderecos enderecos, string? status = null)
         {
-            var usuario = _repoUser.BuscarPorId(enderecos.usuario_id);
+            var usuario = await _repoUser.BuscarPorIdAsync(enderecos.usuario_id);
 
             if (usuario == null)
                 throw new InvalidOperationException("Usuário referenciado não encontrado");
@@ -103,10 +103,10 @@ namespace BackendDesapegaJa.Repositories
             var statusFinal = string.IsNullOrWhiteSpace(enderecos.status) ? "ativo" : enderecos.status;
 
             if (statusFinal == "ativo")
-                DesativarOutrosEnderecosAtivos(enderecos.usuario_id);
+                DesativarOutrosEnderecosAtivosAsync(enderecos.usuario_id);
 
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
             string sql = @"
                 INSERT INTO enderecos 
@@ -132,23 +132,23 @@ namespace BackendDesapegaJa.Repositories
             enderecos.id = Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-        public Enderecos? BuscarPorId(int? id, string? status = null)
+        public async Task<Enderecos?> BuscarPorIdAsync(int? id, string? status = null)
         {
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
             string sql = "SELECT * FROM enderecos WHERE id = @id";
 
             if (!string.IsNullOrWhiteSpace(status))
                 sql += " AND status = @status";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
+            await using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
 
             if (!string.IsNullOrWhiteSpace(status))
                 cmd.Parameters.AddWithValue("@status", status);
 
-            using var reader = cmd.ExecuteReader();
+           await using var reader = await cmd.ExecuteReaderAsync();
 
             if (reader.Read())
                 return Mapper(reader);
@@ -156,17 +156,17 @@ namespace BackendDesapegaJa.Repositories
             return null;
         }
 
-        public Enderecos? BuscarPorUsuarioIdAtivo(int? id, string? status = null)
+        public async Task<Enderecos?> BuscarPorUsuarioIdAtivoAsync(int? id, string? status = null)
         {
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+            await using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
 
             string sql = "SELECT * FROM enderecos WHERE usuario_id = @id AND status = 'ativo'";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
+            await using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
 
-            using var reader = cmd.ExecuteReader();
+            await using var reader = await cmd.ExecuteReaderAsync();
 
             if (reader.Read())
                 return Mapper(reader);
@@ -174,25 +174,25 @@ namespace BackendDesapegaJa.Repositories
             return null;
         }
 
-        public IEnumerable<Enderecos?> BuscarPorUsuarioId(int? id, string? status = null)
+        public async Task<IEnumerable<Enderecos?>> BuscarPorUsuarioIdAsync(int? id, string? status = null)
         {
             var lista = new List<Enderecos>();
 
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+           await using var connection = new NpgsqlConnection(_connectionString);
+           await connection.OpenAsync();
 
             string sql = "SELECT * FROM enderecos WHERE usuario_id = @id";
 
             if (!string.IsNullOrWhiteSpace(status))
                 sql += " AND status = @status";
 
-            using var cmd = new NpgsqlCommand(sql, connection);
+           await using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
 
             if (!string.IsNullOrWhiteSpace(status))
                 cmd.Parameters.AddWithValue("@status", status);
 
-            using var reader = cmd.ExecuteReader();
+            await using var reader = await cmd.ExecuteReaderAsync();
 
             while (reader.Read())
                 lista.Add(Mapper(reader));
@@ -204,16 +204,16 @@ namespace BackendDesapegaJa.Repositories
             return value ?? DBNull.Value;
         }
 
-        public void AtualizarPorId(int id, EnderecosUpdateDTO enderecos, string? status = null)
+        public async Task AtualizarPorIdAsync(int id, EnderecosUpdateDTO enderecos, string? status = null)
         {
-            var atual = BuscarPorId(id);
+            var atual = await BuscarPorIdAsync(id);
             if (atual == null)
                 throw new InvalidOperationException("Nenhum endereço encontrado com esse ID.");
 
             var statusFinal = string.IsNullOrWhiteSpace(enderecos.status) ? atual.status : enderecos.status;
 
             if (statusFinal == "ativo")
-                DesativarOutrosEnderecosAtivos(atual.usuario_id, id);
+                DesativarOutrosEnderecosAtivosAsync(atual.usuario_id, id);
 
             string sql =
                 @"UPDATE enderecos SET 
@@ -229,10 +229,10 @@ namespace BackendDesapegaJa.Repositories
                     status = @status
                   WHERE id = @id";
 
-            using var connection = new NpgsqlConnection(_connectionString);
-            connection.Open();
+           await  using var connection = new NpgsqlConnection(_connectionString);
+           await connection.OpenAsync();
 
-            using var cmd = new NpgsqlCommand(sql, connection);
+            await using var cmd = new NpgsqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", id);
 
             cmd.Parameters.AddWithValue("@cep", DbOr(enderecos.Cep ?? atual.Cep));
@@ -247,7 +247,7 @@ namespace BackendDesapegaJa.Repositories
             cmd.Parameters.AddWithValue("@status", DbOr(statusFinal));
 
 
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
 
        

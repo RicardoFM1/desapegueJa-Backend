@@ -1,21 +1,11 @@
 ﻿using BackendDesapegaJa.Entities;
 
-namespace BackendDesapegaJa.Interfaces
+public interface IProdutoRepository
 {
-    public interface IProdutoRepository
-    {
-        (IEnumerable<Produto> produtos, int total) ListarTodos(string? status = null, int offset = 0, int limit = 10);
-
-        void Adicionar(Produto produto);
-
-        IEnumerable<Produto?> BuscarPorNome(string nome, string? status = null);
-
-        IEnumerable<Produto?> BuscarPorUsuarioID(int? id, string? status = null);
-
-        Produto? BuscarPorId(int? id, string? status = null);
-
-        Produto? Atualizar(int id, ProdutoUpdateDTO produto, string? status = null);
-
-
-    }
+    Task<(IEnumerable<Produto> produtos, int total)> ListarTodosAsync(string? status, int offset, int limit);
+    Task<IEnumerable<Produto>> BuscarPorNomeAsync(string nome, string? status);
+    Task<IEnumerable<Produto>> BuscarPorUsuarioIdAsync(int? id, string? status);
+    Task<Produto?> BuscarPorIdAsync(int? id, string? status);
+    Task AdicionarAsync(Produto produto);
+    Task<Produto?> AtualizarAsync(int id, ProdutoUpdateDTO produto, string? status);
 }

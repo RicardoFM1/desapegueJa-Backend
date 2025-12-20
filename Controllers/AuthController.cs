@@ -19,80 +19,71 @@ namespace BackendDesapegaJa.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get([FromQuery] string? status)
+        public async Task<IActionResult> Get([FromQuery] string? status)
         {
             try
             {
+                var usuarios = await _service.ObterUsuariosAsync(status);
 
-            var usuarios = _service.ObterUsuarios(status);
                 foreach (var u in usuarios)
-                {
                     u.Senha = null;
-                }
+
                 return Ok(usuarios);
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
         }
+
 
         [HttpGet("{id}")]
-
-        public IActionResult GetById(int id, [FromQuery] string? status)
+        public async Task<IActionResult> GetById(int id, [FromQuery] string? status)
         {
             try
             {
-
-            var usuario = _service.BuscarUsuarioPorId(id, status);
+                var usuario = await _service.BuscarUsuarioPorIdAsync(id);
                 usuario.Senha = null;
-            return Ok(usuario);
+                return Ok(usuario);
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
         }
+
 
         [HttpPost]
-        public IActionResult CriarUsuario([FromBody] Usuario usuario)
+        public async Task<IActionResult> CriarUsuario([FromBody] Usuario usuario)
         {
             try
             {
-                var novoUsuario = _service.CriarUsuario(usuario);
-                return StatusCode(201, new { novoUsuario });
+                var novoUsuario = await _service.CriarUsuarioAsync(usuario);
+                return Created("", novoUsuario);
             }
             catch (InvalidOperationException ex)
             {
-                return StatusCode(400, new { message = ex.Message }); 
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro interno: " + ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
         }
 
+
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             try
             {
-                var usuario = new Usuario { Email = loginDto.Email, Senha = loginDto.Senha };
-                var loginResponse = _service.Login(usuario);
-                if (loginResponse == null || usuario.status == "inativo")
+                var usuario = new Usuario
                 {
-                   return Unauthorized(new { message = "Usuário ou senha inválidos." });
-                }
-                if (loginResponse.Status.ToLower() == "inativo")
+                    Email = loginDto.Email,
+                    Senha = loginDto.Senha
+                };
+
+                var loginResponse = await _service.LoginAsync(usuario);
+
+                if (loginResponse == null || loginResponse.Status.ToLower() == "inativo")
                     return Unauthorized(new { message = "Usuário ou senha inválidos." });
+
                 return Ok(loginResponse);
             }
             catch (InvalidOperationException ex)
@@ -101,87 +92,55 @@ namespace BackendDesapegaJa.Controllers
             }
         }
 
+
         [Authorize]
         [HttpGet("retrieve")]
-        public IActionResult GetUsuarioLogado()
+        public async Task<IActionResult> GetUsuarioLogado()
         {
-            try
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
+            var usuario = await _service.BuscarUsuarioPorIdAsync(userId);
+
+            if (usuario == null)
+                return NotFound();
+
+            return Ok(new DTOresponse
             {
-               
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                if (userIdClaim == null)
-                    return Unauthorized(new { message = "Token inválido ou ausente." });
-
-                if (!int.TryParse(userIdClaim, out int userId))
-                    return BadRequest(new { message = "ID de usuário inválido no token." });
-                var usuario = _service.BuscarUsuarioPorId(userId);
-                if (usuario == null)
-                    return NotFound(new { message = "Usuário não encontrado." });
-
-                var response = new DTOresponse
-                {
-                    Id = usuario.Id,
-                    Email = usuario.Email,
-                    Admin = (bool)usuario.Admin,
-                    Nome = usuario.Nome,
-                    Cpf = usuario.Cpf,
-                    Telefone = usuario.Telefone,
-                    Data_Nascimento = usuario.data_de_nascimento,
-                    Foto_Perfil = usuario.Foto_De_Perfil
-
-                };
-
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro ao recuperar usuário.", error = ex.Message });
-            }
+                Id = usuario.Id,
+                Email = usuario.Email,
+                Admin = (bool)usuario.Admin,
+                Nome = usuario.Nome,
+                Cpf = usuario.Cpf,
+                Telefone = usuario.Telefone,
+                Data_Nascimento = usuario.data_de_nascimento,
+                Foto_Perfil = usuario.Foto_De_Perfil
+            });
         }
+
 
         [Authorize]
         [HttpPatch("{id}")]
-        public IActionResult AtualizarUsuario(int id, [FromBody] UsuarioUpdateDTO usuario, [FromQuery] string? status)
+        public async Task<IActionResult> AtualizarUsuario(
+     int id,
+     [FromBody] UsuarioUpdateDTO usuario,
+     [FromQuery] string? status)
         {
-            try
-            {
-              
-                var usuarioExistente = _service.BuscarUsuarioPorId(id);
+            var loggedId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.FindFirst("isAdmin")?.Value == "true";
 
-               
+            if (!int.TryParse(loggedId, out int loggedIdInt))
+                return Forbid();
 
-                var loggedId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var isAdmin = User.FindFirst("isAdmin")?.Value.ToLower() == "true";
+            if (!isAdmin && id != loggedIdInt)
+                return Forbid();
 
-                if (!int.TryParse(loggedId, out int loggedidInt))
-                {
-                    return StatusCode(403, new { message = "Sem autorização para atualizar o usuário" });
-                }
-
-              
-                if (isAdmin == false && (id != loggedidInt || usuarioExistente.status.ToLower() == "inativo"))
-                {
-                    return StatusCode(403, new { message = "Sem autorização para atualizar o usuário ou usuário sem permissão." });
-                }
-
-
-              
-                var atualizacao = _service.AtualizarUsuario(id, usuario, status);
-                return StatusCode(200, atualizacao);
-
-            }
-            catch (InvalidOperationException ex)
-            {
-                return StatusCode(400, new { message = ex.Message });
-            }
-
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro interno: " + ex.Message });
-            }
+            var atualizacao = await _service.AtualizarUsuarioAsync(id, usuario, status);
+            return Ok(atualizacao);
         }
+
         [HttpGet("login-google")]
         public IActionResult ExternalLogin()
         {

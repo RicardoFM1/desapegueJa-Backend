@@ -4,18 +4,18 @@ namespace BackendDesapegaJa.Interfaces
 {
     public interface IEnderecoRepository
     {
-        IEnumerable<Enderecos> ListarTodos(string? status = null);
+         Task<IEnumerable<Enderecos>> ListarTodosAsync(string? status = null);
 
-        void Adicionar(Enderecos enderecos, string? status = null);
+         Task AdicionarAsync(Enderecos enderecos, string? status = null);
 
       
 
-        void AtualizarPorId(int id, EnderecosUpdateDTO enderecos, string? status = null);
+        Task AtualizarPorIdAsync(int id, EnderecosUpdateDTO enderecos, string? status = null);
 
-        Enderecos? BuscarPorId(int? id, string? status = null);
+        Task<Enderecos?> BuscarPorIdAsync(int? id, string? status = null);
 
-        IEnumerable<Enderecos?> BuscarPorUsuarioId(int? id, string? status = null);
+        Task<IEnumerable<Enderecos?>> BuscarPorUsuarioIdAsync(int? id, string? status = null);
 
-        public Enderecos? BuscarPorUsuarioIdAtivo(int? id, string? status = null);
+        Task<Enderecos?> BuscarPorUsuarioIdAtivoAsync(int? id, string? status = null);
     }
 }
